@@ -1,127 +1,230 @@
-# Grid: Academic Networking and Proof of Work Platform
+# 🛡️ AI Financial Safety & Lending Copilot
 
-Grid is a scalable, Next.js based platform engineered for academic networking, portfolio verification, and hyper-local community management. The system leverages fully-local AI-driven KYC (Know Your Customer) processes to verify student identities securely without API keys, and isolates user bases into verified, college specific networks.
+> **An Agentic Decision-Support Platform combining Statistical ML Risk Scoring, Grounded Policy RAG, and Human-in-the-Loop Governance.**
 
-## System Architecture
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2+-black.svg?logo=next.js&logoColor=white)](https://nextjs.org)
+[![Python](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![Tests](https://img.shields.io/badge/Tests-9%20Passed-brightgreen.svg)]()
+[![Branch](https://img.shields.io/badge/Branch-rakshith-orange.svg)](https://github.com/Rakshi2609/innovation_unbounud/tree/rakshith)
 
-The application follows a modern serverless architecture pattern, utilizing Next.js App Router for server side rendering and API route handling, backed by a MongoDB cluster. AI processing has been refactored to be API-free using local execution.
+---
 
-```mermaid
-graph TD
-    Client[Client Browser]
-    NextJS[Next.js Application]
-    Auth[NextAuth / Google OAuth]
-    DB[(MongoDB Atlas)]
-    Tesseract[Local OCR: Tesseract.js]
-    Ollama[Local LLM: Ollama]
+## 📌 1. Project Overview & Hackathon Strategy
 
-    Client -->|HTTP/WebSocket| NextJS
-    Client -->|OAuth/Token| Auth
-    NextJS -->|Mongoose ODM| DB
-    NextJS -->|Image Processing| Tesseract
-    NextJS -->|Resume Roasting| Ollama
-    Auth -->|Token Verification| NextJS
+The **AI Financial Safety & Lending Copilot** is designed to empower banks and lenders to triage credit risk, prevent financial distress, protect vulnerable customers from fraud, and support informal/gig workers with evidence-backed decision support.
+
+### The 5 Target Banking Tracks:
+1. **Protecting Vulnerable Customers from Digital Financial Fraud**
+2. **Making Digital Banking Truly Accessible**
+3. **Preventing Financial Distress Before It Becomes a Crisis**
+4. **Financial Resilience for Gig and Informal Workers**
+5. **Safe and Inclusive Digital Payments**
+
+### Core Philosophy:
+> *"The ML model calculates statistical probability. The RAG system finds the institutional policies. The LangGraph AI explains the situation with citations. The Human Bank Officer makes the final financial decision."*
+
+---
+
+## 👥 2. Team Work Breakdown
+
+```
+ ┌──────────────────────────────────────────────┐ ┌──────────────────────────────────────────────┐
+ │             TANUSH'S ROLE                    │ │             RAKSHITH'S ROLE                  │
+ │       (Data Science & ML Modeling)           │ │        (Backend, RAG, Reasoning & API)       │
+ ├──────────────────────────────────────────────┤ ├──────────────────────────────────────────────┤
+ │ • Financial dataset research (Kaggle/Public) │ │ • Financial Case & Policy Schemas            │
+ │ • Statistical ML Model (XGBoost / LightGBM)  │ │ • Hybrid RAG Store (Qdrant + BM25)           │
+ │ • Model evaluation (AUC-ROC, F1, Shapley)    │ │ • Cross-Encoder Re-Ranking & PII Redactor    │
+ │ • Feature importance & risk classifications  │ │ • LangGraph Grounded Reasoning Engine        │
+ │ • Inference API endpoint (POST /predict-risk)│ │ • Real-Time EventBus & WebSockets            │
+ │                                              │ │ • Human-in-the-Loop Review & Audit Logging   │
+ └──────────────────────────────────────────────┘ └──────────────────────────────────────────────┘
 ```
 
-## Technology Stack
+---
 
-| Component | Technology | Purpose |
-| :--- | :--- | :--- |
-| Framework | Next.js 16 (App Router) | Server-side rendering, routing, API endpoints |
-| Language | TypeScript | Static typing, interface definitions |
-| Database | MongoDB & Mongoose | Document storage, schema validation |
-| Authentication | NextAuth (Google OAuth) | Secure session management & OAuth |
-| Styling | CSS Modules | Scoped component styling, custom design system |
-| OCR AI | Tesseract.js | Client-compressed, server-side OCR for ID verification |
-| Generative AI | Ollama (llama3.2) | Local API-free AI model for roasting resumes |
+## 🏛️ 3. Architecture & Data Flow
 
-## Core Modules
-
-### 1. Identity and Verification Pipeline
-The verification system ensures a high trust environment by algorithmically confirming student enrollment securely without third-party APIs.
-* Users upload institutional ID cards which are compressed client-side via HTML5 Canvas.
-* Images are processed instantly on the server via a cached tesseract.js worker.
-* Extracted text is cross-referenced against user profile data (Name, College).
-* Includes a robust **Campus Anti-Spoofing algorithm** that rejects mismatching regional sub-campuses (e.g., trying to verify as "VIT Vellore" using a "VIT Chennai" ID card).
-* Successful validation modifies the user schema verified boolean, unlocking protected application tiers.
-
-### 2. Community Routing System
-Users are dynamically partitioned into micro-communities based on their institutional affiliation.
-* Centralized dataset of 200+ Indian academic institutions.
-* Dedicated database indexing on the college and year fields for fast query performance.
-* Communities are strictly partitioned by College and Year, eliminating arbitrary branch-based fragmentation and fostering stronger cohort networking.
-* Segregated project boards and discussion forums per institution.
-
-### 3. Proof of Work (PoW) Infrastructure
-The platform replaces conventional resumes with a verifiable project portfolio.
-* Users log technical projects and deployments.
-* Peer endorsement system validates technical claims.
-* AI driven resume analysis module parses and critiques uploaded PDFs using local ollama endpoints.
-
-## Directory Structure
-
-```text
-Grid/
-  ├── public/              # Static assets and images
-  ├── src/
-  │   ├── app/             # Next.js App Router directory
-  │   │   ├── api/         # Serverless API endpoints
-  │   │   ├── community/   # College specific community feeds
-  │   │   ├── profile/     # User profile management and verification
-  │   │   └── roast/       # AI resume analysis module
-  │   ├── components/      # Reusable React components (Navbar, Modals)
-  │   ├── data/            # Static datasets (Colleges, States)
-  │   ├── lib/             # Utility functions and database connectors
-  │   └── models/          # Mongoose schema definitions
-  ├── .env.local           # Environment configuration (git ignored)
-  ├── next.config.ts       # Framework configuration
-  └── package.json         # Dependency management
+```
+   [Customer / Transaction Input]
+                 │
+                 ▼
+┌────────────────────────────────────────────────────────┐
+│  1. Statistical ML Risk Inference (Tanush's Layer)     │
+│     - POST /predict-risk                               │
+│     - Returns: risk_score, risk_class, top_factors     │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│  2. Policy RAG & Hybrid Retrieval (TheSuperRAG Layer)  │
+│     - Qdrant Vector Search (FastEmbed + BM25)          │
+│     - Cross-Encoder Re-Ranking & Citation Numbering    │
+│     - Automated PII Masking (SSN, Phone, Email)        │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│  3. LangGraph Grounded Reasoning Engine                │
+│     - Decomposes ML factors into numeric findings      │
+│     - Grounds reasoning in policy clauses [1], [2]     │
+│     - Generates actionable intervention options        │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│  4. Real-Time EventBus & Audit Engine (E-mrg Layer)    │
+│     - Broadcasts live case alerts via WebSockets       │
+│     - Immutable SQLite / MongoDB audit trail logging   │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│  5. Human Bank Officer Decision Gateway                │
+│     - Review Evidence, Citations & ML Risk Breakdown   │
+│     - Action: Approve | Restructure | Flag | Escalate  │
+└────────────────────────────────────────────────────────┘
 ```
 
-## Environment Configuration
+---
 
-Create a .env.local file in the project root with the following keys.
+## ⚡ 4. Quick Start (Running Server & Client)
 
-| Variable Name | Required | Description |
-| :--- | :--- | :--- |
-| NEXTAUTH_SECRET | Yes | Secret key for signing NextAuth sessions |
-| GOOGLE_CLIENT_ID | Yes | Google Cloud OAuth Client ID |
-| GOOGLE_CLIENT_SECRET | Yes | Google Cloud OAuth Client Secret |
-| MONGODB_URI | Yes | Connection string for MongoDB instance |
-| OLLAMA_BASE_URL | No | (Optional) URL to your hosted Ollama instance for production |
+### Prerequisites:
+* Python 3.12+
+* Node.js v20+ & npm
 
-## Installation and Build Pipeline
-
-1. Clone the repository and install dependencies.
+### Step 1: Start the Backend Server
 ```bash
-git clone https://github.com/tanushbhootra576/Grid.git
-cd Grid
+# 1. Activate virtual environment & install backend requirements
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+
+# 2. Launch FastAPI backend
+uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload
+```
+* **API Server**: `http://localhost:8000`
+* **Swagger Docs**: `http://localhost:8000/docs`
+* **Health Check**: `http://localhost:8000/health/status`
+
+### Step 2: Start the Frontend Client
+```bash
+# In a separate terminal:
+cd TheSuperRAG-main/frontend
 npm install
+npm run dev -- -p 3001
 ```
+* **Web Client**: `http://localhost:3001`
 
-2. Start your local Ollama instance (required for Resume Roast to function locally).
+---
+
+## 🧪 5. Automated Verification & Testing
+
+The backend includes a comprehensive test suite testing ML predictions, RAG retrieval, PII redaction, LangGraph reasoning, and human-in-the-loop decision recording.
+
+Run all tests:
 ```bash
-ollama run llama3.2
+.venv/bin/pytest backend/tests/ -v
 ```
 
-3. Initialize the development server.
-```bash
-npm run dev
+```
+backend/tests/test_api_endpoints.py::test_health_endpoints PASSED
+backend/tests/test_api_endpoints.py::test_list_and_get_cases PASSED
+backend/tests/test_api_endpoints.py::test_evaluate_and_human_decision_workflow PASSED
+backend/tests/test_ml_client.py::test_ml_client_distress_prediction PASSED
+backend/tests/test_ml_client.py::test_ml_client_fraud_anomaly_prediction PASSED
+backend/tests/test_rag_retrieval.py::test_pii_redaction PASSED
+backend/tests/test_rag_retrieval.py::test_policy_store_indexing_and_search PASSED
+backend/tests/test_rag_retrieval.py::test_reranker_scoring PASSED
+backend/tests/test_reasoning_graph.py::test_financial_reasoning_graph_end_to_end PASSED
+
+======================== 9 passed in 1.63s =========================
 ```
 
-4. Execute the production build process.
-```bash
-npm run build
-npm start
+---
+
+## 🔌 6. Tanush's ML Model Integration Contract
+
+The backend is completely decoupled from model weights. Tanush can serve his model at `http://localhost:8001`:
+
+### `POST /predict-risk`
+#### Input Schema:
+```json
+{
+  "customer_id": "CUST-88120",
+  "features": {
+    "monthly_income": 65000.0,
+    "monthly_expenses": 58000.0,
+    "existing_debt": 285000.0,
+    "credit_utilization": 0.89,
+    "recent_delinquencies": 2,
+    "savings_balance": 12000.0,
+    "income_volatility_score": 0.12,
+    "device_trust_score": 0.95,
+    "transaction_amount": 25000.0
+  },
+  "metadata": {
+    "occupation": "Software Developer",
+    "employment_type": "Full-Time Salaried",
+    "account_age_months": 36
+  }
+}
 ```
 
-## Deployment Notes
+#### Output Schema:
+```json
+{
+  "prediction_id": "PRED-88391",
+  "customer_id": "CUST-88120",
+  "risk_score": 0.84,
+  "risk_class": "HIGH",
+  "confidence": 0.89,
+  "risk_type": "credit_distress",
+  "top_factors": [
+    {
+      "factor": "credit_utilization",
+      "weight": 0.42,
+      "description": "Revolving credit utilization is 89.0%, exceeding safe 30% guideline."
+    },
+    {
+      "factor": "cashflow_compression",
+      "weight": 0.35,
+      "description": "Monthly recurring commitments consume 89.2% of net income."
+    }
+  ],
+  "model_version": "v1.2.0-xgboost-distress",
+  "evaluation_metrics": {
+    "auc_roc": 0.914,
+    "f1_score": 0.862
+  }
+}
+```
+*(If Tanush's remote service is offline, the backend's built-in statistical mock engine acts as an exact-conforming fallback).*
 
-This repository is optimized for deployment via Vercel. Ensure all environment variables listed in the configuration table are mapped exactly within the Vercel project settings prior to triggering a build. The default Next.js build command (npm run build) is automatically detected.
+---
 
-Note on Live Deployments (Ollama & Tesseract):
-* Tesseract.js is configured to write to os.tmpdir() to respect Vercel's read-only filesystem. ID Verification will work out of the box in production.
-* Ollama Resume Roasting requires a live, hosted Ollama endpoint (e.g. EC2, Railway, or external GPU service) when deployed to Vercel, since Vercel cannot hit your localhost Ollama. Set an OLLAMA_BASE_URL environment variable pointing to your hosted model for it to work in production.
+## 📡 7. Backend API Reference
 
-Developed by Tanush Bhootra.
-# innovation_unbounud
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/health/live` | Service liveness probe |
+| `GET` | `/health/status` | Vector store & ML bridge status |
+| `GET` | `/api/v1/cases` | List all triaged financial cases |
+| `GET` | `/api/v1/cases/{id}` | Get full case risk assessment, citations & explanation |
+| `POST` | `/api/v1/cases/evaluate` | Evaluate customer profile through ML + RAG reasoning |
+| `POST` | `/api/v1/cases/{id}/decision` | Record human officer decision (`APPROVE`, `RESTRUCTURE`, `FLAG_FRAUD`, etc.) |
+| `GET` | `/api/v1/cases/{id}/audit` | Immutable audit trail for compliance |
+| `GET` | `/api/v1/documents` | List indexed policy guideline files |
+| `POST` | `/api/v1/documents/upload` | Ingest and index new banking policy documents |
+| `WS` | `/api/v1/ws/cases` | WebSocket real-time event feed |
+| `GET` | `/api/v1/events/stream` | Server-Sent Events (SSE) stream |
+
+---
+
+## 🔒 8. Privacy, Security & Governance
+
+1. **Synthetic Test Data Guarantee**: All sample cases, account balances, and identifiers used in testing and demo are synthetic test fixtures.
+2. **Local PII Redaction**: Document loaders automatically scrub SSNs, emails, phone numbers, and card numbers prior to vectorization or LLM prompting.
+3. **Strict Human Governance**: AI outputs are decision-support recommendations only. All consequential financial decisions require explicit human officer authorization with mandatory audit logging.
