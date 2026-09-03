@@ -64,7 +64,7 @@ class MLRiskPrediction(BaseModel):
     is_fallback: bool = False
     is_safety_validated: bool = True
     autonomous_action_allowed: bool = False
-    evaluation_metrics: Optional[Dict[str, float]] = None
+    evaluation_metrics: Optional[Dict[str, Any]] = None
 
 class MLPredictionRequest(BaseModel):
     customer_id: str

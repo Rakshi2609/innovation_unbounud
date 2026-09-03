@@ -323,6 +323,12 @@ def predict_risk(req: MLPredictionRequest):
     except Exception as e:
         raise HTTPException(500, f"Prediction failed: {e}")
 
+    # If device trust anomaly is present, integrate the fraud model / anomaly probability
+    dts = req.features.get("device_trust_score")
+    if dts is not None and float(dts) < 0.40:
+        fraud_risk = round(1.0 - float(dts), 3)
+        prob = max(prob, fraud_risk)
+
     risk_class = _class(prob, threshold)
     confidence = round(0.85 + 0.10 * (1.0 - abs(prob - 0.5)), 2)
     factors = _derive_factors(req.features, req.metadata, prob)
