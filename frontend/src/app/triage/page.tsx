@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Layers, 
@@ -24,178 +24,20 @@ import {
 const API_BASE = "http://localhost:8000";
 
 const formatINR = (val: number | undefined | null): string => {
-  if (val === undefined || val === null) return "₹0";
+  if (val === undefined || val === null || isNaN(Number(val))) return "₹0";
   return "₹" + Number(val).toLocaleString("en-IN");
 };
 
-// Robust initial seed data to prevent empty/flashing screen during fetch
-const SEED_CASES = [
-  {
-    case_id: "CASE-2026-001",
-    customer_id: "CUST-88120",
-    customer_name: "Aarav Patel",
-    track_type: "distress",
-    status: "PENDING_REVIEW",
-    risk_score: 0.84,
-    risk_class: "HIGH",
-    risk_type: "credit_distress",
-    top_factors: [
-      { factor: "revolving_credit_overutilization", weight: 0.35, description: "Credit utilization is 89.0%, well above safe 30% guideline." },
-      { factor: "cashflow_compression", weight: 0.25, description: "Monthly recurring commitments consume 89.2% of net income." }
-    ],
-    customer_profile: {
-      customer_id: "CUST-88120",
-      name: "Aarav Patel",
-      occupation: "Software Developer",
-      employment_type: "Full-Time Salaried",
-      credit_score: 640,
-      account_age_months: 36,
-      financial_metrics: {
-        monthly_income: 65000,
-        monthly_expenses: 58000,
-        existing_debt: 285000,
-        credit_utilization: 0.89,
-        recent_delinquencies: 2,
-        savings_balance: 12000,
-        income_volatility_score: 0.12
-      }
-    },
-    ml_prediction: {
-      prediction_id: "PRED-88391",
-      customer_id: "CUST-88120",
-      risk_score: 0.84,
-      risk_class: "HIGH",
-      confidence: 0.89,
-      risk_type: "credit_distress",
-      model_version: "v1.2.0-fallback-mock",
-      is_fallback: true,
-      top_factors: [
-        { factor: "revolving_credit_overutilization", weight: 0.35, description: "Credit utilization is 89.0%, well above safe 30% guideline." },
-        { factor: "cashflow_compression", weight: 0.25, description: "Monthly recurring commitments consume 89.2% of net income." }
-      ]
-    },
-    rag_citations: [
-      {
-        source_file: "lending_underwriting_guidelines_2026.md",
-        policy_name: "Lending Underwriting Guidelines 2026",
-        section: "Section 1: Debt-to-Income & Credit Utilization Thresholds",
-        clause: "Clause 1.2 (Elevated Risk Threshold)",
-        snippet: "Borrowers with a revolving credit utilization above 85.0% or a monthly debt service ratio exceeding 70.0% of net income must be flagged for elevated distress risk.",
-        relevance_score: 0.92
-      },
-      {
-        source_file: "hardship_relief_and_debt_restructuring_policy.md",
-        policy_name: "Hardship Relief And Debt Restructuring Policy",
-        section: "Section 2: Pre-Delinquency Early Intervention",
-        clause: "Clause 2.1 (Restructuring Moratorium)",
-        snippet: "Borrowers displaying early cashflow distress prior to 60-day default are eligible for a 3-month principal moratorium or 36-month term debt consolidation.",
-        relevance_score: 0.88
-      }
-    ],
-    explanation: {
-      summary: "Customer flagged for early financial distress with HIGH risk profile (84.0% ML risk score). Revolving credit utilization is 89.0% with recurring commitments consuming 89.2% of monthly income.",
-      policy_alignment: "In accordance with institutional distress intervention policies [1], [2], early pre-delinquency signals qualify the borrower for non-punitive debt workouts and term restructuring prior to formal default.",
-      factor_breakdown: [
-        "• Revolving Credit Overutilization: Credit utilization is 89.0%, well above safe 30% guideline. (Contribution Weight: 0.35)",
-        "• Cashflow Compression: Monthly recurring commitments consume 89.2% of net income. (Contribution Weight: 0.25)"
-      ],
-      recommendations: [
-        {
-          action_type: "RESTRUCTURE_LOAN",
-          title: "Proactive Debt Workout & Term Consolidation",
-          rationale: "Consolidate high-interest revolving balances into a 36-month fixed amortizing loan with interest rate discount.",
-          eligible_programs: ["Hardship Relief Restructure", "3-Month Principal Moratorium"]
-        },
-        {
-          action_type: "REQUIRE_DOCUMENTATION",
-          title: "Request Updated Cashflow Disclosures",
-          rationale: "Verify current expense obligations before adjusting credit limits.",
-          eligible_programs: ["Financial Health Consultation"]
-        }
-      ]
-    },
-    confidence_score: 0.89
-  },
-  {
-    case_id: "CASE-2026-002",
-    customer_id: "CUST-44912",
-    customer_name: "Fatima Noor",
-    track_type: "gig_resilience",
-    status: "PENDING_REVIEW",
-    risk_score: 0.68,
-    risk_class: "HIGH",
-    risk_type: "gig_income_volatility",
-    top_factors: [
-      { factor: "earnings_volatility", weight: 0.40, description: "Monthly platform earnings vary by >40% across seasonal quarters." }
-    ],
-    customer_profile: {
-      customer_id: "CUST-44912",
-      name: "Fatima Noor",
-      occupation: "Rideshare Driver",
-      employment_type: "Gig / Informal",
-      credit_score: 610,
-      account_age_months: 18,
-      financial_metrics: {
-        monthly_income: 38000,
-        monthly_expenses: 31000,
-        existing_debt: 65000,
-        credit_utilization: 0.72,
-        recent_delinquencies: 0,
-        savings_balance: 5000,
-        income_volatility_score: 0.58
-      }
-    },
-    ml_prediction: {
-      prediction_id: "PRED-44912",
-      customer_id: "CUST-44912",
-      risk_score: 0.68,
-      risk_class: "HIGH",
-      confidence: 0.85,
-      risk_type: "gig_income_volatility",
-      model_version: "v1.2.0-fallback-mock",
-      is_fallback: true,
-      top_factors: [
-        { factor: "earnings_volatility", weight: 0.40, description: "Monthly platform earnings vary by >40% across seasonal quarters." }
-      ]
-    },
-    rag_citations: [
-      {
-        source_file: "gig_worker_cashflow_underwriting_framework.md",
-        policy_name: "Gig Worker Cashflow Underwriting Framework",
-        section: "Section 2: Flexible Repayment and Micro-Liquidity Lines",
-        clause: "Clause 2.1 (Income-Contingent Micro-Lines)",
-        snippet: "Gig workers maintaining positive platform activity ratings are eligible for income-contingent liquidity lines up to ₹25,000 with flexible daily/weekly micro-deductions.",
-        relevance_score: 0.94
-      }
-    ],
-    explanation: {
-      summary: "Customer assessed with HIGH cashflow volatility risk (68.0% risk score). Platform earnings show variance with short-term liquidity buffer needs.",
-      policy_alignment: "Per informal worker underwriting framework [1], credit eligibility is underwritten on 180-day rolling digital cashflow.",
-      factor_breakdown: [
-        "• Earnings Volatility: Monthly platform earnings vary by >40% across seasonal quarters. (Contribution Weight: 0.40)"
-      ],
-      recommendations: [
-        {
-          action_type: "RESTRUCTURE_LOAN",
-          title: "Offer Income-Contingent Micro-Line",
-          rationale: "Provide essential liquidity with automated flexible daily micro-deductions matching earnings pace.",
-          eligible_programs: ["Gig Worker Micro-Buffer Line", "Essential Expense Advance"]
-        }
-      ]
-    },
-    confidence_score: 0.85
-  }
-];
-
 export default function TriagePage() {
-  const [cases, setCases] = useState<any[]>(SEED_CASES);
-  const [selectedCaseId, setSelectedCaseId] = useState<string>("CASE-2026-001");
-  const [selectedCaseDetail, setSelectedCaseDetail] = useState<any | null>(SEED_CASES[0]);
+  const [cases, setCases] = useState<any[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('CASE-2026-001');
+  const [caseDetailsCache, setCaseDetailsCache] = useState<Record<string, any>>({});
+  const [isFetchingList, setIsFetchingList] = useState(false);
   const [trackFilter, setTrackFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [userRole, setUserRole] = useState<'OFFICER' | 'CUSTOMER'>('OFFICER');
 
-  // Decision Modal
+  // Decision Modal State
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
   const [selectedCitation, setSelectedCitation] = useState<any | null>(null);
   const [decisionType, setDecisionType] = useState<string>('RESTRUCTURE');
@@ -206,49 +48,66 @@ export default function TriagePage() {
   const [overrideML, setOverrideML] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
 
-  const fetchCases = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/cases`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.cases && data.cases.length > 0) {
-          setCases(data.cases);
-          // If selected case is not in the new list, keep default
-          if (!selectedCaseId) {
-            setSelectedCaseId(data.cases[0].case_id);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Live API fetch notice (using robust local state):", e);
-    }
-  };
-
-  const fetchCaseDetail = async (id: string) => {
+  // 1. Fetch Case Detail and store in cache
+  const fetchCaseDetail = useCallback(async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}/api/v1/cases/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setSelectedCaseDetail(data);
-        return;
+        setCaseDetailsCache(prev => ({
+          ...prev,
+          [id]: data
+        }));
       }
     } catch (e) {
-      console.warn("Live API case detail notice:", e);
+      console.warn(`Failed fetching case detail for ${id}:`, e);
     }
-    // Fallback to local seed item if network fails
-    const local = SEED_CASES.find(c => c.case_id === id);
-    if (local) setSelectedCaseDetail(local);
-  };
+  }, []);
+
+  // 2. Fetch Cases List
+  const fetchCases = useCallback(async () => {
+    setIsFetchingList(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/cases`);
+      if (res.ok) {
+        const data = await res.json();
+        const list = data.cases || [];
+        setCases(list);
+        
+        // Ensure default selected case exists or select first
+        if (list.length > 0) {
+          const currentExists = list.some((c: any) => c.case_id === selectedCaseId);
+          if (!currentExists) {
+            const scenarioA = list.find((c: any) => c.case_id === 'CASE-2026-001');
+            const targetId = scenarioA ? scenarioA.case_id : list[0].case_id;
+            setSelectedCaseId(targetId);
+            fetchCaseDetail(targetId);
+          } else {
+            fetchCaseDetail(selectedCaseId);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed fetching cases list:", e);
+    } finally {
+      setIsFetchingList(false);
+    }
+  }, [selectedCaseId, fetchCaseDetail]);
 
   useEffect(() => {
     fetchCases();
   }, []);
 
   useEffect(() => {
-    if (selectedCaseId) {
+    if (selectedCaseId && !caseDetailsCache[selectedCaseId]) {
       fetchCaseDetail(selectedCaseId);
     }
-  }, [selectedCaseId]);
+  }, [selectedCaseId, caseDetailsCache, fetchCaseDetail]);
+
+  // Active detail from cache
+  const currentDetail = useMemo(() => {
+    return caseDetailsCache[selectedCaseId] || null;
+  }, [caseDetailsCache, selectedCaseId]);
 
   const handleSubmitDecision = async () => {
     if (!selectedCaseId) return;
@@ -271,38 +130,28 @@ export default function TriagePage() {
 
       if (res.ok) {
         setIsDecisionModalOpen(false);
-        fetchCaseDetail(selectedCaseId);
-        fetchCases();
-      } else {
-        // Update local state directly
-        if (selectedCaseDetail) {
-          setSelectedCaseDetail({
-            ...selectedCaseDetail,
-            status: decisionType === 'RESTRUCTURE' ? 'RESTRUCTURED' : decisionType === 'APPROVE' ? 'APPROVED' : 'FLAGGED'
-          });
-          setIsDecisionModalOpen(false);
-        }
+        // Refresh detail and list
+        await fetchCaseDetail(selectedCaseId);
+        await fetchCases();
       }
-    } catch {
-      if (selectedCaseDetail) {
-        setSelectedCaseDetail({
-          ...selectedCaseDetail,
-          status: decisionType === 'RESTRUCTURE' ? 'RESTRUCTURED' : 'APPROVED'
-        });
-        setIsDecisionModalOpen(false);
-      }
+    } catch (e) {
+      console.error("Failed submitting officer decision:", e);
     }
   };
 
-  const filteredCases = cases.filter(c => {
-    const matchesTrack = trackFilter === 'all' || c.track_type === trackFilter;
-    const matchesSearch = c.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          c.case_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.customer_id?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTrack && matchesSearch;
-  });
+  const filteredCases = useMemo(() => {
+    return cases.filter(c => {
+      const matchesTrack = trackFilter === 'all' || c.track_type === trackFilter;
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !q || 
+                            (c.customer_name && c.customer_name.toLowerCase().includes(q)) || 
+                            (c.case_id && c.case_id.toLowerCase().includes(q)) ||
+                            (c.customer_id && c.customer_id.toLowerCase().includes(q));
+      return matchesTrack && matchesSearch;
+    });
+  }, [cases, trackFilter, searchQuery]);
 
-  const getRiskBadgeColor = (riskClass: string) => {
+  const getRiskBadgeColor = (riskClass: string | undefined) => {
     switch (riskClass) {
       case 'CRITICAL': return 'bg-[#E23D28] text-white border-[#1A1A1A]';
       case 'HIGH': return 'bg-[#F5D04C] text-[#1A1A1A] border-[#1A1A1A]';
@@ -311,7 +160,7 @@ export default function TriagePage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined) => {
     switch (status) {
       case 'APPROVED': return 'bg-[#28A745] text-white';
       case 'RESTRUCTURED': return 'bg-[#0F4C81] text-white';
@@ -320,6 +169,10 @@ export default function TriagePage() {
       default: return 'bg-[#F5D04C] text-[#1A1A1A]';
     }
   };
+
+  // Helper metrics accessor
+  const metrics = currentDetail?.customer_profile?.financial_metrics || currentDetail?.customer?.financial_metrics;
+  const profile = currentDetail?.customer_profile || currentDetail?.customer;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -399,8 +252,13 @@ export default function TriagePage() {
               <h2 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
                 <Layers size={16} className="text-[#E23D28]" /> Triage Queue ({filteredCases.length})
               </h2>
-              <button onClick={fetchCases} className="p-1 hover:bg-gray-100 border border-[#1A1A1A] cursor-pointer">
-                <RefreshCw size={13} />
+              <button 
+                onClick={fetchCases} 
+                disabled={isFetchingList}
+                className="p-1 hover:bg-gray-100 border border-[#1A1A1A] cursor-pointer"
+                title="Refresh Triage Queue"
+              >
+                <RefreshCw size={13} className={isFetchingList ? "animate-spin text-[#E23D28]" : ""} />
               </button>
             </div>
 
@@ -422,10 +280,7 @@ export default function TriagePage() {
                 return (
                   <div
                     key={c.case_id}
-                    onClick={() => {
-                      setSelectedCaseId(c.case_id);
-                      setSelectedCaseDetail(c);
-                    }}
+                    onClick={() => setSelectedCaseId(c.case_id)}
                     className={`p-3.5 border-2 border-[#1A1A1A] cursor-pointer transition-all relative ${
                       isSelected 
                         ? 'bg-[#1A1A1A] text-white shadow-[4px_4px_0px_#E23D28]' 
@@ -440,7 +295,7 @@ export default function TriagePage() {
 
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 border ${getRiskBadgeColor(c.risk_class)}`}>
-                        {c.risk_class} RISK ({Math.round(c.risk_score * 100)}%)
+                        {c.risk_class} RISK ({Math.round((c.risk_score || 0) * 100)}%)
                       </span>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 ${getStatusBadge(c.status)}`}>
                         {c.status}
@@ -464,7 +319,7 @@ export default function TriagePage() {
 
         {/* Right Column: 4 Core Pillars */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          {selectedCaseDetail ? (
+          {currentDetail ? (
             <>
               {/* Customer Header Overview */}
               <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
@@ -472,20 +327,20 @@ export default function TriagePage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-black px-2 py-0.5 bg-[#1A1A1A] text-white uppercase">
-                        {selectedCaseDetail.case_id}
+                        {currentDetail.case_id}
                       </span>
-                      <span className={`text-xs font-black px-2.5 py-0.5 border-2 ${getRiskBadgeColor(selectedCaseDetail.risk_class)}`}>
-                        {selectedCaseDetail.risk_class} RISK ({Math.round(selectedCaseDetail.risk_score * 100)}%)
+                      <span className={`text-xs font-black px-2.5 py-0.5 border-2 ${getRiskBadgeColor(currentDetail.risk_class)}`}>
+                        {currentDetail.risk_class} RISK ({Math.round((currentDetail.risk_score || 0) * 100)}%)
                       </span>
-                      <span className={`text-xs font-black px-2.5 py-0.5 uppercase ${getStatusBadge(selectedCaseDetail.status)}`}>
-                        {selectedCaseDetail.status}
+                      <span className={`text-xs font-black px-2.5 py-0.5 uppercase ${getStatusBadge(currentDetail.status)}`}>
+                        {currentDetail.status}
                       </span>
                     </div>
                     <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">
-                      {selectedCaseDetail.customer_name}
+                      {currentDetail.customer_name}
                     </h2>
                     <p className="text-xs font-bold text-[#8A8A8A]">
-                      ID: {selectedCaseDetail.customer_id} · {selectedCaseDetail.customer_profile?.occupation} ({selectedCaseDetail.customer_profile?.employment_type})
+                      ID: {currentDetail.customer_id} · {profile?.occupation || 'Salaried Borrower'} ({profile?.employment_type || 'Full-Time'})
                     </p>
                   </div>
 
@@ -511,25 +366,25 @@ export default function TriagePage() {
                   <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
                     <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Monthly Income</p>
                     <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(selectedCaseDetail.customer_profile?.financial_metrics?.monthly_income)}
+                      {formatINR(metrics?.monthly_income)}
                     </p>
                   </div>
                   <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
                     <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Monthly Expenses</p>
                     <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(selectedCaseDetail.customer_profile?.financial_metrics?.monthly_expenses)}
+                      {formatINR(metrics?.monthly_expenses)}
                     </p>
                   </div>
                   <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
                     <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Credit Utilization</p>
                     <p className="text-base font-black text-[#E23D28]">
-                      {Math.round((selectedCaseDetail.customer_profile?.financial_metrics?.credit_utilization || 0) * 100)}%
+                      {Math.round((metrics?.credit_utilization || 0) * 100)}%
                     </p>
                   </div>
                   <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
                     <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Total Debt Balance</p>
                     <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(selectedCaseDetail.customer_profile?.financial_metrics?.existing_debt)}
+                      {formatINR(metrics?.existing_debt)}
                     </p>
                   </div>
                 </div>
@@ -543,24 +398,24 @@ export default function TriagePage() {
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black px-2 py-0.5 border ${
-                      selectedCaseDetail.ml_prediction?.is_fallback 
+                      currentDetail.ml_prediction?.is_fallback 
                         ? 'bg-yellow-100 text-yellow-900 border-yellow-800' 
                         : 'bg-green-100 text-green-900 border-green-800'
                     }`}>
-                      {selectedCaseDetail.ml_prediction?.is_fallback ? '⚠️ LOCAL FALLBACK ENGINE' : '🟢 ONLINE ML MODEL'}
+                      {currentDetail.ml_prediction?.is_fallback ? '⚠️ LOCAL FALLBACK ENGINE' : '🟢 ONLINE ML MODEL'}
                     </span>
                     <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
-                      Model: {selectedCaseDetail.ml_prediction?.model_version || 'v1.2.0-fallback-mock'}
+                      Model: {currentDetail.ml_prediction?.model_version || 'v1.0-india-npa-timeaware'}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {selectedCaseDetail.ml_prediction?.top_factors?.map((factor: any, idx: number) => (
+                  {currentDetail.ml_prediction?.top_factors?.map((factor: any, idx: number) => (
                     <div key={idx} className="p-3.5 border-2 border-[#1A1A1A] bg-[#FFF8E7]">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-black uppercase text-[#1A1A1A]">
-                          {factor.factor.replace(/_/g, ' ')}
+                          {factor.factor?.replace(/_/g, ' ')}
                         </span>
                         <span className="text-xs font-bold text-[#E23D28]">
                           Weight: {factor.weight}
@@ -581,12 +436,12 @@ export default function TriagePage() {
                     <BookOpen size={18} className="text-[#0F4C81]" /> Pillar 2: TheSuperRAG Policy Evidence
                   </h3>
                   <span className="text-[10px] font-bold bg-blue-50 border border-[#0F4C81] text-[#0F4C81] px-2 py-0.5">
-                    {selectedCaseDetail.rag_citations?.length || 0} Clauses Retrieved & Reranked
+                    {currentDetail.rag_citations?.length || 0} Clauses Retrieved & Reranked
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                  {selectedCaseDetail.rag_citations?.map((citation: any, i: number) => (
+                  {currentDetail.rag_citations?.map((citation: any, i: number) => (
                     <div
                       key={i}
                       onClick={() => setSelectedCitation(citation)}
@@ -616,24 +471,24 @@ export default function TriagePage() {
                     <Sparkles size={18} className="text-[#E23D28]" /> Pillar 3: LangGraph Grounded Reasoning & Recommendations
                   </h3>
                   <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
-                    Certainty: {Math.round((selectedCaseDetail.confidence_score || 0.89) * 100)}%
+                    Certainty: {Math.round((currentDetail.confidence_score || currentDetail.ml_prediction?.confidence || 0.89) * 100)}%
                   </span>
                 </div>
 
                 {/* Grounded Summary */}
                 <div className="p-4 bg-[#F4F4F4] border-l-8 border-[#0F4C81] border-2 border-[#1A1A1A] mb-4">
                   <p className="text-xs font-bold leading-relaxed text-[#1A1A1A] mb-2">
-                    {selectedCaseDetail.explanation?.summary}
+                    {currentDetail.explanation?.summary}
                   </p>
                   <p className="text-xs font-semibold text-[#0F4C81]">
-                    {selectedCaseDetail.explanation?.policy_alignment}
+                    {currentDetail.explanation?.policy_alignment}
                   </p>
                 </div>
 
                 {/* Suggested Interventions */}
                 <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Recommended Responsible Interventions:</h4>
                 <div className="flex flex-col gap-2">
-                  {selectedCaseDetail.explanation?.recommendations?.map((rec: any, idx: number) => (
+                  {currentDetail.explanation?.recommendations?.map((rec: any, idx: number) => (
                     <div key={idx} className="p-3 border-2 border-[#28A745] bg-[#28A745]/5 flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
@@ -670,20 +525,22 @@ export default function TriagePage() {
               </div>
             </>
           ) : (
-            <div className="p-12 text-center bg-white border-4 border-[#1A1A1A]">
-              <p className="font-bold text-gray-500">Select a case from the triage queue on the left to inspect.</p>
+            <div className="p-12 text-center bg-white border-4 border-[#1A1A1A] shadow-[4px_4px_0px_#1A1A1A]">
+              <p className="font-black text-sm uppercase text-[#1A1A1A] animate-pulse">
+                Loading Case Details...
+              </p>
             </div>
           )}
         </div>
       </div>
 
       {/* Decision Modal */}
-      {isDecisionModalOpen && selectedCaseDetail && (
+      {isDecisionModalOpen && currentDetail && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white border-4 border-[#1A1A1A] max-w-xl w-full p-6 shadow-[8px_8px_0px_#E23D28] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
               <h3 className="font-black text-base uppercase text-[#1A1A1A]">
-                Human Decision Gateway: {selectedCaseDetail.customer_name}
+                Human Decision Gateway: {currentDetail.customer_name}
               </h3>
               <button onClick={() => setIsDecisionModalOpen(false)} className="font-black text-lg cursor-pointer">✕</button>
             </div>
