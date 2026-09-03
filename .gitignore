@@ -43,7 +43,6 @@ qdrant_db/
 .env.production.local
 .env.test.local
 .env.development.local
-.env
 
 # misc
 .DS_Store
@@ -57,3 +56,4 @@ qdrant_db/
 *.tsbuildinfo
 next-env.d.ts
 
+config.bat
