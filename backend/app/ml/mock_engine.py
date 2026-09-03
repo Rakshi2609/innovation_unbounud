@@ -12,7 +12,6 @@ class MockFinancialMLEngine:
         metrics = customer.financial_metrics
         tx = customer.recent_transaction
 
-        # 1. Compute foundational risk indices
         dti = (metrics.existing_debt / max(metrics.monthly_income * 12, 1.0))
         monthly_burden = (metrics.monthly_expenses / max(metrics.monthly_income, 1.0))
         utilization = metrics.credit_utilization
@@ -36,7 +35,7 @@ class MockFinancialMLEngine:
                 factors.append(RiskFactor(
                     factor="unusual_velocity_and_amount",
                     weight=0.25,
-                    description=f"Single transfer of ${tx.amount:,.2f} represents major deviation from normal account balance."
+                    description=f"Single transfer of ₹{tx.amount:,.2f} represents major deviation from normal account balance."
                 ))
             risk_type = "payment_fraud"
 
