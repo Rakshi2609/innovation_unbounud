@@ -262,21 +262,22 @@ class FinancialReasoningGraph:
         return state
 
     def _node_generate_recommendations(self, state: FinancialCopilotState) -> FinancialCopilotState:
+        cust = state["customer"]
         ml_pred = state["ml_prediction"]
         recs: List[ActionRecommendation] = []
 
-        if ml_pred.risk_type == "credit_distress":
+        if ml_pred.risk_class == "LOW" and ml_pred.risk_type != "payment_fraud":
             recs.append(ActionRecommendation(
-                action_type="RESTRUCTURE_LOAN",
-                title="Proactive Debt Workout & Term Consolidation",
-                rationale="Consolidate high-interest revolving balances into a 36-month fixed amortizing loan with interest rate discount.",
-                eligible_programs=["Hardship Relief Restructure", "3-Month Principal Moratorium"]
+                action_type="APPROVE",
+                title="Approve Standard Credit Facility",
+                rationale="Borrower demonstrates healthy cashflow buffers, low debt-to-income ratio, and strong credit discipline.",
+                eligible_programs=["Prime Borrower Preferred Rate", "Standard Consumer Lending Line"]
             ))
             recs.append(ActionRecommendation(
                 action_type="REQUIRE_DOCUMENTATION",
-                title="Request Updated Cashflow Disclosures",
-                rationale="Verify current expense obligations before adjusting credit limits.",
-                eligible_programs=["Financial Health Consultation"]
+                title="Standard Income Verification Archival",
+                rationale="Archive routine financial documentation in accordance with periodic compliance audits.",
+                eligible_programs=["Annual Prime Account Review"]
             ))
         elif ml_pred.risk_type == "payment_fraud":
             recs.append(ActionRecommendation(
@@ -291,12 +292,31 @@ class FinancialReasoningGraph:
                 rationale="Perform voice verification and check against recent impersonation scam signatures.",
                 eligible_programs=["Senior Citizen Fraud Protection Protocol"]
             ))
-        elif ml_pred.risk_type == "gig_income_volatility":
+        elif ml_pred.risk_type == "gig_income_volatility" or cust.employment_type in ("Gig / Informal", "Freelance"):
             recs.append(ActionRecommendation(
                 action_type="RESTRUCTURE_LOAN",
                 title="Offer Income-Contingent Micro-Line",
                 rationale="Provide essential liquidity with automated flexible daily micro-deductions matching earnings pace.",
                 eligible_programs=["Gig Worker Micro-Buffer Line", "Essential Expense Advance"]
+            ))
+            recs.append(ActionRecommendation(
+                action_type="REQUIRE_DOCUMENTATION",
+                title="Verify 180-Day Rolling Platform Activity",
+                rationale="Underwrite credit eligibility based on verified digital platform transaction history.",
+                eligible_programs=["Alternative Data Credit Assessment"]
+            ))
+        elif ml_pred.risk_type == "credit_distress":
+            recs.append(ActionRecommendation(
+                action_type="RESTRUCTURE_LOAN",
+                title="Proactive Debt Workout & Term Consolidation",
+                rationale="Consolidate high-interest revolving balances into a 36-month fixed amortizing loan with interest rate discount.",
+                eligible_programs=["Hardship Relief Restructure", "3-Month Principal Moratorium"]
+            ))
+            recs.append(ActionRecommendation(
+                action_type="REQUIRE_DOCUMENTATION",
+                title="Request Updated Cashflow Disclosures",
+                rationale="Verify current expense obligations before adjusting credit limits.",
+                eligible_programs=["Financial Health Consultation"]
             ))
         else:
             recs.append(ActionRecommendation(
