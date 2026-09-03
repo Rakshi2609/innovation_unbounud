@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Layers, BookOpen, Sparkles, History, Plus } from 'lucide-react';
+import { Layers, BookOpen, Sparkles, History, Plus, ShieldAlert } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -28,6 +28,7 @@ export default function Navbar() {
     { href: '/evaluate', label: 'Evaluate Case', icon: Plus },
     { href: '/policies', label: 'Policy Base', icon: BookOpen },
     { href: '/copilot', label: 'RAG Copilot', icon: Sparkles },
+    { href: '/grievance', label: 'Grievance Portal', icon: ShieldAlert },
     { href: '/audit', label: 'Audit Log', icon: History }
   ];
 
@@ -57,7 +58,7 @@ export default function Navbar() {
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 border-2 text-[10px] font-black uppercase ${
               isHealthy ? 'bg-[#28A745]/10 text-[#28A745] border-[#28A745]' : 'bg-[#E23D28]/10 text-[#E23D28] border-[#E23D28]'
             }`}>
-              <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-[#28A745] animate-pulse' : 'bg-[#E23D28]'}`}></span>
+              <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-[#28A745]' : 'bg-[#E23D28]'}`}></span>
               {isHealthy ? 'Backend Live (Port 8000)' : 'Backend Offline'}
             </span>
           </div>
