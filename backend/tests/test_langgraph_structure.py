@@ -28,11 +28,18 @@ def test_graph_has_all_ten_nodes(graph):
 def test_compiled_graph_is_langgraph(graph):
     """The compiled object is a real langgraph Pregel graph, not a plain class."""
     g = graph.get_compiled_graph()
-    # langgraph exposes `nodes`, `edges`, and `.ainvoke`
+    # langgraph exposes `ainvoke` and `get_graph()` (which returns a DrawableGraph
+    # with .nodes / .edges). The drawable graph includes 2 synthetic nodes
+    # (__start__, __end__) on top of the 10 real workflow nodes.
     assert hasattr(g, "ainvoke")
-    assert hasattr(g, "nodes")
-    assert hasattr(g, "edges")
-    assert len(g.nodes) == 10
+    assert hasattr(g, "get_graph")
+    graph_view = g.get_graph()
+    real_node_count = sum(
+        1 for n in graph_view.nodes.values() if not n.id.startswith("__")
+    )
+    assert real_node_count == 10, f"expected 10 real nodes, got {real_node_count}"
+    # The drawable graph should also have an edges collection
+    assert hasattr(graph_view, "edges") or hasattr(graph_view, "_edges")
 
 
 def test_safety_conditional_routes_to_route_when_passed(graph):
