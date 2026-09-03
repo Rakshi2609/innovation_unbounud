@@ -114,5 +114,469 @@
       "is_international": false
     },
     "description": "Routine merchant digital payment flagged by automated velocity filter due to consecutive rapid QR batch settlements."
+  },
+  {
+    "case_id": "CASE-2026-005",
+    "customer_id": "CUST-10203",
+    "track_type": "distress",
+    "customer_name": "Priya Iyer",
+    "occupation": "Government School Teacher",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 695,
+    "account_age_months": 48,
+    "financial_metrics": {
+      "monthly_income": 42000.0,
+      "monthly_expenses": 39500.0,
+      "existing_debt": 165000.0,
+      "credit_utilization": 0.78,
+      "recent_delinquencies": 1,
+      "savings_balance": 18000.0,
+      "income_volatility_score": 0.08
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-201001",
+      "amount": 8500.0,
+      "merchant_category": "Credit Card EMI Payment",
+      "channel": "netbanking",
+      "device_trust_score": 0.92,
+      "location": "Chennai, India",
+      "is_international": false
+    },
+    "description": "Single-income teacher household squeezed by rising EMI outflows; one missed payment last cycle after a medical expense."
+  },
+  {
+    "case_id": "CASE-2026-006",
+    "customer_id": "CUST-10456",
+    "track_type": "distress",
+    "customer_name": "Ravi Kumar",
+    "occupation": "Auto-Rickshaw Driver",
+    "employment_type": "Self-Employed Informal",
+    "credit_score": 615,
+    "account_age_months": 30,
+    "financial_metrics": {
+      "monthly_income": 28000.0,
+      "monthly_expenses": 26000.0,
+      "existing_debt": 95000.0,
+      "credit_utilization": 0.72,
+      "recent_delinquencies": 1,
+      "savings_balance": 4500.0,
+      "income_volatility_score": 0.34
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-201002",
+      "amount": 6500.0,
+      "merchant_category": "Personal Loan EMI",
+      "channel": "upi_qr",
+      "device_trust_score": 0.89,
+      "location": "Hyderabad, India",
+      "is_international": false
+    },
+    "description": "Informal-income auto driver on the edge of delinquency; thin buffer and an existing personal loan EMI are crowding out essentials."
+  },
+  {
+    "case_id": "CASE-2026-007",
+    "customer_id": "CUST-10789",
+    "track_type": "distress",
+    "customer_name": "Mohammad Irfan",
+    "occupation": "Tailor & Garment Worker",
+    "employment_type": "Self-Employed Small Business",
+    "credit_score": 645,
+    "account_age_months": 22,
+    "financial_metrics": {
+      "monthly_income": 32000.0,
+      "monthly_expenses": 31000.0,
+      "existing_debt": 72000.0,
+      "credit_utilization": 0.81,
+      "recent_delinquencies": 2,
+      "savings_balance": 3200.0,
+      "income_volatility_score": 0.22
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-201003",
+      "amount": 4200.0,
+      "merchant_category": "Credit Card Bill Payment",
+      "channel": "mobile_app",
+      "device_trust_score": 0.94,
+      "location": "Lucknow, India",
+      "is_international": false
+    },
+    "description": "Tailoring shop owner with two recent delinquencies and near-zero buffer after a sluggish festive-season quarter."
+  },
+  {
+    "case_id": "CASE-2026-008",
+    "customer_id": "CUST-11234",
+    "track_type": "distress",
+    "customer_name": "Anita Deshmukh",
+    "occupation": "Private Hospital Nurse",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 685,
+    "account_age_months": 60,
+    "financial_metrics": {
+      "monthly_income": 38000.0,
+      "monthly_expenses": 36500.0,
+      "existing_debt": 142000.0,
+      "credit_utilization": 0.74,
+      "recent_delinquencies": 1,
+      "savings_balance": 9500.0,
+      "income_volatility_score": 0.11
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-201004",
+      "amount": 11200.0,
+      "merchant_category": "Credit Card Statement Payment",
+      "channel": "web_portal",
+      "device_trust_score": 0.96,
+      "location": "Pune, India",
+      "is_international": false
+    },
+    "description": "Nurse caring for elderly parents; revolving balance climbed after a sibling's wedding and one cycle slipped past due date."
+  },
+  {
+    "case_id": "CASE-2026-009",
+    "customer_id": "CUST-11567",
+    "track_type": "distress",
+    "customer_name": "Suresh Naik",
+    "occupation": "Smallholder Farmer",
+    "employment_type": "Self-Employed Agricultural",
+    "credit_score": 605,
+    "account_age_months": 28,
+    "financial_metrics": {
+      "monthly_income": 22000.0,
+      "monthly_expenses": 21500.0,
+      "existing_debt": 68000.0,
+      "credit_utilization": 0.66,
+      "recent_delinquencies": 1,
+      "savings_balance": 2800.0,
+      "income_volatility_score": 0.41
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-201005",
+      "amount": 5500.0,
+      "merchant_category": "Kisan Credit Card Installment",
+      "channel": "upi_qr",
+      "device_trust_score": 0.86,
+      "location": "Nashik, India",
+      "is_international": false
+    },
+    "description": "Marginal farmer impacted by below-normal monsoon; one missed KCC installment and minimal liquid buffer for sowing season."
+  },
+  {
+    "case_id": "CASE-2026-010",
+    "customer_id": "CUST-11890",
+    "track_type": "gig_resilience",
+    "customer_name": "Deepa Sharma",
+    "occupation": "Food Delivery Partner",
+    "employment_type": "Gig / Platform Worker",
+    "credit_score": 635,
+    "account_age_months": 14,
+    "financial_metrics": {
+      "monthly_income": 26000.0,
+      "monthly_expenses": 23500.0,
+      "existing_debt": 42000.0,
+      "credit_utilization": 0.55,
+      "recent_delinquencies": 0,
+      "savings_balance": 6200.0,
+      "income_volatility_score": 0.62
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-202001",
+      "amount": 3800.0,
+      "merchant_category": "Two-Wheeler EMI",
+      "channel": "mobile_app",
+      "device_trust_score": 0.97,
+      "location": "Delhi NCR, India",
+      "is_international": false
+    },
+    "description": "Zomato-Swiggy rider whose weekly swings exceed 40% of monthly income; seeking a flexible short-tenure credit line for off-season weeks."
+  },
+  {
+    "case_id": "CASE-2026-011",
+    "customer_id": "CUST-12123",
+    "track_type": "gig_resilience",
+    "customer_name": "Lakshmi Pillai",
+    "occupation": "Freelance Graphic Designer",
+    "employment_type": "Freelance / Contract",
+    "credit_score": 705,
+    "account_age_months": 42,
+    "financial_metrics": {
+      "monthly_income": 55000.0,
+      "monthly_expenses": 41000.0,
+      "existing_debt": 88000.0,
+      "credit_utilization": 0.41,
+      "recent_delinquencies": 0,
+      "savings_balance": 145000.0,
+      "income_volatility_score": 0.52
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-202002",
+      "amount": 7200.0,
+      "merchant_category": "Software Subscription (Adobe CC)",
+      "channel": "web_portal",
+      "device_trust_score": 0.99,
+      "location": "Kochi, India",
+      "is_international": false
+    },
+    "description": "Project-based freelancer with two quiet months post-Diwali and a healthy savings buffer; applying for a top-up to bridge the dry spell."
+  },
+  {
+    "case_id": "CASE-2026-012",
+    "customer_id": "CUST-12456",
+    "track_type": "gig_resilience",
+    "customer_name": "Vikram Singh",
+    "occupation": "Auto-Rickshaw & Cab Driver",
+    "employment_type": "Gig / Ola-Uber Partner",
+    "credit_score": 625,
+    "account_age_months": 26,
+    "financial_metrics": {
+      "monthly_income": 34000.0,
+      "monthly_expenses": 30000.0,
+      "existing_debt": 64000.0,
+      "credit_utilization": 0.58,
+      "recent_delinquencies": 0,
+      "savings_balance": 7500.0,
+      "income_volatility_score": 0.55
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-202003",
+      "amount": 4800.0,
+      "merchant_category": "Fast-Tag Recharge & Fuel",
+      "channel": "upi_qr",
+      "device_trust_score": 0.93,
+      "location": "Gurugram, India",
+      "is_international": false
+    },
+    "description": "Shift-based gig driver with monsoon-driven income dip; modest savings and a recent fuel-cost spike eating into weekly take-home."
+  },
+  {
+    "case_id": "CASE-2026-013",
+    "customer_id": "CUST-12789",
+    "track_type": "gig_resilience",
+    "customer_name": "Neha Bhattacharya",
+    "occupation": "Freelance Content Writer & Tutor",
+    "employment_type": "Freelance / Part-Time Hybrid",
+    "credit_score": 680,
+    "account_age_months": 20,
+    "financial_metrics": {
+      "monthly_income": 31000.0,
+      "monthly_expenses": 27500.0,
+      "existing_debt": 38000.0,
+      "credit_utilization": 0.39,
+      "recent_delinquencies": 0,
+      "savings_balance": 28000.0,
+      "income_volatility_score": 0.47
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-202004",
+      "amount": 2100.0,
+      "merchant_category": "Online Course Subscription",
+      "channel": "web_portal",
+      "device_trust_score": 0.98,
+      "location": "Kolkata, India",
+      "is_international": false
+    },
+    "description": "Hybrid freelancer combining content work and tutoring; steady buffer but uneven inflows make short-tenure liquidity useful."
+  },
+  {
+    "case_id": "CASE-2026-014",
+    "customer_id": "CUST-13101",
+    "track_type": "fraud",
+    "customer_name": "Kamala Krishnan (Senior Citizen)",
+    "occupation": "Retired School Principal",
+    "employment_type": "Pensioner",
+    "credit_score": 765,
+    "account_age_months": 144,
+    "financial_metrics": {
+      "monthly_income": 38000.0,
+      "monthly_expenses": 22000.0,
+      "existing_debt": 0.0,
+      "credit_utilization": 0.03,
+      "recent_delinquencies": 0,
+      "savings_balance": 480000.0,
+      "income_volatility_score": 0.03
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-203001",
+      "amount": 95000.0,
+      "merchant_category": "International Wire Transfer",
+      "channel": "web_portal",
+      "device_trust_score": 0.22,
+      "location": "Singapore IP (Unrecognized)",
+      "is_international": true
+    },
+    "description": "Retired principal reportedly guided by a 'CBI officer' on a video call; out-of-pattern international wire initiated from a brand-new laptop."
+  },
+  {
+    "case_id": "CASE-2026-015",
+    "customer_id": "CUST-13456",
+    "track_type": "fraud",
+    "customer_name": "Rajesh Menon",
+    "occupation": "Mid-Career IT Consultant",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 745,
+    "account_age_months": 84,
+    "financial_metrics": {
+      "monthly_income": 145000.0,
+      "monthly_expenses": 78000.0,
+      "existing_debt": 220000.0,
+      "credit_utilization": 0.31,
+      "recent_delinquencies": 0,
+      "savings_balance": 320000.0,
+      "income_volatility_score": 0.18
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-203002",
+      "amount": 240000.0,
+      "merchant_category": "Luxury Goods E-commerce (Unverified Vendor)",
+      "channel": "mobile_app",
+      "device_trust_score": 0.31,
+      "location": "Dubai IP (VPN Detected)",
+      "is_international": true
+    },
+    "description": "Account takeover suspected: same credentials used from unrecognized Dubai IP to authorize a 240K luxury goods transfer hours after a SIM-swap alert."
+  },
+  {
+    "case_id": "CASE-2026-016",
+    "customer_id": "CUST-13789",
+    "track_type": "fraud",
+    "customer_name": "Pooja Verma",
+    "occupation": "Junior Doctor (Resident)",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 720,
+    "account_age_months": 38,
+    "financial_metrics": {
+      "monthly_income": 78000.0,
+      "monthly_expenses": 62000.0,
+      "existing_debt": 150000.0,
+      "credit_utilization": 0.28,
+      "recent_delinquencies": 0,
+      "savings_balance": 95000.0,
+      "income_volatility_score": 0.16
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-203003",
+      "amount": 78000.0,
+      "merchant_category": "Gift Card Bulk Purchase",
+      "channel": "mobile_app",
+      "device_trust_score": 0.28,
+      "location": "Bengaluru, India (New Device Fingerprint)",
+      "is_international": false
+    },
+    "description": "Resident doctor allegedly buying gift cards for 'customs duty'; nine back-to-back small denoms initiated from an unpaired device fingerprint."
+  },
+  {
+    "case_id": "CASE-2026-017",
+    "customer_id": "CUST-14101",
+    "track_type": "safe_payments",
+    "customer_name": "Sanjay Joshi",
+    "occupation": "Cafe Owner",
+    "employment_type": "Self-Employed Small Merchant",
+    "credit_score": 728,
+    "account_age_months": 36,
+    "financial_metrics": {
+      "monthly_income": 95000.0,
+      "monthly_expenses": 58000.0,
+      "existing_debt": 140000.0,
+      "credit_utilization": 0.34,
+      "recent_delinquencies": 0,
+      "savings_balance": 125000.0,
+      "income_volatility_score": 0.25
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-204001",
+      "amount": 12500.0,
+      "merchant_category": "Dairy & Bakery Wholesale Supplier",
+      "channel": "upi_qr",
+      "device_trust_score": 0.91,
+      "location": "Indore, India",
+      "is_international": false
+    },
+    "description": "Small cafe owner settling a routine weekly dairy-and-bakery invoice via UPI; transaction briefly held by automated velocity checks."
+  },
+  {
+    "case_id": "CASE-2026-018",
+    "customer_id": "CUST-14456",
+    "track_type": "safe_payments",
+    "customer_name": "Meera Subramanian",
+    "occupation": "Vegetable & Grocery Retailer",
+    "employment_type": "Self-Employed Small Merchant",
+    "credit_score": 702,
+    "account_age_months": 19,
+    "financial_metrics": {
+      "monthly_income": 48000.0,
+      "monthly_expenses": 32000.0,
+      "existing_debt": 38000.0,
+      "credit_utilization": 0.22,
+      "recent_delinquencies": 0,
+      "savings_balance": 55000.0,
+      "income_volatility_score": 0.21
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-204002",
+      "amount": 8400.0,
+      "merchant_category": "Wholesale Kirana Supplier",
+      "channel": "upi_qr",
+      "device_trust_score": 0.93,
+      "location": "Coimbatore, India",
+      "is_international": false
+    },
+    "description": "Neighborhood kirana store running consistent UPI volumes to a single known supplier; flagged briefly for early-morning batch pattern."
+  },
+  {
+    "case_id": "CASE-2026-019",
+    "customer_id": "CUST-14789",
+    "track_type": "standard_healthy",
+    "customer_name": "Arjun Reddy",
+    "occupation": "Senior Software Engineer",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 795,
+    "account_age_months": 96,
+    "financial_metrics": {
+      "monthly_income": 185000.0,
+      "monthly_expenses": 95000.0,
+      "existing_debt": 240000.0,
+      "credit_utilization": 0.18,
+      "recent_delinquencies": 0,
+      "savings_balance": 520000.0,
+      "income_volatility_score": 0.09
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-205001",
+      "amount": 35000.0,
+      "merchant_category": "Home Loan Pre-EMI",
+      "channel": "netbanking",
+      "device_trust_score": 0.97,
+      "location": "Hyderabad, India",
+      "is_international": false
+    },
+    "description": "Senior engineer with strong savings buffer and disciplined credit utilization; applying for a pre-approved top-up on his existing home loan."
+  },
+  {
+    "case_id": "CASE-2026-020",
+    "customer_id": "CUST-15101",
+    "track_type": "standard_healthy",
+    "customer_name": "Rohini Banerjee",
+    "occupation": "Government Doctor (Specialist)",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 810,
+    "account_age_months": 132,
+    "financial_metrics": {
+      "monthly_income": 155000.0,
+      "monthly_expenses": 88000.0,
+      "existing_debt": 180000.0,
+      "credit_utilization": 0.14,
+      "recent_delinquencies": 0,
+      "savings_balance": 680000.0,
+      "income_volatility_score": 0.06
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-205002",
+      "amount": 22000.0,
+      "merchant_category": "Mutual Fund SIP",
+      "channel": "netbanking",
+      "device_trust_score": 0.98,
+      "location": "Bengaluru, India",
+      "is_international": false
+    },
+    "description": "Specialist doctor with pristine credit history and a six-figure liquid buffer; routine SIP debit and a clean request for a small travel loan."
   }
 ]
