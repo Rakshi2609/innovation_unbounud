@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Dict, Optional, Any, Literal
 from datetime import datetime
 
@@ -25,13 +25,23 @@ class TransactionMetadata(BaseModel):
 
 class CustomerProfile(BaseModel):
     customer_id: str
-    name: str
-    occupation: str = "Salaried Professional" # Gig Worker, Freelancer, Small Business, Salaried
+    name: str = "Valued Customer"
+    occupation: str = "Salaried Professional"
     employment_type: str = "Full-Time"
     credit_score: Optional[int] = None
     account_age_months: int = 12
     financial_metrics: FinancialMetrics
     recent_transaction: Optional[TransactionMetadata] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def reconcile_name(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "customer_name" in data and "name" not in data:
+                data["name"] = data["customer_name"]
+            elif "name" in data and "customer_name" not in data:
+                data["customer_name"] = data["name"]
+        return data
 
 # ---------------------------------------------------------------------------
 # 2. ML Prediction Contract (Tanush's Interface)
@@ -47,7 +57,7 @@ class MLRiskPrediction(BaseModel):
     risk_score: float = Field(..., ge=0.0, le=1.0, description="Normalized risk score from 0 (safe) to 1 (critical)")
     risk_class: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
     confidence: float = Field(..., ge=0.0, le=1.0, description="Model certainty")
-    risk_type: str = "credit_distress" # credit_distress, loan_default, payment_fraud, gig_income_volatility
+    risk_type: str = "credit_distress"
     top_factors: List[RiskFactor] = Field(default_factory=list)
     model_version: str = "v1.0.0-xgb"
     evaluation_metrics: Optional[Dict[str, float]] = None
@@ -80,7 +90,7 @@ class ActionRecommendation(BaseModel):
     action_type: Literal["APPROVE", "REQUIRE_DOCUMENTATION", "RESTRUCTURE_LOAN", "STEP_UP_AUTH", "ESCALATE_REVIEW", "DECLINE"]
     title: str
     rationale: str
-    eligible_programs: List[str] = Field(default_factory=list) # e.g. "Hardship Relief Plan", "Secured Micro-Line"
+    eligible_programs: List[str] = Field(default_factory=list)
 
 class CaseExplanation(BaseModel):
     summary: str
@@ -129,5 +139,5 @@ class EventEnvelope(BaseModel):
     sequence: int = 0
     occurred_at: str
     case_id: str
-    event_type: str # case.created, ml.evaluated, rag.grounded, human.decided, system.alert
+    event_type: str
     payload: Dict[str, Any]

@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.schemas import (
     CustomerProfile,
     MLRiskPrediction,
@@ -43,7 +43,7 @@ class FinancialReasoningGraph:
             case_id=case_id,
             customer_id=customer.customer_id,
             status="PENDING_REVIEW",
-            created_at=datetime.utcnow().isoformat(),
+            created_at=datetime.now(timezone.utc).isoformat(),
             customer=customer,
             ml_prediction=ml_prediction,
             explanation=explanation,
@@ -77,7 +77,6 @@ class FinancialReasoningGraph:
             docs = await self.policy_store.search(q, k=settings.retrieval_k)
             raw_candidates.extend(docs)
 
-        # Deduplicate candidates by snippet content
         unique_docs = {}
         for d in raw_candidates:
             unique_docs[d.page_content.strip()] = d
@@ -86,7 +85,6 @@ class FinancialReasoningGraph:
         if not candidate_list:
             return []
 
-        # Rerank against the primary risk question
         primary_query = " ".join(queries[:2])
         top_docs, scores = self.reranker.rerank(primary_query, candidate_list, top_k=settings.rerank_top_k)
 
