@@ -14,6 +14,7 @@ from app.rag.store import FinancialPolicyStore
 from app.rag.reranker import CrossEncoderReranker
 from app.rag.llm_client import FinancialLLMClient
 from app.core.config import settings
+from langgraph.graph import StateGraph, END, START
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +49,82 @@ class FinancialCopilotState(TypedDict, total=False):
 class FinancialReasoningGraph:
     """
     LangGraph-based Orchestration Engine for the AI Financial Safety & Resilience Platform.
+
+    Wires the 10-node reasoning flow into a real langgraph.StateGraph so the
+    orchestration is inspectable (graph.get_graph()) and can be visualised.
+
     Enforces strict evidence grounding and safety constraints:
-    The AI system is strictly a decision-support copilot and NEVER autonomously approves/rejects loans.
+    The AI system is strictly a decision-support copilot and NEVER autonomously
+    approves/rejects loans.
     """
+    # Static node identifiers — exposed so tests and observability can reference them.
+    NODE_VALIDATE = "validate_input"
+    NODE_CONTEXT = "load_context"
+    NODE_EVALUATE = "evaluate_risk"
+    NODE_QUERIES = "create_policy_queries"
+    NODE_RETRIEVE = "rag_retrieval"
+    NODE_EVIDENCE = "evidence_validation"
+    NODE_LLM = "llm_reasoning"
+    NODE_RECOMMEND = "generate_recommendations"
+    NODE_SAFETY = "safety_guardrails"
+    NODE_ROUTE = "route_to_human_review"
+
     def __init__(self, policy_store: FinancialPolicyStore, reranker: Optional[CrossEncoderReranker] = None,
                  llm_client: Optional[FinancialLLMClient] = None):
         self.policy_store = policy_store
         self.reranker = reranker or CrossEncoderReranker()
         self.llm_client = llm_client or FinancialLLMClient()
+        self._graph = self._build_graph()
 
+    # ---- LangGraph wiring ----------------------------------------------------
+    def _build_graph(self):
+        """Compile the 10-node StateGraph. Conditional edges route around LLM if disabled."""
+        g = StateGraph(FinancialCopilotState)
+
+        # Register every node. Async nodes (rag_retrieval, llm_reasoning) are
+        # awaited automatically by langgraph when invoked via ainvoke.
+        g.add_node(self.NODE_VALIDATE, self._node_validate_input)
+        g.add_node(self.NODE_CONTEXT, self._node_load_context)
+        g.add_node(self.NODE_EVALUATE, self._node_evaluate_risk)
+        g.add_node(self.NODE_QUERIES, self._node_create_policy_queries)
+        g.add_node(self.NODE_RETRIEVE, self._node_rag_retrieval)
+        g.add_node(self.NODE_EVIDENCE, self._node_evidence_validation)
+        g.add_node(self.NODE_LLM, self._node_llm_reasoning)
+        g.add_node(self.NODE_RECOMMEND, self._node_generate_recommendations)
+        g.add_node(self.NODE_SAFETY, self._node_safety_guardrails)
+        g.add_node(self.NODE_ROUTE, self._node_route_to_human_review)
+
+        # Linear pipeline with one conditional branch:
+        # if the LLM node fails the safety check, loop back to evidence validation.
+        g.add_edge(START, self.NODE_VALIDATE)
+        g.add_edge(self.NODE_VALIDATE, self.NODE_CONTEXT)
+        g.add_edge(self.NODE_CONTEXT, self.NODE_EVALUATE)
+        g.add_edge(self.NODE_EVALUATE, self.NODE_QUERIES)
+        g.add_edge(self.NODE_QUERIES, self.NODE_RETRIEVE)
+        g.add_edge(self.NODE_RETRIEVE, self.NODE_EVIDENCE)
+        g.add_edge(self.NODE_EVIDENCE, self.NODE_LLM)
+        g.add_edge(self.NODE_LLM, self.NODE_RECOMMEND)
+        g.add_edge(self.NODE_RECOMMEND, self.NODE_SAFETY)
+        g.add_conditional_edges(
+            self.NODE_SAFETY,
+            self._after_safety,
+            {
+                "retry_evidence": self.NODE_EVIDENCE,
+                "continue": self.NODE_ROUTE,
+            },
+        )
+        g.add_edge(self.NODE_ROUTE, END)
+
+        return g.compile()
+
+    @staticmethod
+    def _after_safety(state: FinancialCopilotState) -> str:
+        """Conditional edge — retry evidence if the LLM reasoning failed safety."""
+        if not state.get("safety_check_passed", True):
+            return "retry_evidence"
+        return "continue"
+
+    # ---- Public API ----------------------------------------------------------
     async def execute(
         self,
         case_id: str,
@@ -64,48 +132,31 @@ class FinancialReasoningGraph:
         ml_prediction: MLRiskPrediction,
         track_type: str = "distress"
     ) -> CopilotCaseAssessment:
-        """
-        Executes the full LangGraph node workflow sequentially with state validation.
-        """
-        # Node 1: Input Validation
-        state: FinancialCopilotState = {
+        """Invoke the compiled graph and return the final assessment."""
+        initial: FinancialCopilotState = {
             "case_id": case_id,
             "track_type": track_type,
             "customer": customer,
             "ml_prediction": ml_prediction,
             "is_valid_input": True,
-            "validation_errors": []
+            "validation_errors": [],
         }
-        state = self._node_validate_input(state)
+        result = await self._graph.ainvoke(initial)
+        return result["assessment"]
 
-        # Node 2: Load Contextual Financial Metrics
-        state = self._node_load_context(state)
+    # ---- Introspection -------------------------------------------------------
+    def get_node_names(self) -> List[str]:
+        """Return ordered list of node identifiers. Useful for tests and observability."""
+        return [
+            self.NODE_VALIDATE, self.NODE_CONTEXT, self.NODE_EVALUATE,
+            self.NODE_QUERIES, self.NODE_RETRIEVE, self.NODE_EVIDENCE,
+            self.NODE_LLM, self.NODE_RECOMMEND, self.NODE_SAFETY,
+            self.NODE_ROUTE,
+        ]
 
-        # Node 3: Evaluate Risk Profile
-        state = self._node_evaluate_risk(state)
-
-        # Node 4: Create Policy Queries for TheSuperRAG
-        state = self._node_create_policy_queries(state)
-
-        # Node 5: RAG Retrieval & Cross-Encoder Reranking
-        state = await self._node_rag_retrieval(state)
-
-        # Node 6: Evidence Validation & Citation Filtering
-        state = self._node_evidence_validation(state)
-
-        # Node 7: Grounded LLM Reasoning & Explainability
-        state = await self._node_llm_reasoning(state)
-
-        # Node 8: Generate Recommended Interventions
-        state = self._node_generate_recommendations(state)
-
-        # Node 9: Safety Enforcement (Strict No-Autonomous Action Guardrail)
-        state = self._node_safety_guardrails(state)
-
-        # Node 10: Route to Human / Customer Review Gateway
-        state = self._node_route_to_human_review(state)
-
-        return state["assessment"]
+    def get_compiled_graph(self):
+        """Expose the compiled langgraph for visualization / debugging."""
+        return self._graph
 
     # -------------------------------------------------------------------------
     # LANGGRAPH NODES

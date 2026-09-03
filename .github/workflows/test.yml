@@ -29,8 +29,10 @@ jobs:
           cache-dependency-glob: "backend/requirements.txt"
 
       - name: Install dependencies
-        run: uv pip install --system -r backend/requirements.txt
+        run: |
+          uv venv .venv
+          uv pip install --python .venv/bin/python -r backend/requirements.txt
 
       - name: Run pytest
         working-directory: backend
-        run: python -m pytest tests/ --tb=short
+        run: .venv/bin/python -m pytest tests/ --tb=short
