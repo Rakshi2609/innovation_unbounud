@@ -1,0 +1,27 @@
+=== EDA: path_b_upi_india ===
+Shape: (250000, 17)
+Target: fraud_flag  positive_rate=0.0019  (480 positives)
+
+Missing values per column:
+Series([], )
+
+Numeric summary:
+        amount (INR)     fraud_flag    hour_of_day     is_weekend
+count  250000.000000  250000.000000  250000.000000  250000.000000
+mean     1311.756036       0.001920      14.681032       0.285348
+std      1848.059224       0.043776       5.188304       0.451581
+min        10.000000       0.000000       0.000000       0.000000
+25%       288.000000       0.000000      11.000000       0.000000
+50%       629.000000       0.000000      15.000000       0.000000
+75%      1596.000000       0.000000      19.000000       1.000000
+max     42099.000000       1.000000      23.000000       1.000000
+
+Categorical summary (top values):
+  transaction id: {'TXN0000000001': 1, 'TXN0000000002': 1, 'TXN0000000003': 1, 'TXN0000000004': 1, 'TXN0000000005': 1}
+  timestamp: {'2024-09-19 12:40:40': 3, '2024-05-16 20:14:31': 3, '2024-07-23 21:31:06': 3, '2024-12-25 18:15:15': 3, '2024-07-11 15:45:15': 3}
+  transaction type: {'P2P': 112445, 'P2M': 87660, 'Bill Payment': 37368, 'Recharge': 12527}
+  merchant_category: {'Grocery': 49966, 'Food': 37464, 'Shopping': 29872, 'Fuel': 25063, 'Other': 24828}
+  transaction_status: {'SUCCESS': 237624, 'FAILED': 12376}
+  sender_age_group: {'26-35': 87432, '36-45': 62873, '18-25': 62345, '46-55': 24841, '56+': 12509}
+  receiver_age_group: {'26-35': 87864, '18-25': 62611, '36-45': 62151, '46-55': 24823, '56+': 12551}
+  sender_state: {'Maharashtra': 37427, 'Uttar Pradesh': 30125, 'Karnataka': 29756, 'Tamil Nadu': 25367, 'Delhi': 24870}

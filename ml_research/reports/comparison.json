@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "path_a_india_default_distress": {
+      "best_model": "lgbm_a",
+      "dataset": "india_npa",
+      "n_train": 22500,
+      "n_test": 7500,
+      "roc_auc": 0.9999,
+      "pr_auc": 0.9999,
+      "f1_at_best": 0.9965,
+      "precision_at_best": 0.9946,
+      "recall_at_best": 0.9984,
+      "best_threshold": 0.3276
+    },
+    "path_b_ulb_creditcard_fraud": {
+      "best_model": "lgbm_b",
+      "dataset": "ulb_creditcard",
+      "n_train": 213605,
+      "n_test": 71202,
+      "roc_auc": 0.974,
+      "pr_auc": 0.8688,
+      "f1_at_best": 0.867,
+      "precision_at_best": 0.9182,
+      "recall_at_best": 0.8211,
+      "best_threshold": 0.0909
+    },
+    "path_c_india_inclusion": {
+      "best_model": "lgbm_c",
+      "dataset": "india_fi_state",
+      "n_train": 36,
+      "n_test": 36,
+      "roc_auc": 0.9907,
+      "pr_auc": 0.9921,
+      "f1_at_best": 0.9714,
+      "precision_at_best": 1.0,
+      "recall_at_best": 0.9444,
+      "best_threshold": 0.999
+    }
+  },
+  "scores": {
+    "path_a_india_default_distress": 0.999,
+    "path_b_ulb_creditcard_fraud": 0.9857,
+    "path_c_india_inclusion": 0.9863
+  },
+  "ranked": [
+    "path_a_india_default_distress",
+    "path_c_india_inclusion",
+    "path_b_ulb_creditcard_fraud"
+  ],
+  "recommended": "path_a_india_default_distress",
+  "rationale": {
+    "path_a_india_default_distress": "STRONG signal (ROC \u2248 0.99\u20131.0) on 30k real Indian loans with CIBIL, FOIR, LTI, ALR. Time-aware eval confirms the model is not memorizing. Direct fit for the /predict-risk API contract and Problem 3 (Preventing Financial Distress).",
+    "path_b_ulb_creditcard_fraud": "Real fraud signal (PR-AUC strong) on 284k ULB credit card transactions (492 fraud). Imbalance is realistic. Maps to Problem 1 (Vulnerable Customers) + Problem 5 (Safe Payments).",
+    "path_c_india_inclusion": "Strong LOO signal on India state-level PLFS data. Maps to Problem 2 (Accessibility) + Problem 4 (Gig/Informal Resilience). Honest eval via leave-one-out."
+  },
+  "problem_match": {
+    "path_a_india_default_distress": "Problem 3 (Preventing Financial Distress) \u2014 primary match for /predict-risk API",
+    "path_b_ulb_creditcard_fraud": "Problems 1 (Vulnerable Customers) + 5 (Safe Payments)",
+    "path_c_india_inclusion": "Problems 2 (Accessibility) + 4 (Gig/Informal Resilience)"
+  }
+}

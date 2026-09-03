@@ -1,0 +1,77 @@
+[
+  {
+    "model": "logreg_c",
+    "dataset": "india_fi_state",
+    "n_train": 36,
+    "n_test": 36,
+    "metrics": {
+      "model": "logreg_c",
+      "roc_auc": 0.8703703703703703,
+      "pr_auc": 0.9076409008776161,
+      "best_threshold": 0.5732787489330418,
+      "precision_at_best": 0.9333333333333333,
+      "recall_at_best": 0.7777777777777778,
+      "f1_at_best": 0.8484848484843526,
+      "confusion_matrix": [
+        [
+          17,
+          1
+        ],
+        [
+          4,
+          14
+        ]
+      ]
+    }
+  },
+  {
+    "model": "rf_c",
+    "dataset": "india_fi_state",
+    "n_train": 36,
+    "n_test": 36,
+    "metrics": {
+      "model": "rf_c",
+      "roc_auc": 0.9413580246913581,
+      "pr_auc": 0.945869371140269,
+      "best_threshold": 0.3527777777777778,
+      "precision_at_best": 0.8095238095238095,
+      "recall_at_best": 0.9444444444444444,
+      "f1_at_best": 0.8717948717943746,
+      "confusion_matrix": [
+        [
+          14,
+          4
+        ],
+        [
+          1,
+          17
+        ]
+      ]
+    }
+  },
+  {
+    "model": "lgbm_c",
+    "dataset": "india_fi_state",
+    "n_train": 36,
+    "n_test": 36,
+    "metrics": {
+      "model": "lgbm_c",
+      "roc_auc": 0.9907407407407407,
+      "pr_auc": 0.9920634920634921,
+      "best_threshold": 0.9989815831399584,
+      "precision_at_best": 1.0,
+      "recall_at_best": 0.9444444444444444,
+      "f1_at_best": 0.9714285714280718,
+      "confusion_matrix": [
+        [
+          18,
+          0
+        ],
+        [
+          1,
+          17
+        ]
+      ]
+    }
+  }
+]

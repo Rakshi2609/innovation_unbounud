@@ -1,0 +1,80 @@
+[
+  {
+    "model": "logreg_b",
+    "dataset": "ulb_creditcard",
+    "n_train": 213605,
+    "n_test": 71202,
+    "metrics": {
+      "model": "logreg_b",
+      "roc_auc": 0.9726275024114357,
+      "pr_auc": 0.7038865238574392,
+      "best_threshold": 0.9999999747915456,
+      "precision_at_best": 0.8571428571428571,
+      "recall_at_best": 0.7804878048780488,
+      "f1_at_best": 0.8170212765952457,
+      "confusion_matrix": [
+        [
+          71063,
+          16
+        ],
+        [
+          27,
+          96
+        ]
+      ],
+      "train_seconds": 0.9
+    }
+  },
+  {
+    "model": "rf_b",
+    "dataset": "ulb_creditcard",
+    "n_train": 213605,
+    "n_test": 71202,
+    "metrics": {
+      "model": "rf_b",
+      "roc_auc": 0.9774257247489538,
+      "pr_auc": 0.8191167697159443,
+      "best_threshold": 0.4629189092515816,
+      "precision_at_best": 0.8376068376068376,
+      "recall_at_best": 0.7967479674796748,
+      "f1_at_best": 0.8166666666661669,
+      "confusion_matrix": [
+        [
+          71060,
+          19
+        ],
+        [
+          25,
+          98
+        ]
+      ],
+      "train_seconds": 51.7
+    }
+  },
+  {
+    "model": "lgbm_b",
+    "dataset": "ulb_creditcard",
+    "n_train": 213605,
+    "n_test": 71202,
+    "metrics": {
+      "model": "lgbm_b",
+      "roc_auc": 0.973965301633348,
+      "pr_auc": 0.8688173585022477,
+      "best_threshold": 0.09094951000741962,
+      "precision_at_best": 0.9181818181818182,
+      "recall_at_best": 0.8211382113821138,
+      "f1_at_best": 0.8669527896990724,
+      "confusion_matrix": [
+        [
+          71070,
+          9
+        ],
+        [
+          22,
+          101
+        ]
+      ],
+      "train_seconds": 9.4
+    }
+  }
+]

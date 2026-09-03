@@ -1,0 +1,80 @@
+[
+  {
+    "model": "logreg_a",
+    "dataset": "india_npa",
+    "n_train": 22500,
+    "n_test": 7500,
+    "metrics": {
+      "model": "logreg_a",
+      "roc_auc": 0.9740450736412107,
+      "pr_auc": 0.9647209107838985,
+      "best_threshold": 0.5047515975751367,
+      "precision_at_best": 0.9041007426541815,
+      "recall_at_best": 0.890302066772655,
+      "f1_at_best": 0.8971483498873564,
+      "confusion_matrix": [
+        [
+          4058,
+          297
+        ],
+        [
+          345,
+          2800
+        ]
+      ],
+      "train_seconds": 0.3
+    }
+  },
+  {
+    "model": "rf_a",
+    "dataset": "india_npa",
+    "n_train": 22500,
+    "n_test": 7500,
+    "metrics": {
+      "model": "rf_a",
+      "roc_auc": 0.9962937909206565,
+      "pr_auc": 0.9948847462409104,
+      "best_threshold": 0.4603925873871262,
+      "precision_at_best": 0.9622581668252458,
+      "recall_at_best": 0.9647058823529412,
+      "f1_at_best": 0.9634804699899732,
+      "confusion_matrix": [
+        [
+          4236,
+          119
+        ],
+        [
+          111,
+          3034
+        ]
+      ],
+      "train_seconds": 3.0
+    }
+  },
+  {
+    "model": "lgbm_a",
+    "dataset": "india_npa",
+    "n_train": 22500,
+    "n_test": 7500,
+    "metrics": {
+      "model": "lgbm_a",
+      "roc_auc": 0.9999233379391412,
+      "pr_auc": 0.9998920844404732,
+      "best_threshold": 0.3276050241475407,
+      "precision_at_best": 0.9946151409566044,
+      "recall_at_best": 0.9984101748807631,
+      "f1_at_best": 0.9965090447471991,
+      "confusion_matrix": [
+        [
+          4338,
+          17
+        ],
+        [
+          5,
+          3140
+        ]
+      ],
+      "train_seconds": 0.7
+    }
+  }
+]
