@@ -26,7 +26,7 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
 
 ---
 
-## 📂 2. Repository & File Structure
+## 📂 2. Clean Repository & File Structure
 
 ```text
 innovation_unbounud/
@@ -73,23 +73,22 @@ innovation_unbounud/
 │   │   └── test_reasoning_graph.py         # LangGraph Reasoning Graph Integration Tests
 │   └── requirements.txt                    # Python Dependencies
 │
-├── TheSuperRAG-main/
-│   └── frontend/                           # Next.js 16 Web Dashboard (Bauhaus Aesthetic)
-│       └── src/
-│           ├── app/                        # App Router Architecture
-│           │   ├── layout.tsx              # Root Layout with Theme & Navigation
-│           │   ├── page.tsx                # Root Redirect to /triage
-│           │   ├── triage/page.tsx         # Real-time Case Triage, ML Breakdown & Decision Modal
-│           │   ├── evaluate/page.tsx       # Interactive Customer Evaluation Form (in ₹)
-│           │   ├── policies/page.tsx       # Policy Knowledge Base & Upload Console
-│           │   ├── copilot/page.tsx        # Interactive RAG Policy & Case Chatbot
-│           │   ├── audit/page.tsx          # Compliance & Responsible AI Audit Log
-│           │   └── globals.css             # Fluid Typography & Bauhaus Theme Variables
-│           └── components/
-│               └── layout/
-│                   ├── Navbar.tsx          # Live System Status & Route Navigation Bar
-│                   ├── ErrorBoundary.tsx   # React Error Boundary
-│                   └── PageContainer.tsx   # Responsive Container Wrapper
+├── frontend/                               # Next.js 16 Web Dashboard (Bauhaus Aesthetic)
+│   └── src/
+│       ├── app/                            # App Router Architecture
+│       │   ├── layout.tsx                  # Root Layout with Theme & Navigation
+│       │   ├── page.tsx                    # Root Redirect to /triage
+│       │   ├── triage/page.tsx             # Real-time Case Triage, ML Breakdown & Decision Modal
+│       │   ├── evaluate/page.tsx           # Interactive Customer Evaluation Form (in ₹)
+│       │   ├── policies/page.tsx           # Policy Knowledge Base & Upload Console
+│       │   ├── copilot/page.tsx            # Interactive RAG Policy & Case Chatbot
+│       │   ├── audit/page.tsx              # Compliance & Responsible AI Audit Log
+│       │   └── globals.css                 # Fluid Typography & Bauhaus Theme Variables
+│       └── components/
+│           └── layout/
+│               ├── Navbar.tsx              # Live System Status & Route Navigation Bar
+│               ├── ErrorBoundary.tsx       # React Error Boundary
+│               └── PageContainer.tsx       # Responsive Container Wrapper
 │
 ├── README.md                               # Master Project Documentation & Quickstart
 └── .gitignore                              # Git Exclusion Rules
@@ -111,7 +110,7 @@ innovation_unbounud/
                            │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│  2. Policy RAG & Hybrid Retrieval (TheSuperRAG Layer)  │
+│  2. Policy RAG & Hybrid Retrieval                      │
 │     - Qdrant Vector Search (FastEmbed + BM25)          │
 │     - Cross-Encoder Re-Ranking & Citation Numbering    │
 │     - Automated PII Masking (SSN, Phone, Email)        │
@@ -165,7 +164,7 @@ uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload
 ### Step 2: Start the Frontend Client
 ```bash
 # In a separate terminal:
-cd TheSuperRAG-main/frontend
+cd frontend
 npm install
 npm run dev -- -p 3001
 ```
