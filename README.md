@@ -6,13 +6,13 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.2+-black.svg?logo=next.js&logoColor=white)](https://nextjs.org)
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python&logoColor=white)](https://python.org)
 [![Tests](https://img.shields.io/badge/Tests-9%20Passed-brightgreen.svg)]()
-[![Branch](https://img.shields.io/badge/Branch-rakshith-orange.svg)](https://github.com/Rakshi2609/innovation_unbounud/tree/rakshith)
+[![Branch](https://img.shields.io/badge/Branch-main-orange.svg)](https://github.com/Rakshi2609/innovation_unbounud/tree/main)
 
 ---
 
 ## 📌 1. Project Overview & Hackathon Strategy
 
-The **AI Financial Safety & Lending Copilot** is designed to empower banks and lenders to triage credit risk, prevent financial distress, protect vulnerable customers from fraud, and support informal/gig workers with evidence-backed decision support.
+The **AI Financial Safety & Lending Copilot** is designed to empower banks and lenders to triage credit risk, prevent financial distress, protect vulnerable customers from fraud, and support informal/gig workers with evidence-backed decision support in Indian Rupees (₹).
 
 ### The 5 Target Banking Tracks:
 1. **Protecting Vulnerable Customers from Digital Financial Fraud**
@@ -26,7 +26,78 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
 
 ---
 
-## 🏛️ 2. Architecture & Data Flow
+## 📂 2. Repository & File Structure
+
+```text
+innovation_unbounud/
+├── backend/                                # FastAPI Risk & RAG Orchestration Service
+│   ├── app/
+│   │   ├── core/                           # Configuration, Settings & Structured Logging
+│   │   │   ├── config.py                   # Pydantic Settings (Vector store, ML bridge URLs)
+│   │   │   └── logging.py                  # Standardized Logger Setup
+│   │   ├── models/                         # Data Contracts & Database Schema
+│   │   │   ├── schemas.py                  # Pydantic Models (Cases, ML contracts, Citations)
+│   │   │   └── database.py                 # SQLite/SQLAlchemy Models (Audit logs, Policy files)
+│   │   ├── ml/                             # Statistical ML Inference Layer
+│   │   │   ├── client.py                   # Async HTTP Client for model inference (POST /predict-risk)
+│   │   │   └── mock_engine.py              # Statistical Fallback Engine (XGBoost logic)
+│   │   ├── rag/                            # Retrieval-Augmented Generation Core
+│   │   │   ├── loaders.py                  # Markdown/PDF Ingestion & Regex PII Sanitization
+│   │   │   ├── chunker.py                  # Semantic Clause & Section Boundary Chunker
+│   │   │   ├── store.py                    # Qdrant Hybrid Vector Store (FastEmbed + BM25)
+│   │   │   ├── reranker.py                 # Cross-Encoder Re-Ranking & Confidence Scoring
+│   │   │   └── graph.py                    # LangGraph Grounded Reasoning Engine
+│   │   ├── realtime/                       # Real-Time Event System
+│   │   │   ├── bus.py                      # In-Memory EventBus Pub/Sub
+│   │   │   └── websocket.py                # WebSocket Connection Manager
+│   │   ├── routers/                        # REST API Endpoint Handlers
+│   │   │   ├── health.py                   # Liveness & System Health Check
+│   │   │   ├── cases.py                    # Case Triage, Retrieval & Live Evaluation
+│   │   │   ├── decisions.py                # Human Officer Decision Recording & Audit Log
+│   │   │   ├── documents.py                # Policy Upload & Document Search
+│   │   │   └── realtime.py                 # WebSocket & Server-Sent Events (SSE) Feeds
+│   │   ├── services/
+│   │   │   └── copilot_orchestrator.py     # Master Orchestrator (ML -> RAG -> Graph -> Audit)
+│   │   └── main.py                         # FastAPI App Factory & Async Lifespan Setup
+│   ├── data/
+│   │   ├── policies/                       # Institutional Banking Policy Corpus
+│   │   │   ├── lending_underwriting_guidelines_2026.md
+│   │   │   ├── hardship_relief_and_debt_restructuring_policy.md
+│   │   │   ├── fraud_prevention_and_account_takeover_sop.md
+│   │   │   └── gig_worker_cashflow_underwriting_framework.md
+│   │   └── sample_cases.json               # Seed Case Fixtures (Covering all 5 Banking Tracks)
+│   ├── tests/                              # Automated Pytest Suite
+│   │   ├── test_api_endpoints.py           # REST API Endpoint Tests
+│   │   ├── test_ml_client.py               # ML Scoring & Anomaly Inference Tests
+│   │   ├── test_rag_retrieval.py           # Hybrid Search, PII Masking & Reranker Tests
+│   │   └── test_reasoning_graph.py         # LangGraph Reasoning Graph Integration Tests
+│   └── requirements.txt                    # Python Dependencies
+│
+├── TheSuperRAG-main/
+│   └── frontend/                           # Next.js 16 Web Dashboard (Bauhaus Aesthetic)
+│       └── src/
+│           ├── app/                        # App Router Architecture
+│           │   ├── layout.tsx              # Root Layout with Theme & Navigation
+│           │   ├── page.tsx                # Root Redirect to /triage
+│           │   ├── triage/page.tsx         # Real-time Case Triage, ML Breakdown & Decision Modal
+│           │   ├── evaluate/page.tsx       # Interactive Customer Evaluation Form (in ₹)
+│           │   ├── policies/page.tsx       # Policy Knowledge Base & Upload Console
+│           │   ├── copilot/page.tsx        # Interactive RAG Policy & Case Chatbot
+│           │   ├── audit/page.tsx          # Compliance & Responsible AI Audit Log
+│           │   └── globals.css             # Fluid Typography & Bauhaus Theme Variables
+│           └── components/
+│               └── layout/
+│                   ├── Navbar.tsx          # Live System Status & Route Navigation Bar
+│                   ├── ErrorBoundary.tsx   # React Error Boundary
+│                   └── PageContainer.tsx   # Responsive Container Wrapper
+│
+├── README.md                               # Master Project Documentation & Quickstart
+└── .gitignore                              # Git Exclusion Rules
+```
+
+---
+
+## 🏛️ 3. Architecture & Data Flow
 
 ```
    [Customer / Transaction Input]
@@ -56,7 +127,7 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
                            │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│  4. Real-Time EventBus & Audit Engine (E-mrg Layer)    │
+│  4. Real-Time EventBus & Audit Engine                  │
 │     - Broadcasts live case alerts via WebSockets       │
 │     - Immutable SQLite / MongoDB audit trail logging   │
 └──────────────────────────┬─────────────────────────────┘
@@ -71,7 +142,7 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
 
 ---
 
-## ⚡ 3. Quick Start (Running Server & Client)
+## ⚡ 4. Quick Start (Running Server & Client)
 
 ### Prerequisites:
 * Python 3.12+
@@ -108,7 +179,7 @@ npm run dev -- -p 3001
 
 ---
 
-## 🧪 4. Automated Verification & Testing
+## 🧪 5. Automated Verification & Testing
 
 The backend includes a comprehensive test suite testing ML predictions, RAG retrieval, PII redaction, LangGraph reasoning, and human-in-the-loop decision recording.
 
@@ -128,12 +199,12 @@ backend/tests/test_rag_retrieval.py::test_policy_store_indexing_and_search PASSE
 backend/tests/test_rag_retrieval.py::test_reranker_scoring PASSED
 backend/tests/test_reasoning_graph.py::test_financial_reasoning_graph_end_to_end PASSED
 
-======================== 9 passed in 1.19s =========================
+======================== 9 passed in 0.90s =========================
 ```
 
 ---
 
-## 🔌 5. Statistical ML Model Integration Contract
+## 🔌 6. Statistical ML Model Integration Contract
 
 The backend is completely decoupled from model weights and supports serving external ML models at `http://localhost:8001`:
 
@@ -193,7 +264,7 @@ The backend is completely decoupled from model weights and supports serving exte
 
 ---
 
-## 📡 6. Backend API Reference
+## 📡 7. Backend API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -211,7 +282,7 @@ The backend is completely decoupled from model weights and supports serving exte
 
 ---
 
-## 🔒 7. Privacy, Security & Governance
+## 🔒 8. Privacy, Security & Governance
 
 1. **Synthetic Test Data Guarantee**: All sample cases, account balances, and identifiers used in testing and demo are synthetic test fixtures.
 2. **Local PII Redaction**: Document loaders automatically scrub SSNs, emails, phone numbers, and card numbers prior to vectorization or LLM prompting.
