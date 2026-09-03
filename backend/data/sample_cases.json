@@ -1,0 +1,118 @@
+[
+  {
+    "case_id": "CASE-2026-001",
+    "customer_id": "CUST-88120",
+    "track_type": "distress",
+    "customer_name": "Aarav Patel",
+    "occupation": "Mid-Level Software Developer",
+    "employment_type": "Full-Time Salaried",
+    "credit_score": 670,
+    "account_age_months": 36,
+    "financial_metrics": {
+      "monthly_income": 65000.0,
+      "monthly_expenses": 58000.0,
+      "existing_debt": 285000.0,
+      "credit_utilization": 0.89,
+      "recent_delinquencies": 2,
+      "savings_balance": 12000.0,
+      "income_volatility_score": 0.12
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-109283",
+      "amount": 25000.0,
+      "merchant_category": "Credit Card Minimum Payment",
+      "channel": "web_portal",
+      "device_trust_score": 0.95,
+      "location": "Bengaluru, India",
+      "is_international": false
+    },
+    "description": "Customer with high revolving credit utilization and recent consecutive minimum-payment strain, showing early indicators of debt distress."
+  },
+  {
+    "case_id": "CASE-2026-002",
+    "customer_id": "CUST-99341",
+    "track_type": "gig_resilience",
+    "customer_name": "Fatima Noor",
+    "occupation": "Rideshare Driver & Delivery Partner",
+    "employment_type": "Gig / Informal",
+    "credit_score": 640,
+    "account_age_months": 18,
+    "financial_metrics": {
+      "monthly_income": 38000.0,
+      "monthly_expenses": 34000.0,
+      "existing_debt": 75000.0,
+      "credit_utilization": 0.68,
+      "recent_delinquencies": 0,
+      "savings_balance": 8500.0,
+      "income_volatility_score": 0.58
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-109284",
+      "amount": 15000.0,
+      "merchant_category": "Vehicle Maintenance & Insurance",
+      "channel": "mobile_app",
+      "device_trust_score": 0.98,
+      "location": "Mumbai, India",
+      "is_international": false
+    },
+    "description": "Gig economy worker with seasonal income volatility requesting emergency micro-credit buffer for vehicle repair to sustain earnings."
+  },
+  {
+    "case_id": "CASE-2026-003",
+    "customer_id": "CUST-44109",
+    "track_type": "fraud",
+    "customer_name": "Devendra Sen (Senior Citizen)",
+    "occupation": "Retired Government Officer",
+    "employment_type": "Pensioner",
+    "credit_score": 790,
+    "account_age_months": 120,
+    "financial_metrics": {
+      "monthly_income": 42000.0,
+      "monthly_expenses": 20000.0,
+      "existing_debt": 0.0,
+      "credit_utilization": 0.05,
+      "recent_delinquencies": 0,
+      "savings_balance": 350000.0,
+      "income_volatility_score": 0.04
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-109285",
+      "amount": 185000.0,
+      "merchant_category": "Crypto Exchange Peer-to-Peer",
+      "channel": "mobile_app",
+      "device_trust_score": 0.15,
+      "location": "Unrecognized IP (Overseas VPN)",
+      "is_international": true
+    },
+    "description": "Elderly customer targeted by remote tech support impersonation scam. Unusual sudden high-value transfer from newly bound unrecognized device."
+  },
+  {
+    "case_id": "CASE-2026-004",
+    "customer_id": "CUST-77215",
+    "track_type": "safe_payments",
+    "customer_name": "Kavita Rao",
+    "occupation": "Boutique Craft Retailer",
+    "employment_type": "Self-Employed Small Merchant",
+    "credit_score": 715,
+    "account_age_months": 24,
+    "financial_metrics": {
+      "monthly_income": 82000.0,
+      "monthly_expenses": 45000.0,
+      "existing_debt": 110000.0,
+      "credit_utilization": 0.32,
+      "recent_delinquencies": 0,
+      "savings_balance": 95000.0,
+      "income_volatility_score": 0.28
+    },
+    "recent_transaction": {
+      "transaction_id": "TX-109286",
+      "amount": 49000.0,
+      "merchant_category": "B2B Wholesale Supplier Payment",
+      "channel": "upi_qr",
+      "device_trust_score": 0.88,
+      "location": "Jaipur, India",
+      "is_international": false
+    },
+    "description": "Routine merchant digital payment flagged by automated velocity filter due to consecutive rapid QR batch settlements."
+  }
+]
