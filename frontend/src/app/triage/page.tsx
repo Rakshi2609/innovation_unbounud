@@ -3,22 +3,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { 
-  Layers, 
-  RefreshCw, 
-  Search, 
-  Plus, 
-  Scale, 
-  TrendingDown, 
-  BookOpen, 
-  ShieldCheck, 
-  AlertTriangle,
-  UserCheck,
-  CheckCircle2,
-  Lock,
-  Sparkles,
-  Info,
-  SlidersHorizontal,
-  ChevronRight
+  Layers, RefreshCw, Search, Plus, Scale, TrendingDown, BookOpen, 
+  ShieldCheck, AlertTriangle, UserCheck, CheckCircle2, Lock, Sparkles, 
+  Activity, FileText
 } from 'lucide-react';
 
 const API_BASE = "http://localhost:8000";
@@ -48,23 +35,18 @@ export default function TriagePage() {
   const [overrideML, setOverrideML] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
 
-  // 1. Fetch Case Detail and store in cache
   const fetchCaseDetail = useCallback(async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}/api/v1/cases/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setCaseDetailsCache(prev => ({
-          ...prev,
-          [id]: data
-        }));
+        setCaseDetailsCache(prev => ({ ...prev, [id]: data }));
       }
     } catch (e) {
       console.warn(`Failed fetching case detail for ${id}:`, e);
     }
   }, []);
 
-  // 2. Fetch Cases List
   const fetchCases = useCallback(async () => {
     setIsFetchingList(true);
     try {
@@ -73,8 +55,6 @@ export default function TriagePage() {
         const data = await res.json();
         const list = data.cases || [];
         setCases(list);
-        
-        // Ensure default selected case exists or select first
         if (list.length > 0) {
           const currentExists = list.some((c: any) => c.case_id === selectedCaseId);
           if (!currentExists) {
@@ -94,20 +74,14 @@ export default function TriagePage() {
     }
   }, [selectedCaseId, fetchCaseDetail]);
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
+  useEffect(() => { fetchCases(); }, []);
   useEffect(() => {
     if (selectedCaseId && !caseDetailsCache[selectedCaseId]) {
       fetchCaseDetail(selectedCaseId);
     }
   }, [selectedCaseId, caseDetailsCache, fetchCaseDetail]);
 
-  // Active detail from cache
-  const currentDetail = useMemo(() => {
-    return caseDetailsCache[selectedCaseId] || null;
-  }, [caseDetailsCache, selectedCaseId]);
+  const currentDetail = useMemo(() => caseDetailsCache[selectedCaseId] || null, [caseDetailsCache, selectedCaseId]);
 
   const handleSubmitDecision = async () => {
     if (!selectedCaseId) return;
@@ -130,7 +104,6 @@ export default function TriagePage() {
 
       if (res.ok) {
         setIsDecisionModalOpen(false);
-        // Refresh detail and list
         await fetchCaseDetail(selectedCaseId);
         await fetchCases();
       }
@@ -151,384 +124,295 @@ export default function TriagePage() {
     });
   }, [cases, trackFilter, searchQuery]);
 
-  const getRiskBadgeColor = (riskClass: string | undefined) => {
-    switch (riskClass) {
-      case 'CRITICAL': return 'bg-[#E23D28] text-white border-[#1A1A1A]';
-      case 'HIGH': return 'bg-[#F5D04C] text-[#1A1A1A] border-[#1A1A1A]';
-      case 'MEDIUM': return 'bg-[#0F4C81] text-white border-[#1A1A1A]';
-      default: return 'bg-[#28A745] text-white border-[#1A1A1A]';
-    }
-  };
-
-  const getStatusBadge = (status: string | undefined) => {
-    switch (status) {
-      case 'APPROVED': return 'bg-[#28A745] text-white';
-      case 'RESTRUCTURED': return 'bg-[#0F4C81] text-white';
-      case 'FLAGGED': return 'bg-[#E23D28] text-white';
-      case 'DECLINED': return 'bg-gray-800 text-white';
-      default: return 'bg-[#F5D04C] text-[#1A1A1A]';
-    }
-  };
-
-  // Helper metrics accessor
   const metrics = currentDetail?.customer_profile?.financial_metrics || currentDetail?.customer?.financial_metrics;
   const profile = currentDetail?.customer_profile || currentDetail?.customer;
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="w-full bg-[#F9FAFB] min-h-screen">
       
-      {/* Role Switcher & Golden Path Banner */}
-      <div className="bg-white border-4 border-[#1A1A1A] p-4 mb-6 shadow-[4px_4px_0px_#1A1A1A] flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Top Controls Toolbar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sticky top-0 z-40">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#E23D28] text-white">
-              Primary Demo: Scenario A
-            </span>
-            <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wide">
-              Financial Distress Detection & Responsible Restructuring
-            </span>
+          <h1 className="text-xl font-black uppercase tracking-tight text-gray-900">Case Triage Queue</h1>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mt-1">Select a case to review intelligence</p>
+        </div>
+        
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex flex-1 md:flex-none items-center bg-gray-100 p-1 border border-gray-200 rounded">
+            <button
+              onClick={() => setUserRole('OFFICER')}
+              className={`flex-1 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
+                userRole === 'OFFICER' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Officer
+            </button>
+            <button
+              onClick={() => setUserRole('CUSTOMER')}
+              className={`flex-1 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
+                userRole === 'CUSTOMER' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Customer
+            </button>
           </div>
-          <p className="text-xs text-gray-600 font-medium">
-            Golden Path: Financial Input → ML Risk Inference → TheSuperRAG Evidence → LangGraph Reasoning → Human Confirmation
-          </p>
-        </div>
-
-        {/* Role Toggle Selector */}
-        <div className="flex items-center gap-2 bg-[#F4F4F4] p-1.5 border-2 border-[#1A1A1A]">
-          <span className="text-[11px] font-black uppercase text-gray-500 px-2">View Role:</span>
-          <button
-            onClick={() => setUserRole('OFFICER')}
-            className={`px-3 py-1 text-xs font-black uppercase transition-all cursor-pointer ${
-              userRole === 'OFFICER'
-                ? 'bg-[#1A1A1A] text-white shadow-[2px_2px_0px_#E23D28]'
-                : 'bg-white text-[#1A1A1A] hover:bg-gray-100'
-            }`}
-          >
-            Bank Officer View
-          </button>
-          <button
-            onClick={() => setUserRole('CUSTOMER')}
-            className={`px-3 py-1 text-xs font-black uppercase transition-all cursor-pointer ${
-              userRole === 'CUSTOMER'
-                ? 'bg-[#0F4C81] text-white shadow-[2px_2px_0px_#1A1A1A]'
-                : 'bg-white text-[#1A1A1A] hover:bg-gray-100'
-            }`}
-          >
-            Customer Transparency View
-          </button>
         </div>
       </div>
 
-      {/* Track Filter Bar */}
-      <div className="bg-white border-4 border-[#1A1A1A] p-3 mb-6 shadow-[4px_4px_0px_#1A1A1A] flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-black uppercase text-[#8A8A8A]">Filter Banking Track:</span>
-          <select
-            value={trackFilter}
-            onChange={e => setTrackFilter(e.target.value)}
-            className="border-2 border-[#1A1A1A] px-3 py-1 bg-white font-bold text-xs uppercase cursor-pointer"
-          >
-            <option value="all">All 5 Banking Tracks</option>
-            <option value="distress">1. Preventing Financial Distress</option>
-            <option value="fraud">2. Vulnerable Customer Fraud Defense</option>
-            <option value="gig_resilience">3. Gig Worker Financial Resilience</option>
-            <option value="safe_payments">4. Safe & Inclusive Digital Payments</option>
-          </select>
-        </div>
-
-        <Link
-          href="/evaluate"
-          className="flex items-center gap-1.5 bg-[#E23D28] text-white px-3.5 py-1.5 border-2 border-[#1A1A1A] font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] transition-all"
-        >
-          <Plus size={14} /> Evaluate New Customer
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="max-w-[1600px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
         {/* Left Column: Triage Feed */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          <div className="bg-white border-4 border-[#1A1A1A] p-4 shadow-[4px_4px_0px_#1A1A1A]">
+        <div className="lg:col-span-3 flex flex-col gap-4 bg-white border border-gray-200 rounded h-[40vh] lg:h-[calc(100vh-120px)] min-h-[300px] overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                <Layers size={16} className="text-[#E23D28]" /> Triage Queue ({filteredCases.length})
+              <h2 className="font-black text-xs uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                <Layers size={14} className="text-gray-400" /> Queue ({filteredCases.length})
               </h2>
               <button 
                 onClick={fetchCases} 
                 disabled={isFetchingList}
-                className="p-1 hover:bg-gray-100 border border-[#1A1A1A] cursor-pointer"
-                title="Refresh Triage Queue"
+                className="text-gray-400 hover:text-gray-900 transition-colors"
               >
-                <RefreshCw size={13} className={isFetchingList ? "animate-spin text-[#E23D28]" : ""} />
+                <RefreshCw size={14} className={isFetchingList ? "animate-spin" : ""} />
               </button>
             </div>
-
-            <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-2.5 text-gray-500" />
+            <div className="relative">
+              <Search size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by customer, case ID..."
+                placeholder="Search case or customer..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 border-2 border-[#1A1A1A] text-xs font-bold"
+                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded text-xs font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
+          </div>
 
-            <div className="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
-              {filteredCases.map(c => {
-                const isSelected = selectedCaseId === c.case_id;
-                const isScenarioA = c.case_id === 'CASE-2026-001';
-                return (
-                  <div
-                    key={c.case_id}
-                    onClick={() => setSelectedCaseId(c.case_id)}
-                    className={`p-3.5 border-2 border-[#1A1A1A] cursor-pointer transition-all relative ${
-                      isSelected 
-                        ? 'bg-[#1A1A1A] text-white shadow-[4px_4px_0px_#E23D28]' 
-                        : 'bg-white hover:bg-[#F9FAFB] shadow-[2px_2px_0px_#1A1A1A]'
-                    }`}
-                  >
-                    {isScenarioA && (
-                      <span className="absolute -top-2 -right-2 bg-[#E23D28] text-white text-[9px] font-black px-2 py-0.5 border border-[#1A1A1A] shadow-sm uppercase">
-                        ⭐ Primary Demo
-                      </span>
-                    )}
-
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 border ${getRiskBadgeColor(c.risk_class)}`}>
-                        {c.risk_class} RISK ({Math.round((c.risk_score || 0) * 100)}%)
-                      </span>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 ${getStatusBadge(c.status)}`}>
-                        {c.status}
-                      </span>
-                    </div>
-
-                    <h3 className={`font-black text-sm leading-tight ${isSelected ? 'text-white' : 'text-[#1A1A1A]'}`}>
-                      {c.customer_name}
-                    </h3>
-
-                    <div className={`flex items-center justify-between text-xs mt-2 font-bold ${isSelected ? 'text-gray-300' : 'text-[#8A8A8A]'}`}>
-                      <span>{c.case_id}</span>
-                      <span className="capitalize">{c.risk_type?.replace(/_/g, ' ')}</span>
-                    </div>
+          <div className="flex-1 overflow-y-auto">
+            {filteredCases.map(c => {
+              const isSelected = selectedCaseId === c.case_id;
+              
+              return (
+                <div
+                  key={c.case_id}
+                  onClick={() => setSelectedCaseId(c.case_id)}
+                  className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                    isSelected ? 'bg-blue-50/50 border-l-4 border-l-blue-600' : 'bg-white hover:bg-gray-50 border-l-4 border-l-transparent'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      {c.case_id}
+                    </span>
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${
+                      c.risk_class === 'CRITICAL' ? 'bg-red-100 text-red-700' : 
+                      c.risk_class === 'HIGH' ? 'bg-orange-100 text-orange-700' : 
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {c.risk_class}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
+                  <h3 className={`font-black text-sm uppercase tracking-tight ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                    {c.customer_name}
+                  </h3>
+                  <div className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mt-1">
+                    {c.status}
+                  </div>
+                </div>
+              );
+            })}
+            {filteredCases.length === 0 && (
+              <div className="p-6 text-left text-xs font-medium text-gray-400 uppercase tracking-widest">
+                No cases found.
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Column: 4 Core Pillars */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
+        {/* Right Column: High-Density Details */}
+        <div className="lg:col-span-9 flex flex-col gap-6">
           {currentDetail ? (
-            <>
-              {/* Customer Header Overview */}
-              <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-4 mb-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-black px-2 py-0.5 bg-[#1A1A1A] text-white uppercase">
-                        {currentDetail.case_id}
-                      </span>
-                      <span className={`text-xs font-black px-2.5 py-0.5 border-2 ${getRiskBadgeColor(currentDetail.risk_class)}`}>
-                        {currentDetail.risk_class} RISK ({Math.round((currentDetail.risk_score || 0) * 100)}%)
-                      </span>
-                      <span className={`text-xs font-black px-2.5 py-0.5 uppercase ${getStatusBadge(currentDetail.status)}`}>
-                        {currentDetail.status}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">
-                      {currentDetail.customer_name}
-                    </h2>
-                    <p className="text-xs font-bold text-[#8A8A8A]">
-                      ID: {currentDetail.customer_id} · {profile?.occupation || 'Salaried Borrower'} ({profile?.employment_type || 'Full-Time'})
-                    </p>
-                  </div>
-
-                  {userRole === 'OFFICER' ? (
-                    <button
-                      onClick={() => setIsDecisionModalOpen(true)}
-                      className="bg-[#E23D28] text-white border-2 border-[#1A1A1A] px-5 py-3 font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] hover:shadow-[4px_4px_0px_#1A1A1A] transition-all cursor-pointer flex items-center gap-2"
-                    >
-                      <Scale size={16} /> Authorize Officer Action
-                    </button>
-                  ) : (
-                    <Link
-                      href="/grievance"
-                      className="bg-[#0F4C81] text-white border-2 border-[#1A1A1A] px-4 py-2 font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] transition-all cursor-pointer"
-                    >
-                      Request Human Review
-                    </Link>
-                  )}
-                </div>
-
-                {/* Financial Metrics in Indian Rupees (₹) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
-                    <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Monthly Income</p>
-                    <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(metrics?.monthly_income)}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
-                    <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Monthly Expenses</p>
-                    <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(metrics?.monthly_expenses)}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
-                    <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Credit Utilization</p>
-                    <p className="text-base font-black text-[#E23D28]">
-                      {Math.round((metrics?.credit_utilization || 0) * 100)}%
-                    </p>
-                  </div>
-                  <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A]">
-                    <p className="text-[10px] font-black uppercase text-[#8A8A8A]">Total Debt Balance</p>
-                    <p className="text-base font-black text-[#1A1A1A]">
-                      {formatINR(metrics?.existing_debt)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* PILLAR 1: Statistical ML Prediction Breakdown */}
-              <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4 gap-2">
-                  <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                    <TrendingDown size={18} className="text-[#E23D28]" /> Pillar 1: Statistical ML Risk Inference
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-black px-2 py-0.5 border ${
-                      currentDetail.ml_prediction?.is_fallback 
-                        ? 'bg-yellow-100 text-yellow-900 border-yellow-800' 
-                        : 'bg-green-100 text-green-900 border-green-800'
-                    }`}>
-                      {currentDetail.ml_prediction?.is_fallback ? '⚠️ LOCAL FALLBACK ENGINE' : '🟢 ONLINE ML MODEL'}
+            <div className="space-y-6">
+              
+              {/* Profile Bar */}
+              <div className="bg-white border border-gray-200 rounded shadow-sm p-6 flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-sm">
+                      {currentDetail.case_id}
                     </span>
-                    <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
-                      Model: {currentDetail.ml_prediction?.model_version || 'v1.0-india-npa-timeaware'}
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      {currentDetail.status}
                     </span>
                   </div>
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-gray-900 mb-2">
+                    {currentDetail.customer_name}
+                  </h2>
+                  <div className="flex items-center gap-4 text-xs font-medium text-gray-500 uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5"><Lock size={12}/> {currentDetail.customer_id}</span>
+                    <span>|</span>
+                    <span>{profile?.occupation || 'Salaried'}</span>
+                    <span>|</span>
+                    <span>{profile?.employment_type || 'Full-Time'}</span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {currentDetail.ml_prediction?.top_factors?.map((factor: any, idx: number) => (
-                    <div key={idx} className="p-3.5 border-2 border-[#1A1A1A] bg-[#FFF8E7]">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-black uppercase text-[#1A1A1A]">
-                          {factor.factor?.replace(/_/g, ' ')}
-                        </span>
-                        <span className="text-xs font-bold text-[#E23D28]">
-                          Weight: {factor.weight}
-                        </span>
-                      </div>
-                      <p className="text-xs font-medium text-[#4A4A4A]">
-                        {factor.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {userRole === 'OFFICER' ? (
+                  <button
+                    onClick={() => setIsDecisionModalOpen(true)}
+                    className="bg-blue-600 text-white px-6 py-3 rounded font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap"
+                  >
+                    <Scale size={14} /> Authorize Action
+                  </button>
+                ) : (
+                  <Link
+                    href="/grievance"
+                    className="bg-white border border-gray-300 text-gray-900 px-6 py-3 rounded font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  >
+                    Request Review
+                  </Link>
+                )}
               </div>
 
-              {/* PILLAR 2: TheSuperRAG Policy Retrieval & Citations */}
-              <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
-                <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
-                  <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                    <BookOpen size={18} className="text-[#0F4C81]" /> Pillar 2: TheSuperRAG Policy Evidence
-                  </h3>
-                  <span className="text-[10px] font-bold bg-blue-50 border border-[#0F4C81] text-[#0F4C81] px-2 py-0.5">
-                    {currentDetail.rag_citations?.length || 0} Clauses Retrieved & Reranked
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                  {currentDetail.rag_citations?.map((citation: any, i: number) => (
-                    <div
-                      key={i}
-                      onClick={() => setSelectedCitation(citation)}
-                      className="p-3 border-2 border-[#1A1A1A] bg-white hover:bg-yellow-50 cursor-pointer transition-all shadow-[2px_2px_0px_#1A1A1A]"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-black uppercase bg-[#1A1A1A] text-white px-1.5 py-0.5">
-                          [{i+1}] {citation.clause}
-                        </span>
-                        <span className="text-[10px] font-bold text-[#0F4C81]">
-                          Score: {citation.relevance_score}
-                        </span>
-                      </div>
-                      <p className="text-xs font-bold text-[#1A1A1A] truncate">{citation.policy_name}</p>
-                      <p className="text-[11px] text-[#4A4A4A] line-clamp-2 mt-1 italic">
-                        "{citation.snippet}"
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              {/* Financial Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: "Monthly Income", val: formatINR(metrics?.monthly_income) },
+                  { label: "Monthly Expenses", val: formatINR(metrics?.monthly_expenses) },
+                  { label: "Credit Utilization", val: `${Math.round((metrics?.credit_utilization || 0) * 100)}%`, color: "text-red-600" },
+                  { label: "Total Debt", val: formatINR(metrics?.existing_debt) }
+                ].map((m, i) => (
+                  <div key={i} className="bg-white border border-gray-200 p-4 rounded shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{m.label}</p>
+                    <p className={`text-xl font-black uppercase tracking-tight ${m.color || 'text-gray-900'}`}>{m.val}</p>
+                  </div>
+                ))}
               </div>
 
-              {/* PILLAR 3: LangGraph Grounded Explanation & Recommendations */}
-              <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
-                <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
-                  <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                    <Sparkles size={18} className="text-[#E23D28]" /> Pillar 3: LangGraph Grounded Reasoning & Recommendations
-                  </h3>
-                  <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
-                    Certainty: {Math.round((currentDetail.confidence_score || currentDetail.ml_prediction?.confidence || 0.89) * 100)}%
-                  </span>
+              {/* AI Analysis Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* ML Risk */}
+                <div className="bg-white border border-gray-200 rounded shadow-sm p-6 flex flex-col h-[400px]">
+                  <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
+                    <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                      <Activity size={16} className="text-gray-400" /> Statistical ML Risk
+                    </h3>
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600 px-2 py-1 rounded-sm">
+                      {currentDetail.ml_prediction?.is_fallback ? 'Fallback Engine' : 'Online Engine'}
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                    {currentDetail.ml_prediction?.top_factors?.map((factor: any, idx: number) => (
+                      <div key={idx} className="border border-gray-100 bg-gray-50 rounded p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-black uppercase tracking-tight text-gray-900">
+                            {factor.factor?.replace(/_/g, ' ')}
+                          </span>
+                          <span className="text-[10px] font-black text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded-sm">
+                            Wt: {factor.weight}
+                          </span>
+                        </div>
+                        <p className="text-xs font-medium text-gray-600 leading-relaxed">
+                          {factor.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Grounded Summary */}
-                <div className="p-4 bg-[#F4F4F4] border-l-8 border-[#0F4C81] border-2 border-[#1A1A1A] mb-4">
-                  <p className="text-xs font-bold leading-relaxed text-[#1A1A1A] mb-2">
+                {/* RAG Evidence */}
+                <div className="bg-white border border-gray-200 rounded shadow-sm p-6 flex flex-col h-[400px]">
+                  <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
+                    <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                      <BookOpen size={16} className="text-gray-400" /> Policy Evidence
+                    </h3>
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600 px-2 py-1 rounded-sm">
+                      {currentDetail.rag_citations?.length || 0} Citations
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                    {currentDetail.rag_citations?.map((citation: any, i: number) => (
+                      <div
+                        key={i}
+                        onClick={() => setSelectedCitation(citation)}
+                        className="border border-gray-200 bg-white rounded p-3 cursor-pointer hover:border-gray-400 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded-sm">
+                            {citation.clause}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-400">Score: {citation.relevance_score}</span>
+                        </div>
+                        <p className="text-xs font-black uppercase tracking-tight text-gray-900 mb-1 truncate">{citation.policy_name}</p>
+                        <p className="text-xs text-gray-500 font-medium italic line-clamp-2 border-l-2 border-gray-200 pl-2">
+                          "{citation.snippet}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* LangGraph Reasoning */}
+              <div className="bg-white border border-gray-200 rounded shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
+                  <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                    <Sparkles size={16} className="text-gray-400" /> Synthesized Recommendation
+                  </h3>
+                  <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100 px-2 py-1 rounded-sm">
+                    Confidence: {Math.round((currentDetail.confidence_score || currentDetail.ml_prediction?.confidence || 0.89) * 100)}%
+                  </span>
+                </div>
+                
+                <div className="bg-gray-50 border border-gray-200 rounded p-4 mb-6">
+                  <p className="text-sm font-medium leading-relaxed text-gray-900 mb-2">
                     {currentDetail.explanation?.summary}
                   </p>
-                  <p className="text-xs font-semibold text-[#0F4C81]">
+                  <p className="text-xs font-black uppercase tracking-widest text-blue-700">
                     {currentDetail.explanation?.policy_alignment}
                   </p>
                 </div>
 
-                {/* Suggested Interventions */}
-                <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Recommended Responsible Interventions:</h4>
-                <div className="flex flex-col gap-2">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Proposed Interventions</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {currentDetail.explanation?.recommendations?.map((rec: any, idx: number) => (
-                    <div key={idx} className="p-3 border-2 border-[#28A745] bg-[#28A745]/5 flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black px-2 py-0.5 bg-[#28A745] text-white uppercase">
-                            {rec.action_type}
-                          </span>
-                          <strong className="text-xs text-[#1A1A1A]">{rec.title}</strong>
-                        </div>
-                        <p className="text-xs text-[#4A4A4A] mt-1">{rec.rationale}</p>
-                        {rec.eligible_programs?.length > 0 && (
-                          <div className="flex gap-1.5 mt-2">
-                            {rec.eligible_programs.map((prog: string, pIdx: number) => (
-                              <span key={pIdx} className="text-[10px] font-bold px-2 py-0.5 border border-[#28A745] text-[#28A745]">
-                                {prog}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                    <div key={idx} className="border border-gray-200 bg-white rounded p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 size={16} className="text-gray-900" />
+                        <strong className="text-xs font-black uppercase tracking-tight text-gray-900">{rec.title}</strong>
                       </div>
+                      <p className="text-xs text-gray-600 font-medium mb-3">{rec.rationale}</p>
+                      
+                      {rec.eligible_programs?.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {rec.eligible_programs.map((prog: string, pIdx: number) => (
+                            <span key={pIdx} className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm bg-gray-100 text-gray-600">
+                              {prog}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* PILLAR 4: Safety Guardrails & Governance Notice */}
-              <div className="p-4 bg-yellow-50 border-4 border-[#1A1A1A] shadow-[4px_4px_0px_#1A1A1A] flex items-start gap-3">
-                <ShieldCheck size={22} className="text-[#E23D28] shrink-0 mt-0.5" />
-                <div className="text-xs font-medium text-[#1A1A1A]">
-                  <strong className="block uppercase font-black mb-0.5">
-                    Pillar 4: Responsible AI Governance Guardrail
-                  </strong>
-                  This system operates strictly under Human-in-the-Loop oversight. AI agents cannot autonomously approve loans, decline credit, freeze accounts, or enforce collections without authorized human officer confirmation and full audit logging.
-                </div>
-              </div>
-            </>
+            </div>
           ) : (
-            <div className="p-12 text-center bg-white border-4 border-[#1A1A1A] shadow-[4px_4px_0px_#1A1A1A]">
-              <p className="font-black text-sm uppercase text-[#1A1A1A] animate-pulse">
-                Loading Case Details...
-              </p>
+            <div className="flex flex-col items-center justify-center h-full p-12 bg-transparent text-gray-400 border-2 border-dashed border-gray-200 rounded">
+              {cases.length === 0 && !isFetchingList ? (
+                <>
+                  <ShieldCheck size={32} className="mb-4 text-gray-300" />
+                  <p className="font-black text-xs uppercase tracking-widest text-gray-500">Queue is empty</p>
+                  <p className="font-medium text-xs text-gray-400 mt-2">No active cases require intervention.</p>
+                </>
+              ) : (
+                <p className="font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                  <Activity size={14} className="animate-spin text-blue-500" /> Fetching Intelligence...
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -536,107 +420,97 @@ export default function TriagePage() {
 
       {/* Decision Modal */}
       {isDecisionModalOpen && currentDetail && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-[#1A1A1A] max-w-xl w-full p-6 shadow-[8px_8px_0px_#E23D28] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
-              <h3 className="font-black text-base uppercase text-[#1A1A1A]">
-                Human Decision Gateway: {currentDetail.customer_name}
+        <div className="fixed inset-0 z-50 bg-gray-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded border border-gray-200 shadow-xl max-w-lg w-full">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <h3 className="font-black text-xs uppercase tracking-widest text-gray-900">
+                Authorize Action: {currentDetail.customer_name}
               </h3>
-              <button onClick={() => setIsDecisionModalOpen(false)} className="font-black text-lg cursor-pointer">✕</button>
+              <button onClick={() => setIsDecisionModalOpen(false)} className="text-gray-400 hover:text-gray-900">✕</button>
             </div>
 
-            <div className="flex flex-col gap-4 text-xs font-bold">
+            <div className="p-6 space-y-4">
               <div>
-                <label className="block uppercase text-gray-600 mb-1">Decision Action:</label>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1.5">Decision Action</label>
                 <select
                   value={decisionType}
                   onChange={e => setDecisionType(e.target.value)}
-                  className="w-full p-2 border-2 border-[#1A1A1A] bg-white font-bold text-xs cursor-pointer"
+                  className="w-full p-2.5 bg-white border border-gray-200 rounded text-xs font-bold text-gray-900 focus:outline-none focus:border-blue-500"
                 >
-                  <option value="RESTRUCTURE">Approve Debt Restructuring / Moratorium (Recommended)</option>
-                  <option value="APPROVE">Approve Standard Credit Facility</option>
-                  <option value="REQUEST_INFO">Require Additional Documentation Disclosures</option>
-                  <option value="FLAG_FRAUD">Flag Fraud Anomaly & Hold Transaction</option>
-                  <option value="DECLINE">Decline Credit Request</option>
+                  <option value="RESTRUCTURE">Approve Debt Restructuring</option>
+                  <option value="APPROVE">Approve Standard Facility</option>
+                  <option value="REQUEST_INFO">Require Additional Info</option>
+                  <option value="FLAG_FRAUD">Flag Fraud Anomaly</option>
+                  <option value="DECLINE">Decline Request</option>
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block uppercase text-gray-600 mb-1">Officer Name:</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1.5">Officer Name</label>
                   <input
                     type="text"
                     value={officerName}
                     onChange={e => setOfficerName(e.target.value)}
-                    className="w-full p-2 border-2 border-[#1A1A1A]"
+                    className="w-full p-2.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block uppercase text-gray-600 mb-1">Officer ID:</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1.5">Officer ID</label>
                   <input
                     type="text"
                     value={officerId}
                     onChange={e => setOfficerId(e.target.value)}
-                    className="w-full p-2 border-2 border-[#1A1A1A]"
+                    className="w-full p-2.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block uppercase text-gray-600 mb-1">Action Summary:</label>
-                <input
-                  type="text"
-                  value={actionTaken}
-                  onChange={e => setActionTaken(e.target.value)}
-                  className="w-full p-2 border-2 border-[#1A1A1A]"
-                />
-              </div>
-
-              <div>
-                <label className="block uppercase text-gray-600 mb-1">Officer Compliance Notes:</label>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1.5">Action Notes</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={decisionNotes}
                   onChange={e => setDecisionNotes(e.target.value)}
-                  className="w-full p-2 border-2 border-[#1A1A1A]"
+                  className="w-full p-2.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-900 focus:outline-none focus:border-blue-500 resize-none"
                 />
               </div>
 
-              <div className="p-3 bg-yellow-50 border-2 border-[#1A1A1A]">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded">
+                <label className="flex items-center gap-2 cursor-pointer mb-1">
                   <input
                     type="checkbox"
                     checked={overrideML}
                     onChange={e => setOverrideML(e.target.checked)}
-                    className="w-4 h-4 cursor-pointer"
+                    className="w-3 h-3 text-blue-600 rounded-sm border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="uppercase text-xs font-black">Override AI / ML Model Risk Finding</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">Override ML Finding</span>
                 </label>
                 {overrideML && (
                   <input
                     type="text"
-                    placeholder="Mandatory rationale for overriding ML model..."
+                    placeholder="Rationale for override..."
                     value={overrideReason}
                     onChange={e => setOverrideReason(e.target.value)}
-                    className="w-full p-2 border-2 border-[#1A1A1A] mt-2 bg-white"
+                    className="w-full p-2 mt-2 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
                   />
                 )}
               </div>
+            </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#1A1A1A]">
-                <button
-                  onClick={() => setIsDecisionModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#1A1A1A] uppercase font-bold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmitDecision}
-                  className="px-5 py-2 bg-[#E23D28] text-white border-2 border-[#1A1A1A] font-black uppercase hover:bg-[#1A1A1A] cursor-pointer"
-                >
-                  Confirm & Commit to Audit Trail
-                </button>
-              </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={() => setIsDecisionModalOpen(false)}
+                className="px-4 py-2 bg-white border border-gray-200 rounded text-xs font-black uppercase tracking-widest text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitDecision}
+                className="px-6 py-2 bg-blue-600 text-white rounded text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Sign & Authorize
+              </button>
             </div>
           </div>
         </div>
@@ -644,34 +518,36 @@ export default function TriagePage() {
 
       {/* Citation Detail Modal */}
       {selectedCitation && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-[#1A1A1A] max-w-lg w-full p-6 shadow-[8px_8px_0px_#F5D04C]">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
-              <span className="text-xs font-black px-2 py-0.5 bg-[#1A1A1A] text-white uppercase">
+        <div className="fixed inset-0 z-50 bg-gray-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded border border-gray-200 shadow-xl max-w-lg w-full">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-gray-200 text-gray-900 px-2 py-1 rounded-sm">
                 {selectedCitation.clause}
               </span>
-              <button onClick={() => setSelectedCitation(null)} className="font-black text-lg cursor-pointer">✕</button>
+              <button onClick={() => setSelectedCitation(null)} className="text-gray-400 hover:text-gray-900">✕</button>
             </div>
 
-            <h3 className="font-black text-sm uppercase text-[#1A1A1A] mb-1">
-              {selectedCitation.policy_name}
-            </h3>
-            <p className="text-xs text-gray-500 font-bold mb-3">
-              Section: {selectedCitation.section} · Source File: {selectedCitation.source_file}
-            </p>
+            <div className="p-6">
+              <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 mb-2">
+                {selectedCitation.policy_name}
+              </h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
+                Section: {selectedCitation.section} | File: {selectedCitation.source_file}
+              </p>
 
-            <div className="p-3 bg-[#F4F4F4] border-2 border-[#1A1A1A] text-xs font-mono leading-relaxed text-[#1A1A1A] mb-4">
-              {selectedCitation.snippet}
-            </div>
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded text-xs leading-relaxed text-gray-900 italic mb-6">
+                "{selectedCitation.snippet}"
+              </div>
 
-            <div className="flex justify-between items-center text-xs font-bold">
-              <span className="text-[#0F4C81]">Relevance Score: {selectedCitation.relevance_score}</span>
-              <button
-                onClick={() => setSelectedCitation(null)}
-                className="px-4 py-1.5 bg-[#1A1A1A] text-white font-bold cursor-pointer"
-              >
-                Close
-              </button>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Score: {selectedCitation.relevance_score}</span>
+                <button
+                  onClick={() => setSelectedCitation(null)}
+                  className="px-6 py-2 bg-gray-900 text-white font-black text-xs uppercase tracking-widest rounded hover:bg-gray-800 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -679,3 +555,5 @@ export default function TriagePage() {
     </div>
   );
 }
+
+

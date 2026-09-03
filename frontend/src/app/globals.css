@@ -31,52 +31,56 @@
   --text-3xl: clamp(1.5rem, 5vw, 1.875rem);
   --text-4xl: clamp(1.75rem, 6vw, 2.25rem);
 
-  /* Theme Colors - Light (Bauhaus) */
-  --bg-primary: #F4F4F4;
-  --bg-secondary: #E9ECEF;
+  /* Theme Colors - Light (Modern SaaS) */
+  --bg-primary: #FDFDFD;
+  --bg-secondary: #F9FAFB;
   --bg-tertiary: #FFFFFF;
-  --text-primary: #1A1A1A;
-  --text-secondary: #4A4A4A;
-  --text-muted: #8A8A8A;
-  --border: #E9ECEF;
-  --border-strong: #1A1A1A;
-  --accent: #E23D28;
-  --accent-hover: #0F4C81;
-  --accent-muted: rgba(226, 61, 40, 0.1);
-  --success: #28A745;
-  --warning: #F5D04C;
-  --error: #E23D28;
-  --shadow-sm: 2px 2px 0px 0px var(--border-strong);
-  --shadow-md: 4px 4px 0px 0px var(--border-strong);
-  --shadow-lg: 6px 6px 0px 0px var(--border-strong);
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  
+  /* Lighter, subtle borders */
+  --border: #F3F4F6;
+  --border-strong: #E5E7EB; /* Sleek gray-200 borders */
+  
+  /* SaaS Accents */
+  --accent: #2563EB; /* Modern royal blue */
+  --accent-hover: #1D4ED8;
+  --accent-muted: rgba(37, 99, 235, 0.1);
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  
+  /* Soft, elevated shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
 
-  /* Original Bauhaus for specific elements */
-  --bauhaus-red: #E23D28;
-  --bauhaus-blue: #0F4C81;
-  --bauhaus-yellow: #F5D04C;
-  --bauhaus-black: #1A1A1A;
-  --bauhaus-white: #F4F4F4;
-  --bauhaus-gray: #E9ECEF;
+  --bauhaus-red: #DC2626;
+  --bauhaus-blue: #2563EB;
+  --bauhaus-yellow: #D97706;
+  --bauhaus-black: #111827;
+  --bauhaus-white: #FFFFFF;
+  --bauhaus-gray: #F3F4F6;
 }
 
 [data-theme="dark"] {
-  --bg-primary: #0F0F11;
-  --bg-secondary: #18181B;
-  --bg-tertiary: #1E1E24;
-  --text-primary: #F4F4F4;
-  --text-secondary: #D4D4D8;
-  --text-muted: #A1A1AA;
-  --border: #3F3F46;
-  --border-strong: #71717A;
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border: #374151;
+  --border-strong: #6B7280;
   
-  /* Brighten by 15% */
   --accent: #F45D48; 
   --accent-hover: #2F6C91;
   --accent-muted: rgba(244, 93, 72, 0.15);
   
-  --shadow-sm: 2px 2px 0px 0px var(--border-strong);
-  --shadow-md: 4px 4px 0px 0px var(--border-strong);
-  --shadow-lg: 6px 6px 0px 0px var(--border-strong);
+  --shadow-sm: 2px 2px 0px 0px rgba(107, 114, 128, 0.5);
+  --shadow-md: 4px 4px 0px 0px rgba(107, 114, 128, 0.5);
+  --shadow-lg: 6px 6px 0px 0px rgba(107, 114, 128, 0.5);
 }
 
 body {
@@ -98,61 +102,64 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-strong);
   border-radius: 4px;
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
-/* ── Bold Bauhaus Utilities ─────────────────────────────────────────────── */
+/* ── Soft Bauhaus Utilities ─────────────────────────────────────────────── */
 .glass-panel {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  border-radius: 4px;
 }
 
-.bauhaus-btn {
-  background: var(--bg-primary);
+.bauhaus-btn, .finance-btn {
+  background: var(--bg-tertiary);
   color: var(--text-primary);
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 4px solid var(--border-strong);
-  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-sm);
   padding: 0.5rem 1rem;
 }
 
-.bauhaus-btn:hover {
+.bauhaus-btn:hover, .finance-btn:hover {
   background: var(--warning);
-  color: #1A1A1A;
-  transform: translate(2px, 2px);
-  box-shadow: var(--shadow-md);
+  color: #1F2937;
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.bauhaus-btn:active {
-  transform: translate(6px, 6px);
+.bauhaus-btn:active, .finance-btn:active {
+  transform: translate(2px, 2px);
   box-shadow: none;
 }
 
-.bauhaus-btn.primary {
+.bauhaus-btn.primary, .finance-btn.primary {
   background: var(--accent);
-  color: #F4F4F4;
+  color: #F9FAFB;
+  border-color: var(--accent);
 }
 
-.bauhaus-btn.primary:hover {
+.bauhaus-btn.primary:hover, .finance-btn.primary:hover {
   background: var(--accent-hover);
-  color: #F4F4F4;
+  border-color: var(--accent-hover);
+  color: #F9FAFB;
 }
 
 [data-theme="dark"] .invert-pdf-dark {

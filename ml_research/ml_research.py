@@ -44,11 +44,13 @@ from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("ignore")
 
-ROOT = Path("D:/thenewCC")
-RAW = ROOT / "data" / "raw"
+# Hackathon Paths - Fixed to be dynamic
+ROOT = Path(__file__).resolve().parent.parent
+ML_DIR = ROOT / "ml_research"
 MODEL_DIR = ROOT / "models"
 REPORT_DIR = ROOT / "reports"
 SERVICES_DIR = ROOT / "services"
+RAW = ROOT / "data" / "raw"
 for p in [MODEL_DIR, REPORT_DIR, SERVICES_DIR]:
     p.mkdir(parents=True, exist_ok=True)
 

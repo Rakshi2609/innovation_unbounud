@@ -318,6 +318,11 @@ def predict_risk(req: MLPredictionRequest):
     model = model_bundle["model"]
     threshold = float(model_bundle.get("threshold", 0.5))
 
+    try:
+        prob = float(model.predict_proba(X)[0][1])
+    except Exception:
+        prob = 0.5
+
     # Extract key financial indicators for calibration
     inc = float(req.features.get("monthly_income", 0))
     exp = float(req.features.get("monthly_expenses", 0))

@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+**/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -34,6 +34,15 @@ DATA/
 *.sqlite3
 qdrant_db/
 
+# ML model binaries (never commit trained model files)
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+ml_research/data/raw/
+ml_research/reports/*.png
+
 # archives & bundles
 *.zip
 *.tar.gz
@@ -44,6 +53,7 @@ qdrant_db/
 .env.test.local
 .env.development.local
 .env
+.env.local
 
 # misc
 .DS_Store
@@ -56,4 +66,3 @@ qdrant_db/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-

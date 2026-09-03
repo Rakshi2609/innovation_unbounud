@@ -14,10 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-[#F4F4F4] text-[#1A1A1A] font-sans selection:bg-[#F5D04C]">
+      <body className="min-h-screen bg-[var(--bg-secondary)] text-[var(--text-primary)] font-sans selection:bg-yellow-400">
         <Navbar />
         {children}
       </body>
     </html>
   );
 }
+
+

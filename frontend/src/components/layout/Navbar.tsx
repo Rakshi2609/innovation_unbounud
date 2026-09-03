@@ -32,50 +32,51 @@ export default function Navbar() {
     { href: '/audit', label: 'Audit Log', icon: History }
   ];
 
+  if (pathname === '/') return null;
+
   return (
-    <header className="border-b-4 border-[#1A1A1A] bg-white sticky top-0 z-50">
-      {/* Brand Header */}
-      <div className="px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-4 border-b-2 border-[#1A1A1A]">
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between">
-          <Link href="/triage" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 grid grid-cols-2 border-2 border-[#1A1A1A] overflow-hidden shadow-[2px_2px_0px_#1A1A1A] group-hover:rotate-6 transition-transform">
-              <div className="bg-[#E23D28] rounded-br-full"></div>
-              <div className="bg-[#0F4C81]"></div>
-              <div className="bg-[#F5D04C]"></div>
-              <div className="bg-[#1A1A1A] rounded-tl-full"></div>
+    <header className="bg-white sticky top-0 z-50 border-b-2 border-gray-200">
+      <div className="px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <div className="flex items-center gap-6 w-full md:w-auto">
+          <Link href="/triage" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-900 text-white flex items-center justify-center font-black text-lg">
+              FS
             </div>
             <div>
-              <h1 className="text-lg font-black uppercase tracking-wider text-[#1A1A1A]">
-                AI Financial Safety & Lending Copilot
+              <h1 className="text-xl font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                Financial Safety <span className="text-blue-600">Copilot</span>
               </h1>
-              <p className="text-[10px] font-bold text-[#8A8A8A] uppercase tracking-widest">
-                Statistical ML · Grounded RAG · Human Governance
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">
+                Statistical ML · Grounded RAG
               </p>
             </div>
           </Link>
 
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 border-2 text-[10px] font-black uppercase ${
-              isHealthy ? 'bg-[#28A745]/10 text-[#28A745] border-[#28A745]' : 'bg-[#E23D28]/10 text-[#E23D28] border-[#E23D28]'
+          <div className="hidden md:flex items-center">
+            <span className={`inline-flex items-center gap-2 px-3 py-1 text-[10px] font-black uppercase tracking-widest border-2 ${
+              isHealthy ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
             }`}>
-              <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-[#28A745]' : 'bg-[#E23D28]'}`}></span>
-              {isHealthy ? 'Backend Live (Port 8000)' : 'Backend Offline'}
+              <span className={`relative flex h-2 w-2`}>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isHealthy ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${isHealthy ? 'bg-green-500' : 'bg-red-500'}`}></span>
+              </span>
+              {isHealthy ? 'System Active' : 'System Offline'}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Link
             href="/evaluate"
-            className="flex items-center gap-1.5 bg-[#E23D28] text-white px-3.5 py-1.5 border-2 border-[#1A1A1A] font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] hover:shadow-[3px_3px_0px_#1A1A1A] transition-all cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-2.5 font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors w-full md:w-auto"
           >
             <Plus size={14} /> New Case Evaluation
           </Link>
         </div>
       </div>
 
-      {/* Route Navigation Tabs */}
-      <div className="bg-[#F4F4F4] px-6 py-2 flex items-center gap-2 overflow-x-auto">
+      <div className="px-6 flex items-center gap-1 overflow-x-auto border-t-2 border-gray-100 bg-white custom-scrollbar">
         {navLinks.map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname === tab.href || (pathname === '/' && tab.href === '/triage');
@@ -83,10 +84,10 @@ export default function Navbar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex items-center gap-2 px-3.5 py-1.5 border-2 border-[#1A1A1A] text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+              className={`shrink-0 flex items-center gap-2 px-4 py-3 text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-b-4 ${
                 isActive
-                  ? 'bg-[#1A1A1A] text-white shadow-[3px_3px_0px_#E23D28]'
-                  : 'bg-white text-[#1A1A1A] hover:bg-[#E9ECEF]'
+                  ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Icon size={14} />
@@ -98,3 +99,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+

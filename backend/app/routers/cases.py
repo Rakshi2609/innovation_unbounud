@@ -33,6 +33,25 @@ class ChatResponse(BaseModel):
 @router.get("")
 def list_cases(db: Session = Depends(get_db)):
     records = db.query(CaseRecord).order_by(CaseRecord.created_at.desc()).all()
+    from app.models.database import AuditTrailRecord
+    case_ids = [r.id for r in records]
+    audits = db.query(AuditTrailRecord).filter(AuditTrailRecord.case_id.in_(case_ids)).all() if case_ids else []
+    
+    import collections
+    audit_map = collections.defaultdict(list)
+    for a in audits:
+        audit_map[a.case_id].append({
+            "id": a.id,
+            "event_type": a.event_type,
+            "actor": a.actor,
+            "action": a.action,
+            "decision": a.decision,
+            "override_ml": a.override_ml,
+            "override_reason": a.override_reason,
+            "notes": a.notes,
+            "timestamp": a.timestamp.isoformat() if a.timestamp else None
+        })
+
     results = []
     for r in records:
         results.append({
@@ -47,9 +66,43 @@ def list_cases(db: Session = Depends(get_db)):
             "created_at": r.created_at.isoformat() if r.created_at else None,
             "updated_at": r.updated_at.isoformat() if r.updated_at else None,
             "top_factors": r.ml_prediction.get("top_factors", []) if r.ml_prediction else [],
-            "citations_count": len(r.rag_citations) if r.rag_citations else 0
+            "citations_count": len(r.rag_citations) if r.rag_citations else 0,
+            "audit_trail": audit_map.get(r.id, [])
         })
     return {"cases": results}
+
+class GrievancePayload(BaseModel):
+    grievance_type: str
+    customer_id: str
+    customer_name: str
+    email: str
+    dispute_category: str
+    case_id: Optional[str]
+    description: str
+    submitted_at: str
+
+@router.post("/grievances")
+def submit_grievance(payload: GrievancePayload, db: Session = Depends(get_db)):
+    import uuid
+    from app.models.database import AuditTrailRecord
+    
+    # Store grievance in the audit trail of the case (or standalone if no case)
+    audit = AuditTrailRecord(
+        id=f"GRV-{uuid.uuid4().hex[:8].upper()}",
+        case_id=payload.case_id or "UNLINKED",
+        event_type="CUSTOMER_GRIEVANCE",
+        actor=payload.customer_name,
+        action="SUBMITTED_GRIEVANCE",
+        notes=payload.description,
+        details={
+            "dispute_category": payload.dispute_category,
+            "email": payload.email,
+            "customer_id": payload.customer_id
+        }
+    )
+    db.add(audit)
+    db.commit()
+    return {"status": "success", "ticket_id": audit.id}
 
 @router.get("/{case_id}")
 def get_case(case_id: str, db: Session = Depends(get_db)):

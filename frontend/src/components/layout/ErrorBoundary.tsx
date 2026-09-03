@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4">
-          <div className="border-4 border-[var(--border-strong)] p-8 max-w-md w-full bg-[var(--bg-secondary)] shadow-[var(--shadow-lg)]">
+          <div className="border-2 border-[var(--border-strong)] p-8 max-w-md w-full bg-[var(--bg-secondary)] shadow-md">
             <h1 className="text-2xl font-black uppercase mb-4 text-[var(--error)]">Something went wrong</h1>
             <p className="mb-6 font-medium">{this.state.error?.message || "An unexpected error occurred."}</p>
             <button 
@@ -45,3 +45,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+
