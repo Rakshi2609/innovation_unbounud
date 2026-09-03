@@ -90,7 +90,7 @@ export default function EvaluateCasePage() {
               <Plus size={20} className="text-[#E23D28]" /> Run New Customer Risk & Policy Assessment
             </h1>
             <p className="text-xs font-bold text-[#8A8A8A] mt-1">
-              Statistical ML Inference (XGBoost) $\rightarrow$ Grounded Policy RAG $\rightarrow$ Numbered Citations
+              Statistical ML Inference (LightGBM) → Grounded Policy RAG → Numbered Citations
             </p>
           </div>
         </div>

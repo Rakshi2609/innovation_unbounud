@@ -10,18 +10,18 @@ export default function Navbar() {
   const [isHealthy, setIsHealthy] = useState(true);
 
   useEffect(() => {
+    let active = true;
     const checkHealth = async () => {
       try {
         const res = await fetch("http://localhost:8000/health/live");
-        setIsHealthy(res.ok);
+        if (active) setIsHealthy(res.ok);
       } catch {
-        setIsHealthy(false);
+        if (active) setIsHealthy(false);
       }
     };
     checkHealth();
-    const interval = setInterval(checkHealth, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => { active = false; };
+  }, [pathname]);
 
   const navLinks = [
     { href: '/triage', label: 'Triage Queue', icon: Layers },
