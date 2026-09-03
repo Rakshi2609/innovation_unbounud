@@ -60,6 +60,10 @@ class MLRiskPrediction(BaseModel):
     risk_type: str = "credit_distress"
     top_factors: List[RiskFactor] = Field(default_factory=list)
     model_version: str = "v1.0.0-xgb"
+    model_source: str = "ONLINE_ML_SERVICE" # ONLINE_ML_SERVICE or LOCAL_FALLBACK_MOCK
+    is_fallback: bool = False
+    is_safety_validated: bool = True
+    autonomous_action_allowed: bool = False
     evaluation_metrics: Optional[Dict[str, float]] = None
 
 class MLPredictionRequest(BaseModel):

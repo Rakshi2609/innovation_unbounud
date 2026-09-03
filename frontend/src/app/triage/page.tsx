@@ -10,9 +10,15 @@ import {
   Scale, 
   TrendingDown, 
   BookOpen, 
-  ExternalLink,
-  ShieldAlert,
-  AlertTriangle
+  ShieldCheck, 
+  AlertTriangle,
+  UserCheck,
+  CheckCircle2,
+  Lock,
+  Sparkles,
+  Info,
+  SlidersHorizontal,
+  ChevronRight
 } from 'lucide-react';
 
 const API_BASE = "http://localhost:8000";
@@ -29,6 +35,7 @@ export default function TriagePage() {
   const [loading, setLoading] = useState(false);
   const [trackFilter, setTrackFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userRole, setUserRole] = useState<'OFFICER' | 'CUSTOMER'>('OFFICER');
 
   // Decision Modal
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
@@ -36,8 +43,8 @@ export default function TriagePage() {
   const [decisionType, setDecisionType] = useState<string>('RESTRUCTURE');
   const [officerName, setOfficerName] = useState('Officer Priya Nair');
   const [officerId, setOfficerId] = useState('OFFICER-402');
-  const [actionTaken, setActionTaken] = useState('Approved 36-Month Term Debt Restructuring Plan');
-  const [decisionNotes, setDecisionNotes] = useState('Customer proactively engaged before 60-day default window.');
+  const [actionTaken, setActionTaken] = useState('Approved 36-Month Term Debt Restructuring Plan with 2.5% rate discount');
+  const [decisionNotes, setDecisionNotes] = useState('Customer proactively accepted workout terms prior to 60-day default window.');
   const [overrideML, setOverrideML] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
 
@@ -47,8 +54,10 @@ export default function TriagePage() {
       if (res.ok) {
         const data = await res.json();
         setCases(data.cases || []);
+        // Default to Scenario A: Aarav Patel (CASE-2026-001)
         if (data.cases && data.cases.length > 0 && !selectedCaseId) {
-          setSelectedCaseId(data.cases[0].case_id);
+          const defaultCase = data.cases.find((c: any) => c.case_id === 'CASE-2026-001') || data.cases[0];
+          setSelectedCaseId(defaultCase.case_id);
         }
       }
     } catch (e) {
@@ -139,14 +148,57 @@ export default function TriagePage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      
+      {/* Role Switcher & Golden Path Banner */}
+      <div className="bg-white border-4 border-[#1A1A1A] p-4 mb-6 shadow-[4px_4px_0px_#1A1A1A] flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#E23D28] text-white">
+              Primary Demo: Scenario A
+            </span>
+            <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wide">
+              Financial Distress Detection & Responsible Restructuring
+            </span>
+          </div>
+          <p className="text-xs text-gray-600 font-medium">
+            Golden Path: Financial Input → ML Risk Inference → TheSuperRAG Evidence → LangGraph Reasoning → Human Confirmation
+          </p>
+        </div>
+
+        {/* Role Toggle Selector */}
+        <div className="flex items-center gap-2 bg-[#F4F4F4] p-1.5 border-2 border-[#1A1A1A]">
+          <span className="text-[11px] font-black uppercase text-gray-500 px-2">View Role:</span>
+          <button
+            onClick={() => setUserRole('OFFICER')}
+            className={`px-3 py-1 text-xs font-black uppercase transition-all cursor-pointer ${
+              userRole === 'OFFICER'
+                ? 'bg-[#1A1A1A] text-white shadow-[2px_2px_0px_#E23D28]'
+                : 'bg-white text-[#1A1A1A] hover:bg-gray-100'
+            }`}
+          >
+            Bank Officer View
+          </button>
+          <button
+            onClick={() => setUserRole('CUSTOMER')}
+            className={`px-3 py-1 text-xs font-black uppercase transition-all cursor-pointer ${
+              userRole === 'CUSTOMER'
+                ? 'bg-[#0F4C81] text-white shadow-[2px_2px_0px_#1A1A1A]'
+                : 'bg-white text-[#1A1A1A] hover:bg-gray-100'
+            }`}
+          >
+            Customer Transparency View
+          </button>
+        </div>
+      </div>
+
       {/* Track Filter Bar */}
-      <div className="bg-white border-4 border-[#1A1A1A] p-4 mb-6 shadow-[4px_4px_0px_#1A1A1A] flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white border-4 border-[#1A1A1A] p-3 mb-6 shadow-[4px_4px_0px_#1A1A1A] flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="text-xs font-black uppercase text-[#8A8A8A]">Filter Banking Track:</span>
           <select
             value={trackFilter}
             onChange={e => setTrackFilter(e.target.value)}
-            className="border-2 border-[#1A1A1A] px-3 py-1.5 bg-white font-bold text-xs uppercase cursor-pointer"
+            className="border-2 border-[#1A1A1A] px-3 py-1 bg-white font-bold text-xs uppercase cursor-pointer"
           >
             <option value="all">All 5 Banking Tracks</option>
             <option value="distress">1. Preventing Financial Distress</option>
@@ -158,7 +210,7 @@ export default function TriagePage() {
 
         <Link
           href="/evaluate"
-          className="flex items-center gap-1.5 bg-[#E23D28] text-white px-4 py-2 border-2 border-[#1A1A1A] font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] transition-all"
+          className="flex items-center gap-1.5 bg-[#E23D28] text-white px-3.5 py-1.5 border-2 border-[#1A1A1A] font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] transition-all"
         >
           <Plus size={14} /> Evaluate New Customer
         </Link>
@@ -172,7 +224,7 @@ export default function TriagePage() {
               <h2 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
                 <Layers size={16} className="text-[#E23D28]" /> Triage Queue ({filteredCases.length})
               </h2>
-              <button onClick={fetchCases} className="p-1 hover:bg-gray-100 border border-[#1A1A1A]">
+              <button onClick={fetchCases} className="p-1 hover:bg-gray-100 border border-[#1A1A1A] cursor-pointer">
                 <RefreshCw size={13} />
               </button>
             </div>
@@ -191,16 +243,23 @@ export default function TriagePage() {
             <div className="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
               {filteredCases.map(c => {
                 const isSelected = selectedCaseId === c.case_id;
+                const isScenarioA = c.case_id === 'CASE-2026-001';
                 return (
                   <div
                     key={c.case_id}
                     onClick={() => setSelectedCaseId(c.case_id)}
-                    className={`p-3.5 border-2 border-[#1A1A1A] cursor-pointer transition-all ${
+                    className={`p-3.5 border-2 border-[#1A1A1A] cursor-pointer transition-all relative ${
                       isSelected 
                         ? 'bg-[#1A1A1A] text-white shadow-[4px_4px_0px_#E23D28]' 
                         : 'bg-white hover:bg-[#F9FAFB] shadow-[2px_2px_0px_#1A1A1A]'
                     }`}
                   >
+                    {isScenarioA && (
+                      <span className="absolute -top-2 -right-2 bg-[#E23D28] text-white text-[9px] font-black px-2 py-0.5 border border-[#1A1A1A] shadow-sm uppercase">
+                        ⭐ Primary Demo
+                      </span>
+                    )}
+
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 border ${getRiskBadgeColor(c.risk_class)}`}>
                         {c.risk_class} RISK ({Math.round(c.risk_score * 100)}%)
@@ -225,11 +284,11 @@ export default function TriagePage() {
           </div>
         </div>
 
-        {/* Right Column: Full Case Details & Decision Controls */}
+        {/* Right Column: 4 Core Pillars */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           {selectedCaseDetail ? (
             <>
-              {/* Header Overview Card */}
+              {/* Customer Header Overview */}
               <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-4 mb-4">
                   <div>
@@ -252,12 +311,14 @@ export default function TriagePage() {
                     </p>
                   </div>
 
-                  <button
-                    onClick={() => setIsDecisionModalOpen(true)}
-                    className="bg-[#E23D28] text-white border-2 border-[#1A1A1A] px-5 py-3 font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] hover:shadow-[4px_4px_0px_#1A1A1A] transition-all cursor-pointer flex items-center gap-2"
-                  >
-                    <Scale size={16} /> Make Officer Decision
-                  </button>
+                  {userRole === 'OFFICER' && (
+                    <button
+                      onClick={() => setIsDecisionModalOpen(true)}
+                      className="bg-[#E23D28] text-white border-2 border-[#1A1A1A] px-5 py-3 font-black text-xs uppercase tracking-wider hover:bg-[#1A1A1A] hover:shadow-[4px_4px_0px_#1A1A1A] transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      <Scale size={16} /> Authorize Officer Action
+                    </button>
+                  )}
                 </div>
 
                 {/* Financial Metrics in Indian Rupees (₹) */}
@@ -289,15 +350,24 @@ export default function TriagePage() {
                 </div>
               </div>
 
-              {/* Statistical ML Breakdown Card */}
+              {/* PILLAR 1: Statistical ML Prediction Breakdown */}
               <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
-                <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4 gap-2">
                   <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                    <TrendingDown size={18} className="text-[#E23D28]" /> Statistical ML Prediction Breakdown
+                    <TrendingDown size={18} className="text-[#E23D28]" /> Pillar 1: Statistical ML Risk Inference
                   </h3>
-                  <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
-                    Model: {selectedCaseDetail.ml_prediction?.model_version} (Certainty: {Math.round(selectedCaseDetail.ml_prediction?.confidence * 100)}%)
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-black px-2 py-0.5 border ${
+                      selectedCaseDetail.ml_prediction?.is_fallback 
+                        ? 'bg-yellow-100 text-yellow-900 border-yellow-800' 
+                        : 'bg-green-100 text-green-900 border-green-800'
+                    }`}>
+                      {selectedCaseDetail.ml_prediction?.is_fallback ? '⚠️ LOCAL FALLBACK ENGINE' : '🟢 ONLINE ML MODEL'}
+                    </span>
+                    <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
+                      Model: {selectedCaseDetail.ml_prediction?.model_version}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -319,27 +389,17 @@ export default function TriagePage() {
                 </div>
               </div>
 
-              {/* Grounded Policy Reasoning & Citations Card */}
+              {/* PILLAR 2: TheSuperRAG Policy Retrieval & Citations */}
               <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
                 <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
                   <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                    <BookOpen size={18} className="text-[#0F4C81]" /> Grounded Policy Reasoning & Citations
+                    <BookOpen size={18} className="text-[#0F4C81]" /> Pillar 2: TheSuperRAG Policy Evidence
                   </h3>
                   <span className="text-[10px] font-bold bg-blue-50 border border-[#0F4C81] text-[#0F4C81] px-2 py-0.5">
-                    {selectedCaseDetail.rag_citations?.length || 0} Policy Clauses Retrieved
+                    {selectedCaseDetail.rag_citations?.length || 0} Clauses Retrieved & Reranked
                   </span>
                 </div>
 
-                <div className="p-4 bg-[#F4F4F4] border-l-8 border-[#0F4C81] border-2 border-[#1A1A1A] mb-4">
-                  <p className="text-xs font-bold leading-relaxed text-[#1A1A1A] mb-2">
-                    {selectedCaseDetail.explanation?.summary}
-                  </p>
-                  <p className="text-xs font-semibold text-[#0F4C81]">
-                    {selectedCaseDetail.explanation?.policy_alignment}
-                  </p>
-                </div>
-
-                <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Retrieved Policy Clauses:</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   {selectedCaseDetail.rag_citations?.map((citation: any, i: number) => (
                     <div
@@ -362,8 +422,31 @@ export default function TriagePage() {
                     </div>
                   ))}
                 </div>
+              </div>
 
-                <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Suggested Responsible Interventions:</h4>
+              {/* PILLAR 3: LangGraph Grounded Explanation & Recommendations */}
+              <div className="bg-white border-4 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
+                <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-3 mb-4">
+                  <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles size={18} className="text-[#E23D28]" /> Pillar 3: LangGraph Grounded Reasoning & Recommendations
+                  </h3>
+                  <span className="text-[10px] font-bold bg-gray-100 border border-[#1A1A1A] px-2 py-0.5">
+                    Certainty: {Math.round(selectedCaseDetail.confidence_score * 100)}%
+                  </span>
+                </div>
+
+                {/* Grounded Summary */}
+                <div className="p-4 bg-[#F4F4F4] border-l-8 border-[#0F4C81] border-2 border-[#1A1A1A] mb-4">
+                  <p className="text-xs font-bold leading-relaxed text-[#1A1A1A] mb-2">
+                    {selectedCaseDetail.explanation?.summary}
+                  </p>
+                  <p className="text-xs font-semibold text-[#0F4C81]">
+                    {selectedCaseDetail.explanation?.policy_alignment}
+                  </p>
+                </div>
+
+                {/* Suggested Interventions */}
+                <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Recommended Responsible Interventions:</h4>
                 <div className="flex flex-col gap-2">
                   {selectedCaseDetail.explanation?.recommendations?.map((rec: any, idx: number) => (
                     <div key={idx} className="p-3 border-2 border-[#28A745] bg-[#28A745]/5 flex items-start justify-between">
@@ -387,6 +470,17 @@ export default function TriagePage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* PILLAR 4: Safety Guardrails & Governance Notice */}
+              <div className="p-4 bg-yellow-50 border-4 border-[#1A1A1A] shadow-[4px_4px_0px_#1A1A1A] flex items-start gap-3">
+                <ShieldCheck size={22} className="text-[#E23D28] shrink-0 mt-0.5" />
+                <div className="text-xs font-medium text-[#1A1A1A]">
+                  <strong className="block uppercase font-black mb-0.5">
+                    Pillar 4: Responsible AI Governance Guardrail
+                  </strong>
+                  This system operates strictly under Human-in-the-Loop oversight. AI agents cannot autonomously approve loans, decline credit, freeze accounts, or enforce collections without authorized human officer confirmation and full audit logging.
                 </div>
               </div>
             </>
@@ -417,7 +511,7 @@ export default function TriagePage() {
                   onChange={e => setDecisionType(e.target.value)}
                   className="w-full p-2 border-2 border-[#1A1A1A] bg-white font-bold text-xs"
                 >
-                  <option value="RESTRUCTURE">Approve Debt Restructuring / Moratorium</option>
+                  <option value="RESTRUCTURE">Approve Debt Restructuring / Moratorium (Recommended)</option>
                   <option value="APPROVE">Approve Standard Credit Facility</option>
                   <option value="REQUEST_INFO">Require Additional Documentation Disclosures</option>
                   <option value="FLAG_FRAUD">Flag Fraud Anomaly & Hold Transaction</option>
@@ -490,13 +584,13 @@ export default function TriagePage() {
               <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#1A1A1A]">
                 <button
                   onClick={() => setIsDecisionModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#1A1A1A] uppercase font-bold"
+                  className="px-4 py-2 border-2 border-[#1A1A1A] uppercase font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitDecision}
-                  className="px-5 py-2 bg-[#E23D28] text-white border-2 border-[#1A1A1A] font-black uppercase hover:bg-[#1A1A1A]"
+                  className="px-5 py-2 bg-[#E23D28] text-white border-2 border-[#1A1A1A] font-black uppercase hover:bg-[#1A1A1A] cursor-pointer"
                 >
                   Confirm & Commit to Audit Trail
                 </button>
@@ -532,7 +626,7 @@ export default function TriagePage() {
               <span className="text-[#0F4C81]">Relevance Score: {selectedCitation.relevance_score}</span>
               <button
                 onClick={() => setSelectedCitation(null)}
-                className="px-4 py-1.5 bg-[#1A1A1A] text-white font-bold"
+                className="px-4 py-1.5 bg-[#1A1A1A] text-white font-bold cursor-pointer"
               >
                 Close
               </button>

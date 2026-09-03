@@ -106,7 +106,11 @@ class MockFinancialMLEngine:
             confidence=round(0.85 + (0.10 * (1.0 - abs(final_risk_score - 0.5))), 2),
             risk_type=risk_type,
             top_factors=factors,
-            model_version="v1.2.0-xgboost-distress",
+            model_version="v1.2.0-fallback-mock",
+            model_source="LOCAL_FALLBACK_MOCK",
+            is_fallback=True,
+            is_safety_validated=True,
+            autonomous_action_allowed=False,
             evaluation_metrics={
                 "auc_roc": 0.914,
                 "f1_score": 0.862,
