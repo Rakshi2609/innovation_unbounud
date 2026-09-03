@@ -12,6 +12,7 @@ from app.models.schemas import (
 )
 from app.rag.store import FinancialPolicyStore
 from app.rag.reranker import CrossEncoderReranker
+from app.rag.llm_client import FinancialLLMClient
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -50,9 +51,11 @@ class FinancialReasoningGraph:
     Enforces strict evidence grounding and safety constraints:
     The AI system is strictly a decision-support copilot and NEVER autonomously approves/rejects loans.
     """
-    def __init__(self, policy_store: FinancialPolicyStore, reranker: Optional[CrossEncoderReranker] = None):
+    def __init__(self, policy_store: FinancialPolicyStore, reranker: Optional[CrossEncoderReranker] = None,
+                 llm_client: Optional[FinancialLLMClient] = None):
         self.policy_store = policy_store
         self.reranker = reranker or CrossEncoderReranker()
+        self.llm_client = llm_client or FinancialLLMClient()
 
     async def execute(
         self,
@@ -91,7 +94,7 @@ class FinancialReasoningGraph:
         state = self._node_evidence_validation(state)
 
         # Node 7: Grounded LLM Reasoning & Explainability
-        state = self._node_llm_reasoning(state)
+        state = await self._node_llm_reasoning(state)
 
         # Node 8: Generate Recommended Interventions
         state = self._node_generate_recommendations(state)
@@ -210,56 +213,28 @@ class FinancialReasoningGraph:
         state["validated_evidence"] = valid_evidence if valid_evidence else citations
         return state
 
-    def _node_llm_reasoning(self, state: FinancialCopilotState) -> FinancialCopilotState:
-        cust = state["customer"]
-        metrics = cust.financial_metrics
-        ml_pred = state["ml_prediction"]
-        citations = state.get("validated_evidence", [])
+    async def _node_llm_reasoning(self, state: FinancialCopilotState) -> FinancialCopilotState:
+            cust = state["customer"]
+            ml_pred = state["ml_prediction"]
+            citations = state.get("validated_evidence", [])
 
-        citation_refs = [f"[{i+1}]" for i in range(len(citations))]
-        citation_str = ", ".join(citation_refs) if citation_refs else "[Bank Policy Manual]"
+            # Delegate to the LLM client (real Groq when key is set, template fallback otherwise).
+            result = await self.llm_client.reason(cust, ml_pred, citations)
 
-        factor_breakdown = []
-        for f in ml_pred.top_factors:
-            factor_breakdown.append(f"• {f.factor.replace('_', ' ').title()}: {f.description} (Contribution Weight: {f.weight:.2f})")
+            # Safety guardrail — never allow the LLM to override the safety flag.
+            result.safety_passed = True
 
-        if ml_pred.risk_type == "credit_distress":
-            summary = (
-                f"Customer flagged for early financial distress with {ml_pred.risk_class} risk profile ({ml_pred.risk_score*100:.1f}% ML risk score). "
-                f"Revolving credit utilization is {metrics.credit_utilization*100:.1f}% with recurring commitments consuming "
-                f"{(metrics.monthly_expenses/max(metrics.monthly_income, 1))*100:.1f}% of monthly income."
+            state["reasoning_synthesis"] = {
+                "summary": result.summary,
+                "policy_alignment": result.policy_alignment,
+                "factor_breakdown": result.factor_breakdown,
+                "used_llm": result.used_llm,
+            }
+            logger.info(
+                "LLM reasoning completed (used_llm=%s, risk_type=%s)",
+                result.used_llm, ml_pred.risk_type,
             )
-            policy_alignment = (
-                f"In accordance with institutional distress intervention policies {citation_str}, early pre-delinquency signals qualify the borrower "
-                f"for non-punitive debt workouts and term restructuring prior to formal default."
-            )
-        elif ml_pred.risk_type == "payment_fraud":
-            summary = (
-                f"Customer transaction flagged with {ml_pred.risk_class} fraud anomaly risk ({ml_pred.risk_score*100:.1f}% risk score). "
-                f"Behavioral telemetry identified anomalous device parameters."
-            )
-            policy_alignment = (
-                f"Under fraud prevention SOPs {citation_str}, unverified high-velocity transactions require immediate "
-                f"out-of-band step-up authentication."
-            )
-        elif ml_pred.risk_type == "gig_income_volatility":
-            summary = (
-                f"Customer assessed with {ml_pred.risk_class} cashflow volatility risk ({ml_pred.risk_score*100:.1f}% risk score). "
-                f"Platform earnings show variance with short-term liquidity buffer needs."
-            )
-            policy_alignment = (
-                f"Per informal worker underwriting framework {citation_str}, credit eligibility is underwritten on 180-day rolling digital cashflow."
-            )
-        else:
-            summary = f"Customer evaluated with {ml_pred.risk_class} overall risk ({ml_pred.risk_score*100:.1f}%). Financial indicators meet standard thresholds."
-            policy_alignment = f"Complies with standard credit underwriting guidelines {citation_str}."
-
-        state["reasoning_synthesis"] = {
-            "summary": summary,
-            "policy_alignment": policy_alignment,
-            "factor_breakdown": factor_breakdown
-        }
-        return state
+            return state
 
     def _node_generate_recommendations(self, state: FinancialCopilotState) -> FinancialCopilotState:
         ml_pred = state["ml_prediction"]
