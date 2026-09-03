@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class MLRiskClient:
     """
-    Client connecting to Tanush's ML prediction service with automated fallback.
+    Client connecting to Statistical ML prediction service with automated fallback.
     """
     def __init__(self, service_url: Optional[str] = None, timeout: float = 5.0):
         self.service_url = service_url or settings.ml_service_url

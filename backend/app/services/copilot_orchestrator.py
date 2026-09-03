@@ -79,7 +79,7 @@ class CopilotOrchestrator:
     async def evaluate_customer_case(self, customer: CustomerProfile, track_type: str = "distress", case_id: Optional[str] = None) -> CopilotCaseAssessment:
         cid = case_id or f"CASE-{datetime.now().strftime('%Y')}-{uuid.uuid4().hex[:6].upper()}"
 
-        # 1. Statistical ML Prediction (Tanush's Layer)
+        # 1. Statistical ML Prediction Layer
         ml_prediction = await self.ml_client.predict_risk(customer)
 
         # 2. Grounded LangGraph RAG Reasoning

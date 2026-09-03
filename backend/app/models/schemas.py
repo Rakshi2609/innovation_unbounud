@@ -44,7 +44,7 @@ class CustomerProfile(BaseModel):
         return data
 
 # ---------------------------------------------------------------------------
-# 2. ML Prediction Contract (Tanush's Interface)
+# 2. ML Prediction Contract (Statistical Risk Model Interface)
 # ---------------------------------------------------------------------------
 class RiskFactor(BaseModel):
     factor: str

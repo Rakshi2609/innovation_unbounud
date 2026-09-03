@@ -26,32 +26,14 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
 
 ---
 
-## 👥 2. Team Work Breakdown
-
-```
- ┌──────────────────────────────────────────────┐ ┌──────────────────────────────────────────────┐
- │             TANUSH'S ROLE                    │ │             RAKSHITH'S ROLE                  │
- │       (Data Science & ML Modeling)           │ │        (Backend, RAG, Reasoning & API)       │
- ├──────────────────────────────────────────────┤ ├──────────────────────────────────────────────┤
- │ • Financial dataset research (Kaggle/Public) │ │ • Financial Case & Policy Schemas            │
- │ • Statistical ML Model (XGBoost / LightGBM)  │ │ • Hybrid RAG Store (Qdrant + BM25)           │
- │ • Model evaluation (AUC-ROC, F1, Shapley)    │ │ • Cross-Encoder Re-Ranking & PII Redactor    │
- │ • Feature importance & risk classifications  │ │ • LangGraph Grounded Reasoning Engine        │
- │ • Inference API endpoint (POST /predict-risk)│ │ • Real-Time EventBus & WebSockets            │
- │                                              │ │ • Human-in-the-Loop Review & Audit Logging   │
- └──────────────────────────────────────────────┘ └──────────────────────────────────────────────┘
-```
-
----
-
-## 🏛️ 3. Architecture & Data Flow
+## 🏛️ 2. Architecture & Data Flow
 
 ```
    [Customer / Transaction Input]
                  │
                  ▼
 ┌────────────────────────────────────────────────────────┐
-│  1. Statistical ML Risk Inference (Tanush's Layer)     │
+│  1. Statistical ML Risk Inference Layer                │
 │     - POST /predict-risk                               │
 │     - Returns: risk_score, risk_class, top_factors     │
 └──────────────────────────┬─────────────────────────────┘
@@ -89,7 +71,7 @@ The **AI Financial Safety & Lending Copilot** is designed to empower banks and l
 
 ---
 
-## ⚡ 4. Quick Start (Running Server & Client)
+## ⚡ 3. Quick Start (Running Server & Client)
 
 ### Prerequisites:
 * Python 3.12+
@@ -117,10 +99,16 @@ npm install
 npm run dev -- -p 3001
 ```
 * **Web Client**: `http://localhost:3001`
+* **Dedicated Routes**:
+  * `/triage` — Case Triage Queue & Officer Review
+  * `/evaluate` — New Customer Evaluation Form (in ₹)
+  * `/policies` — Policy Knowledge Base
+  * `/copilot` — RAG Copilot Assistant
+  * `/audit` — Compliance Audit Trail
 
 ---
 
-## 🧪 5. Automated Verification & Testing
+## 🧪 4. Automated Verification & Testing
 
 The backend includes a comprehensive test suite testing ML predictions, RAG retrieval, PII redaction, LangGraph reasoning, and human-in-the-loop decision recording.
 
@@ -140,14 +128,14 @@ backend/tests/test_rag_retrieval.py::test_policy_store_indexing_and_search PASSE
 backend/tests/test_rag_retrieval.py::test_reranker_scoring PASSED
 backend/tests/test_reasoning_graph.py::test_financial_reasoning_graph_end_to_end PASSED
 
-======================== 9 passed in 1.63s =========================
+======================== 9 passed in 1.19s =========================
 ```
 
 ---
 
-## 🔌 6. Tanush's ML Model Integration Contract
+## 🔌 5. Statistical ML Model Integration Contract
 
-The backend is completely decoupled from model weights. Tanush can serve his model at `http://localhost:8001`:
+The backend is completely decoupled from model weights and supports serving external ML models at `http://localhost:8001`:
 
 ### `POST /predict-risk`
 #### Input Schema:
@@ -201,11 +189,11 @@ The backend is completely decoupled from model weights. Tanush can serve his mod
   }
 }
 ```
-*(If Tanush's remote service is offline, the backend's built-in statistical mock engine acts as an exact-conforming fallback).*
+*(If the remote ML service is offline, the backend's built-in statistical mock engine acts as an exact-conforming fallback).*
 
 ---
 
-## 📡 7. Backend API Reference
+## 📡 6. Backend API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -223,7 +211,7 @@ The backend is completely decoupled from model weights. Tanush can serve his mod
 
 ---
 
-## 🔒 8. Privacy, Security & Governance
+## 🔒 7. Privacy, Security & Governance
 
 1. **Synthetic Test Data Guarantee**: All sample cases, account balances, and identifiers used in testing and demo are synthetic test fixtures.
 2. **Local PII Redaction**: Document loaders automatically scrub SSNs, emails, phone numbers, and card numbers prior to vectorization or LLM prompting.

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     db_path: str = os.path.abspath("backend/data/financial_copilot.db")
     qdrant_collection: str = "financial_policies"
 
-    # ML Inference Endpoint (Tanush's service)
+    # ML Inference Endpoint (Statistical ML Service)
     ml_service_url: str = "http://localhost:8001"
     ml_timeout_seconds: float = 5.0
     use_mock_ml_fallback: bool = True

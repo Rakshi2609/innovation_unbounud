@@ -20,7 +20,7 @@ export default function DocsPage() {
         </div>
         <nav className="flex items-center gap-4 md:gap-8 font-bold uppercase tracking-widest text-xs md:text-sm w-full md:w-auto justify-center md:justify-end">
           <Link href="/docs" className="text-[#2563EB] decoration-4 underline-offset-8 underline">Documentation</Link>
-          <Link href="https://github.com/tanushbhootra576/TheSuperRAG" target="_blank" className="hover:text-[#EF4444] transition-colors decoration-4 underline-offset-8 hover:underline">GitHub</Link>
+          <Link href="https://github.com/Rakshi2609/innovation_unbounud" target="_blank" className="hover:text-[#EF4444] transition-colors decoration-4 underline-offset-8 hover:underline">GitHub</Link>
           <Link href="/chat" className="bg-[#111111] text-white px-5 py-2.5 hover:bg-[#2563EB] transition-colors border-2 border-[#111111]">
             Launch App
           </Link>
@@ -79,7 +79,7 @@ export default function DocsPage() {
               Clone the repository and install the dependencies to get started. Ensure you have Node.js and Python installed.
             </p>
             <div className="bg-[#111111] text-white p-6 border-4 border-gray-300 shadow-[8px_8px_0px_#EF4444] mb-4">
-              <code className="text-sm font-mono block mb-2">git clone https://github.com/tanushbhootra576/TheSuperRAG.git</code>
+              <code className="text-sm font-mono block mb-2">git clone https://github.com/Rakshi2609/innovation_unbounud.git</code>
               <code className="text-sm font-mono block mb-2">cd TheSuperRAG/frontend</code>
               <code className="text-sm font-mono block">npm install</code>
             </div>
