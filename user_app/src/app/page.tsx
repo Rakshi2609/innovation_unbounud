@@ -5,164 +5,127 @@ import {
   Mic, MicOff, Send, ShieldCheck, AlertTriangle, Clock, CheckCircle2,
   XCircle, User, Users, ArrowUpRight, ArrowDownLeft, RefreshCw,
   Phone, KeyRound, ChevronRight, Settings, Info, Sparkles, Volume2,
-  FileText, ShieldAlert, History, Plus, Check, Play, Square, ExternalLink
+  FileText, ShieldAlert, History, Plus, Check, Play, Square, ExternalLink,
+  QrCode, Landmark, Smartphone, HeartHandshake, Eye, EyeOff, HelpCircle,
+  ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle
 } from 'lucide-react';
 
-interface Beneficiary {
+interface TransferAlert {
   id: string;
+  senderName: string;
+  senderPhone: string;
+  recipientName: string;
+  upiId: string;
+  amount: number;
+  baselineAmount: number;
+  riskTier: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  riskReason: string;
+  timestamp: string;
+  advisoryStatus: 'PENDING' | 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY';
+  daughterNote?: string;
+  finalStatus: 'PENDING_ADVISORY' | 'AWAITING_USER_CONFIRMATION' | 'AUTHORIZED_PAID' | 'CANCELLED';
+}
+
+interface Person {
   name: string;
   upiId: string;
   avatar: string;
-  history: {
-    date: string;
-    amount: number;
-    description: string;
-    monthsAgo: number;
-  }[];
+  color: string;
+  lastPaid: string;
+  baseline: number;
 }
 
-interface Transaction {
-  id: string;
-  recipientName: string;
-  upiId: string;
-  amount: number;
-  date: string;
-  time: string;
-  status: 'SUCCESS' | 'QUEUED' | 'CANCELLED';
-  verifiedViaHistory: boolean;
-  notes: string;
-  narrativeLog: string[];
-}
-
-interface QueuedTransfer {
-  id: string;
-  recipientName: string;
-  upiId: string;
-  amount: number;
-  queuedAt: string;
-  expiresInMinutes: number;
-  reason: string;
-  narrativeLog: string[];
-}
-
-const INITIAL_BENEFICIARIES: Beneficiary[] = [
-  {
-    id: 'BEN-1',
-    name: 'Dilshan Kumar',
-    upiId: 'dilshan.k@okhdfcbank',
-    avatar: '👨🏽‍💼',
-    history: [
-      { date: '12 Jan 2026', amount: 5000, description: 'Weekend Trip Expense', monthsAgo: 1 },
-      { date: '04 Dec 2025', amount: 4200, description: 'Dinner Share', monthsAgo: 3 },
-      { date: '18 Oct 2025', amount: 3500, description: 'Bookings', monthsAgo: 5 }
-    ]
-  },
-  {
-    id: 'BEN-2',
-    name: 'Priya Sharma',
-    upiId: 'priya.sharma@okicici',
-    avatar: '👩🏻‍💻',
-    history: [
-      { date: '01 Feb 2026', amount: 8000, description: 'Apartment Rent Contribution', monthsAgo: 0.5 },
-      { date: '01 Jan 2026', amount: 8000, description: 'Apartment Rent Contribution', monthsAgo: 2 },
-      { date: '01 Dec 2025', amount: 8000, description: 'Apartment Rent Contribution', monthsAgo: 3 }
-    ]
-  },
-  {
-    id: 'BEN-3',
-    name: 'Ramesh Patel',
-    upiId: 'ramesh.patel@paytm',
-    avatar: '👨🏽‍🌾',
-    history: [
-      { date: '15 Jan 2024', amount: 1500, description: 'Old Repair Payment', monthsAgo: 25 }
-    ]
-  },
-  {
-    id: 'BEN-4',
-    name: 'Raj Cyber (Unknown)',
-    upiId: 'raj.cyber.lottery99@ybl',
-    avatar: '🕵️',
-    history: []
-  }
+const FREQUENT_PEOPLE: Person[] = [
+  { name: 'Ravi Kumar', upiId: 'ravi.kumar@okaxis', avatar: '👨🏽', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
+  { name: 'Daughter Ananya', upiId: 'ananya.m@okhdfcbank', avatar: '👩🏻', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
+  { name: 'Sharma Kirana', upiId: 'sharmagrocery@paytm', avatar: '🏪', color: 'bg-amber-600', lastPaid: '₹850 · 3 days ago', baseline: 1000 },
+  { name: 'Electric Bill', upiId: 'bescom.bill@icici', avatar: '⚡', color: 'bg-blue-600', lastPaid: '₹1,240 · Last month', baseline: 1500 },
+  { name: 'Rajesh (Unknown)', upiId: 'rajesh.lottery99@ybl', avatar: '🕵️', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
 ];
 
-export default function UserBankingSimulator() {
-  // Account State
-  const [balance, setBalance] = useState(85450);
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>(INITIAL_BENEFICIARIES);
-  const [transactions, setTransactions] = useState<Transaction[]>([
+export default function BankSathiApp() {
+  // Active Persona: "mother" (Meena Devi) or "daughter" (Ananya)
+  const [activePersona, setActivePersona] = useState<'mother' | 'daughter'>('mother');
+
+  // Accessibility States (WCAG AAA)
+  const [fontScale, setFontScale] = useState(1.0); // 0.85 to 1.8
+  const [highContrast, setHighContrast] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'hi' | 'kn' | 'mr' | 'ta'>('en');
+  const [showBalance, setShowBalance] = useState(true);
+
+  // Financial Balances
+  const [motherBalance, setMotherBalance] = useState(50000);
+  const [daughterBalance, setDaughterBalance] = useState(142000);
+
+  // Speech & Voice State
+  const [isListening, setIsListening] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [syncCaption, setSyncCaption] = useState('');
+  const [speechEnabled, setSpeechEnabled] = useState(true);
+
+  // Current Transfer in Progress (Mother Side)
+  const [activeTransfer, setActiveTransfer] = useState<TransferAlert | null>({
+    id: 'TXN-ALERT-8819',
+    senderName: 'Meena Devi',
+    senderPhone: '9999999001',
+    recipientName: 'Ravi Kumar',
+    upiId: 'ravi.kumar@okaxis',
+    amount: 5000,
+    baselineAmount: 1500,
+    riskTier: 'HIGH',
+    riskReason: 'Amount ₹5,000 exceeds usual spending baseline of ₹1,500 (3.3x deviation). First transfer of this size.',
+    timestamp: 'Just Now',
+    advisoryStatus: 'PENDING',
+    finalStatus: 'PENDING_ADVISORY'
+  });
+
+  // Completed Transactions Ledger
+  const [transactions, setTransactions] = useState<any[]>([
     {
-      id: 'TXN-UPI-8849-01',
-      recipientName: 'Dilshan Kumar',
-      upiId: 'dilshan.k@okhdfcbank',
-      amount: 5000,
-      date: '12 Jan 2026',
-      time: '14:23 IST',
+      id: 'TXN-UPI-9941',
+      recipient: 'Sharma Kirana',
+      upi: 'sharmagrocery@paytm',
+      amount: 850,
+      date: '01 Sep 2026',
       status: 'SUCCESS',
-      verifiedViaHistory: true,
-      notes: 'Verified against 6-month transaction frequency',
-      narrativeLog: ['Voice transfer verified.', '3 prior transactions found within 6 months.']
+      advisory: 'Low Risk · Auto Approved'
     },
     {
-      id: 'TXN-UPI-8849-02',
-      recipientName: 'Priya Sharma',
-      upiId: 'priya.sharma@okicici',
-      amount: 8000,
-      date: '01 Feb 2026',
-      time: '10:05 IST',
+      id: 'TXN-UPI-9920',
+      recipient: 'BESCOM Electricity',
+      upi: 'bescom.bill@icici',
+      amount: 1240,
+      date: '28 Aug 2026',
       status: 'SUCCESS',
-      verifiedViaHistory: true,
-      notes: 'Recurring monthly trusted contact',
-      narrativeLog: ['Recurring payee verified.']
+      advisory: 'Low Risk · Regular Bill'
     }
   ]);
 
-  const [queue, setQueue] = useState<QueuedTransfer[]>([]);
+  // Modals & Banners
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [showReceiptModal, setShowReceiptModal] = useState<any>(null);
+  const [serverErrorAlert, setServerErrorAlert] = useState('');
+  const [demoStep, setDemoStep] = useState(0);
 
-  // Verification Settings
-  const [lookbackMonths, setLookbackMonths] = useState(6);
-  const [minPriorTransactions, setMinPriorTransactions] = useState(1);
-  const [speechEnabled, setSpeechEnabled] = useState(true);
-
-  // Transfer Input State
-  const [inputPrompt, setInputPrompt] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentNarrative, setCurrentNarrative] = useState<string[]>([]);
-  const [activeStep, setActiveStep] = useState<string>('');
-
-  // Modals
-  const [showReceiptModal, setShowReceiptModal] = useState<Transaction | null>(null);
-  const [showVerifyOtpModal, setShowVerifyOtpModal] = useState<QueuedTransfer | null>(null);
-  const [otpInput, setOtpInput] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [showAddBeneficiaryModal, setShowAddBeneficiaryModal] = useState(false);
-  const [newBenName, setNewBenName] = useState('');
-  const [newBenUpi, setNewBenUpi] = useState('');
-  const [newBenHistoryMonths, setNewBenHistoryMonths] = useState('none');
-
-  // Twilio Call State
-  const [callStatus, setCallStatus] = useState('');
-  const [callingId, setCallingId] = useState<string | null>(null);
-
-  // Web Speech Recognition Ref
   const recognitionRef = useRef<any>(null);
 
-  // Text to Speech Helper
-  const speakNarrative = (text: string) => {
+  // Text-To-Speech with Indian Accent / Hindi support
+  const speakVoice = (text: string) => {
+    setSyncCaption(text);
     if (!speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.05;
+      utterance.rate = 0.95; // Slightly slower for elderly clarity
       utterance.pitch = 1.0;
-      // Prefer Indian English voice if available
       const voices = window.speechSynthesis.getVoices();
       const inVoice = voices.find(v => v.lang.includes('IN') || v.name.includes('India') || v.name.includes('Aditi'));
       if (inVoice) utterance.voice = inVoice;
       window.speechSynthesis.speak(utterance);
     } catch (e) {
-      console.error('Speech synthesis error:', e);
+      console.error('Speech error:', e);
     }
   };
 
@@ -173,987 +136,833 @@ export default function UserBankingSimulator() {
       if (SpeechRecognition) {
         const reco = new SpeechRecognition();
         reco.continuous = false;
-        reco.interimResults = false;
-        reco.lang = 'en-IN';
+        reco.interimResults = true;
+        reco.lang = selectedLanguage === 'hi' ? 'hi-IN' : selectedLanguage === 'kn' ? 'kn-IN' : 'en-IN';
 
         reco.onresult = (event: any) => {
-          const speechText = event.results[0][0].transcript;
-          setInputPrompt(speechText);
-          setIsListening(false);
-          handleExecuteTransfer(speechText);
+          const text = event.results[0][0].transcript;
+          setVoiceTranscript(text);
+          if (event.results[0].isFinal) {
+            setIsListening(false);
+            handleVoiceCommand(text);
+          }
         };
 
-        reco.onerror = (err: any) => {
-          console.error('Speech recognition error:', err);
-          setIsListening(false);
-        };
-
-        reco.onend = () => {
-          setIsListening(false);
-        };
-
+        reco.onerror = () => setIsListening(false);
+        reco.onend = () => setIsListening(false);
         recognitionRef.current = reco;
       }
     }
-  }, [lookbackMonths, minPriorTransactions, beneficiaries, balance]);
+  }, [selectedLanguage, motherBalance]);
 
-  const toggleListening = () => {
+  const toggleMic = () => {
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
       if (recognitionRef.current) {
         setIsListening(true);
+        setVoiceTranscript('');
         recognitionRef.current.start();
+        speakVoice(selectedLanguage === 'hi' ? 'बोलिए, किसको कितने पैसे भेजने हैं?' : 'Please speak: who would you like to send money to?');
       } else {
-        alert('Web Speech API is not supported in this browser. Please use the text input below.');
+        alert('Speech recognition is not supported in this browser. Please use the quick action buttons.');
       }
     }
   };
 
-  // Parser: Extract amount and recipient from speech or text
-  const parseTransferCommand = (text: string): { amount: number; recipientQuery: string } | null => {
-    const clean = text.toLowerCase().trim();
+  // Voice Command Intent Extraction & Risk Baseline Check
+  const handleVoiceCommand = (text: string) => {
+    const clean = text.toLowerCase();
+    let amount = 5000;
+    const numMatch = clean.match(/(\d+(?:,\d+)*)/);
+    if (numMatch) {
+      amount = parseInt(numMatch[1].replace(/,/g, ''));
+    }
+
+    let recipient = 'Ravi Kumar';
+    if (clean.includes('ananya') || clean.includes('daughter') || clean.includes('beti')) recipient = 'Daughter Ananya';
+    if (clean.includes('sharma') || clean.includes('kirana') || clean.includes('grocery')) recipient = 'Sharma Kirana';
+    if (clean.includes('electric') || clean.includes('bill') || clean.includes('bescom')) recipient = 'Electric Bill';
+    if (clean.includes('rajesh') || clean.includes('lottery') || clean.includes('unknown')) recipient = 'Rajesh (Unknown)';
+
+    const p = FREQUENT_PEOPLE.find(person => person.name.toLowerCase().includes(recipient.toLowerCase())) || FREQUENT_PEOPLE[0];
     
-    // Match amounts: e.g. "5000", "5,000", "rs 5000", "₹5000", "5000 rupees", "five thousand"
-    let amount = 0;
-    const numMatch = clean.match(/(?:(?:rs\.?|inr|₹|rupees?)\s*)?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?)?/i);
-    if (numMatch && numMatch[1]) {
-      amount = parseFloat(numMatch[1].replace(/,/g, ''));
-    }
+    // Compute Risk Tier
+    const isBaselineExceeded = amount > (p.baseline * 2);
+    const isUnknown = p.baseline === 0;
 
-    // Common words map
-    if (clean.includes('five thousand') || clean.includes('5 thousand')) amount = 5000;
-    if (clean.includes('ten thousand') || clean.includes('10 thousand')) amount = 10000;
-    if (clean.includes('two thousand') || clean.includes('2 thousand')) amount = 2000;
-    if (clean.includes('eight thousand') || clean.includes('8 thousand')) amount = 8000;
+    const riskTier = isUnknown ? 'CRITICAL' : isBaselineExceeded ? 'HIGH' : 'LOW';
+    const reason = isUnknown 
+      ? `Unknown recipient with zero past transaction history. Fraud precaution active.`
+      : isBaselineExceeded 
+      ? `Amount ₹${amount.toLocaleString('en-IN')} is significantly higher than your typical ₹${p.baseline.toLocaleString('en-IN')} payment to ${p.name}.`
+      : `Within typical spending baseline.`;
 
-    // Match recipient
-    let recipientQuery = '';
-    const toMatch = clean.match(/(?:send|transfer|pay|give)\s+(?:(?:rs\.?|inr|₹)?\s*\d+\s*(?:rupees?)?\s+)?to\s+([a-z0-9\s._@]+)/i);
-    if (toMatch && toMatch[1]) {
-      recipientQuery = toMatch[1].trim();
-    } else {
-      // Fallback: search beneficiaries
-      for (const b of beneficiaries) {
-        if (clean.includes(b.name.toLowerCase().split(' ')[0])) {
-          recipientQuery = b.name;
-          break;
-        }
-      }
-    }
-
-    if (!amount || !recipientQuery) return null;
-    return { amount, recipientQuery };
-  };
-
-  // Core Transfer & Behavioral N-Month Verification Engine
-  const handleExecuteTransfer = async (commandText: string) => {
-    if (!commandText.trim()) return;
-    setIsProcessing(true);
-    setCurrentNarrative([]);
-    setActiveStep('Parsing voice intent...');
-
-    const parsed = parseTransferCommand(commandText);
-    if (!parsed) {
-      const errNarrative = [
-        `❌ Could not understand voice command: "${commandText}"`,
-        `Please try phrases like "Send 5000 to Dilshan" or "Pay ₹8,000 to Priya".`
-      ];
-      setCurrentNarrative(errNarrative);
-      speakNarrative(`Sorry, I could not understand the recipient or amount. Please try again.`);
-      setIsProcessing(false);
-      setActiveStep('');
-      return;
-    }
-
-    const { amount, recipientQuery } = parsed;
-
-    // Step 1: Match Beneficiary
-    const matchedBen = beneficiaries.find(b => 
-      b.name.toLowerCase().includes(recipientQuery.toLowerCase()) ||
-      b.upiId.toLowerCase().includes(recipientQuery.toLowerCase()) ||
-      recipientQuery.toLowerCase().includes(b.name.toLowerCase().split(' ')[0])
-    ) || {
-      id: `BEN-${Date.now()}`,
-      name: recipientQuery.charAt(0).toUpperCase() + recipientQuery.slice(1),
-      upiId: `${recipientQuery.toLowerCase().replace(/\s+/g, '')}@upi`,
-      avatar: '👤',
-      history: []
+    const newAlert: TransferAlert = {
+      id: `TXN-${Date.now().toString().slice(-6)}`,
+      senderName: 'Meena Devi',
+      senderPhone: '9999999001',
+      recipientName: p.name,
+      upiId: p.upiId,
+      amount: amount,
+      baselineAmount: p.baseline,
+      riskTier: riskTier,
+      riskReason: reason,
+      timestamp: 'Just Now',
+      advisoryStatus: riskTier === 'LOW' ? 'LOOKS_EXPECTED' : 'PENDING',
+      finalStatus: riskTier === 'LOW' ? 'AWAITING_USER_CONFIRMATION' : 'PENDING_ADVISORY'
     };
 
-    const logs: string[] = [];
-    logs.push(`🗣️ Voice Intent: Transfer ₹${amount.toLocaleString('en-IN')} to ${matchedBen.name} (${matchedBen.upiId})`);
-    setCurrentNarrative([...logs]);
-    setActiveStep(`Analyzing ${lookbackMonths}-month transaction history...`);
-    speakNarrative(`Initiating transfer of ₹${amount} to ${matchedBen.name}. Checking your transaction history over the last ${lookbackMonths} months.`);
+    setActiveTransfer(newAlert);
 
-    await new Promise(r => setTimeout(r, 1600));
-
-    // Step 2: Check N-Month History Rule
-    const validHistoryInWindow = matchedBen.history.filter(h => h.monthsAgo <= lookbackMonths);
-    const hasSufficientHistory = validHistoryInWindow.length >= minPriorTransactions;
-
-    logs.push(`🔍 Historical Behavioral Check: Looking back ${lookbackMonths} months...`);
-    logs.push(`📊 Found ${validHistoryInWindow.length} verified past transactions with ${matchedBen.name} in this window.`);
-
-    if (hasSufficientHistory) {
-      // SUCCESSFUL VERIFICATION PATH
-      logs.push(`✅ Behavioral Verification Passed: ${matchedBen.name} is a trusted recipient.`);
-      logs.push(`⚡ Executing Instant UPI Transfer of ₹${amount.toLocaleString('en-IN')}...`);
-      setCurrentNarrative([...logs]);
-      setActiveStep('Transfer completed successfully!');
-
-      const newBal = balance - amount;
-      setBalance(newBal);
-
-      const newTxn: Transaction = {
-        id: `TXN-UPI-${Date.now().toString().slice(-6)}`,
-        recipientName: matchedBen.name,
-        upiId: matchedBen.upiId,
-        amount: amount,
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' IST',
-        status: 'SUCCESS',
-        verifiedViaHistory: true,
-        notes: `Instant transfer verified via ${validHistoryInWindow.length} past payments in last ${lookbackMonths} months`,
-        narrativeLog: logs
-      };
-
-      setTransactions(prev => [newTxn, ...prev]);
-
-      // Update beneficiary history with new payment
-      setBeneficiaries(prev => prev.map(b => b.id === matchedBen.id ? {
-        ...b,
-        history: [{
-          date: 'Just Now',
-          amount: amount,
-          description: 'Voice Transfer',
-          monthsAgo: 0
-        }, ...b.history]
-      } : b));
-
-      speakNarrative(`Transfer verified! ${matchedBen.name} is a verified recipient with ${validHistoryInWindow.length} previous transfers in the last ${lookbackMonths} months. ₹${amount} has been successfully sent. Your updated balance is ₹${newBal.toLocaleString('en-IN')}.`);
-
-      setShowReceiptModal(newTxn);
+    if (riskTier === 'LOW') {
+      speakVoice(`Transfer of ₹${amount} to ${p.name} is within your normal baseline. Please review and enter your PIN to confirm.`);
     } else {
-      // SAFETY HOLD & QUEUE PATH
-      logs.push(`🛡️ Safety Triggered: Zero qualifying history found for ${matchedBen.name} in last ${lookbackMonths} months (Requires ≥${minPriorTransactions} prior payments).`);
-      logs.push(`🔒 Action: Placed ₹${amount.toLocaleString('en-IN')} on protective 4-hour Cooling-Off Hold in the Safety Queue.`);
-      logs.push(`🛡️ Reason: Anti-Fraud & Coercion Safeguard — Funds remain safe in your account.`);
-      setCurrentNarrative([...logs]);
-      setActiveStep('Transfer placed in Safety Hold Queue');
-
-      const queueItem: QueuedTransfer = {
-        id: `QUEUE-${Date.now().toString().slice(-6)}`,
-        recipientName: matchedBen.name,
-        upiId: matchedBen.upiId,
-        amount: amount,
-        queuedAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        expiresInMinutes: 240, // 4 Hours
-        reason: matchedBen.history.length === 0
-          ? `First-time recipient: No payment history in the last ${lookbackMonths} months.`
-          : `Dormant recipient: Last transfer was ${matchedBen.history[0]?.monthsAgo} months ago (> ${lookbackMonths} month threshold).`,
-        narrativeLog: logs
-      };
-
-      setQueue(prev => [queueItem, ...prev]);
-
-      speakNarrative(`Security Alert: No previous transfers found for ${matchedBen.name} in the last ${lookbackMonths} months. To protect your funds from unauthorized transfers or fraud, this transaction of ₹${amount} is held in your protective safety queue for 4 hours. You can verify it with your secure PIN or phone call.`);
+      speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. We have sent a private advisory notice to your daughter Ananya for her second opinion.`);
     }
-
-    setIsProcessing(false);
   };
 
-  // Verify and Release Queued Transfer via OTP / PIN
-  const handleReleaseQueuedTransfer = (q: QueuedTransfer) => {
-    if (otpInput !== '1234') {
-      setOtpError('Invalid PIN. For simulation demo, enter 1234.');
+  // Run 1-Click Interactive ₹5,000 Demo Story
+  const runDemoStory = () => {
+    setDemoStep(1);
+    setActivePersona('mother');
+    const demoAlert: TransferAlert = {
+      id: 'TXN-DEMO-5000',
+      senderName: 'Meena Devi',
+      senderPhone: '9999999001',
+      recipientName: 'Ravi Kumar',
+      upiId: 'ravi.kumar@okaxis',
+      amount: 5000,
+      baselineAmount: 1500,
+      riskTier: 'HIGH',
+      riskReason: 'Transfer of ₹5,000 is 3.3x higher than regular ₹1,500 baseline. Trusted Circle advisory alert dispatched to Daughter Ananya.',
+      timestamp: 'Just Now',
+      advisoryStatus: 'PENDING',
+      finalStatus: 'PENDING_ADVISORY'
+    };
+    setActiveTransfer(demoAlert);
+    speakVoice('Step 1: Meena Devi is sending ₹5,000 to Ravi Kumar. The risk engine flagged the baseline deviation and sent an advisory alert to daughter Ananya.');
+  };
+
+  // Daughter Submits Advisory Opinion
+  const handleDaughterAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
+    if (!activeTransfer) return;
+    const updated: TransferAlert = {
+      ...activeTransfer,
+      advisoryStatus: opinion,
+      daughterNote: note,
+      finalStatus: 'AWAITING_USER_CONFIRMATION'
+    };
+    setActiveTransfer(updated);
+
+    if (opinion === 'LOOKS_EXPECTED') {
+      speakVoice('Daughter Ananya confirmed: Looks Expected. Advisory badge updated for Meena Devi.');
+    } else if (opinion === 'DONT_RECOGNIZE') {
+      speakVoice('Daughter Ananya warned: I do not recognize this recipient. Please double check before paying.');
+    } else {
+      speakVoice('Daughter Ananya requested a quick phone call to verify.');
+    }
+
+    // Auto-prompt switch back to mother to finalize
+    setTimeout(() => {
+      setActivePersona('mother');
+    }, 1800);
+  };
+
+  // Attempt Helper Authorization (Server-Side Block Enforcement Demonstration)
+  const handleHelperAttemptAuthorization = () => {
+    setServerErrorAlert('HTTP 403 Forbidden: "Shared guidance, not shared access." Trusted Circle guardians cannot execute or confirm payments. Only primary account holder (Meena Devi) holds authorization authority.');
+    speakVoice('Security Protection: Only Mother Meena Devi can authorize this payment. Trusted Circle members cannot access funds or enter PIN.');
+  };
+
+  // Mother Confirms Final Payment with PIN
+  const handleMotherConfirmPayment = () => {
+    if (pinInput !== '1234') {
+      setPinError('Invalid UPI PIN. Enter demo PIN 1234.');
       return;
     }
 
-    setBalance(prev => prev - q.amount);
-    setQueue(prev => prev.filter(item => item.id !== q.id));
+    if (!activeTransfer) return;
 
-    const newTxn: Transaction = {
-      id: `TXN-REL-${Date.now().toString().slice(-6)}`,
-      recipientName: q.recipientName,
-      upiId: q.upiId,
-      amount: q.amount,
+    const newBal = motherBalance - activeTransfer.amount;
+    setMotherBalance(newBal);
+
+    const completedTxn = {
+      id: activeTransfer.id,
+      recipient: activeTransfer.recipientName,
+      upi: activeTransfer.upiId,
+      amount: activeTransfer.amount,
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' IST',
       status: 'SUCCESS',
-      verifiedViaHistory: false,
-      notes: 'Released from Safety Queue via Step-Up PIN Authorization',
-      narrativeLog: [...q.narrativeLog, '🔓 Released from Safety Hold via verified user PIN.']
+      advisory: activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? 'Daughter Verified ✓' : 'User Authorized'
     };
 
-    setTransactions(prev => [newTxn, ...prev]);
-    setShowVerifyOtpModal(null);
-    setOtpInput('');
-    setOtpError('');
+    setTransactions(prev => [completedTxn, ...prev]);
+    setActiveTransfer(null);
+    setShowPinModal(false);
+    setPinInput('');
+    setPinError('');
 
-    speakNarrative(`PIN verified. Transfer of ₹${q.amount} to ${q.recipientName} has been released and completed.`);
-    setShowReceiptModal(newTxn);
+    setShowReceiptModal(completedTxn);
+    speakVoice(`Payment Successful! ₹${completedTxn.amount} sent to ${completedTxn.recipient}. Your updated account balance is ₹${newBal.toLocaleString('en-IN')}.`);
   };
 
-  // Cancel Queued Transfer
-  const handleCancelQueuedTransfer = (queueId: string) => {
-    const item = queue.find(q => q.id === queueId);
-    setQueue(prev => prev.filter(q => q.id !== queueId));
-    if (item) {
-      setTransactions(prev => [{
-        id: `TXN-CANC-${Date.now().toString().slice(-6)}`,
-        recipientName: item.recipientName,
-        upiId: item.upiId,
-        amount: item.amount,
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' IST',
-        status: 'CANCELLED',
-        verifiedViaHistory: false,
-        notes: 'Transfer cancelled by user during protective safety cooling-off period',
-        narrativeLog: [...item.narrativeLog, '✕ Cancelled by user during safety cooling-off period.']
-      }, ...prev]);
-      speakNarrative(`Transfer of ₹${item.amount} to ${item.recipientName} has been cancelled. No funds were debited.`);
-    }
-  };
-
-  // Dispatch Twilio Voice Call for Queued Transfer
-  const handleTwilioVerificationCall = async (q: QueuedTransfer) => {
-    setCallingId(q.id);
-    setCallStatus('Connecting with Twilio Voice Copilot...');
-    try {
-      const script = `Hello Rohan! This is an urgent safety notification from your SafePay AI Protection System. We held a transfer of ₹${q.amount} to ${q.recipientName} because you have not sent money to this account in the last ${lookbackMonths} months. If you authorized this transfer, please approve in your app. Thank you!`;
-      const res = await fetch('http://localhost:8000/api/v1/cases/voice/direct-call', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone_number: '+919461284678',
-          language: 'en',
-          custom_message: script
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setCallStatus(`✓ Verification call dialed to +919461284678 (Call SID: ${data.call_sid})`);
-      } else {
-        setCallStatus(`✕ Twilio Call error: ${data.error}`);
-      }
-    } catch (e) {
-      setCallStatus('✕ Could not reach backend server on port 8000.');
-    } finally {
-      setCallingId(null);
-    }
-  };
-
-  // Add Custom Beneficiary
-  const handleAddBeneficiary = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBenName.trim() || !newBenUpi.trim()) return;
-
-    let hist: any[] = [];
-    if (newBenHistoryMonths === 'recent') {
-      hist = [
-        { date: '10 Jan 2026', amount: 3000, description: 'Past Transfer', monthsAgo: 1 },
-        { date: '15 Nov 2025', amount: 4500, description: 'Past Transfer', monthsAgo: 3 }
-      ];
-    } else if (newBenHistoryMonths === 'old') {
-      hist = [
-        { date: '01 Jan 2024', amount: 2000, description: 'Old Transfer', monthsAgo: 24 }
-      ];
-    }
-
-    const newBen: Beneficiary = {
-      id: `BEN-${Date.now()}`,
-      name: newBenName.trim(),
-      upiId: newBenUpi.trim(),
-      avatar: '👤',
-      history: hist
-    };
-
-    setBeneficiaries(prev => [...prev, newBen]);
-    setShowAddBeneficiaryModal(false);
-    setNewBenName('');
-    setNewBenUpi('');
+  // Cancel Payment
+  const handleCancelPayment = () => {
+    if (!activeTransfer) return;
+    speakVoice('Transfer cancelled. No money left your account.');
+    setActiveTransfer(null);
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-gray-900 pb-16">
-      {/* Top Mobile/Web Navigation Bar */}
-      <header className="bg-[#1E3A8A] text-white border-b-4 border-blue-950 sticky top-0 z-40 shadow-md">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-amber-400 text-blue-950 font-black flex items-center justify-center text-lg shadow-sm">
-              ₹
+    <div 
+      className={`min-h-screen transition-all ${
+        highContrast ? 'bg-black text-white' : 'bg-[#F8F9FA] text-gray-900'
+      }`}
+      style={{ fontSize: `${fontScale * 100}%` }}
+    >
+      {/* 🌟 TOP DEMO STORY & PERSONA CONTROLLER BAR */}
+      <div className="bg-[#1A73E8] text-white border-b-2 border-blue-900 sticky top-0 z-50 shadow-md">
+        <div className="max-w-4xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+          {/* Brand */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white text-[#1A73E8] font-black flex items-center justify-center text-sm shadow-xs">
+              🏦
             </div>
             <div>
-              <h1 className="font-black text-sm tracking-wide uppercase flex items-center gap-1.5">
-                SafePay India <span className="bg-amber-400 text-blue-950 text-[10px] px-1.5 py-0.2 font-black rounded-xs">AI VOICE</span>
-              </h1>
-              <p className="text-[10px] text-blue-200 font-bold">Behavioral N-Month Safety & Voice Transfer Simulator</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 bg-blue-900/80 px-3 py-1.5 rounded-sm border border-blue-700">
-              <ShieldCheck size={16} className="text-emerald-400" />
-              <div className="text-right">
-                <span className="text-[9px] uppercase tracking-wider text-blue-300 block font-bold">Fraud Shield</span>
-                <span className="text-xs font-black text-white">Active ({lookbackMonths}M Lookback)</span>
-              </div>
-            </div>
-
-            <a
-              href="http://localhost:3001"
-              target="_blank"
-              rel="noreferrer"
-              className="px-2.5 py-1.5 bg-amber-400 text-blue-950 font-black text-xs uppercase rounded-sm hover:bg-amber-300 flex items-center gap-1 shadow-sm"
-              title="Open Bank Copilot (Port 3001)"
-            >
-              <span>Copilot Admin</span>
-              <ExternalLink size={12} />
-            </a>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 pt-6 space-y-6">
-        {/* Account Balance Card */}
-        <div className="bg-gradient-to-br from-[#1E3A8A] to-[#172554] text-white p-6 rounded-lg shadow-lg border-2 border-blue-900 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-            <ShieldCheck size={180} />
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-            <div>
-              <div className="flex items-center gap-2 text-blue-200 text-xs font-bold mb-1">
-                <User size={14} /> Rohan Sharma · <span className="font-mono">rohan.sharma@okaxis</span>
-              </div>
-              <span className="text-xs font-black uppercase text-blue-300 tracking-wider">Available Savings Balance</span>
-              <div className="text-3xl sm:text-4xl font-black tracking-tight text-white mt-0.5">
-                ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="bg-blue-900/80 p-3 rounded-md border border-blue-700">
-                <span className="text-[10px] font-black uppercase text-blue-300 block mb-1">
-                  Safety Lookback Window (N Months)
-                </span>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min="1"
-                    max="12"
-                    value={lookbackMonths}
-                    onChange={(e) => setLookbackMonths(parseInt(e.target.value))}
-                    className="w-32 accent-amber-400 cursor-pointer"
-                  />
-                  <span className="text-xs font-black text-amber-300 bg-blue-950 px-2 py-0.5 rounded-sm border border-blue-800">
-                    {lookbackMonths} Months
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* NARRATIVE VOICE TRANSFER COMMAND CENTER */}
-        <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md">
-          <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">
-                <Volume2 size={16} />
-              </div>
-              <div>
-                <h2 className="text-sm font-black uppercase tracking-wide text-gray-900">
-                  Narrative Voice Transfer Copilot
-                </h2>
-                <p className="text-[11px] text-gray-500 font-bold">
-                  Speak naturally to transfer funds. AI automatically verifies recipient history over the last {lookbackMonths} months.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setSpeechEnabled(!speechEnabled)}
-                className={`p-1.5 rounded-sm border text-xs font-bold flex items-center gap-1 cursor-pointer ${
-                  speechEnabled ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-gray-100 text-gray-500 border-gray-300'
-                }`}
-                title="Toggle Speech Audio Narration"
-              >
-                <Volume2 size={13} className={speechEnabled ? 'text-emerald-700' : 'text-gray-400'} />
-                <span className="text-[10px]">{speechEnabled ? 'Voice ON' : 'Mute'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Voice Input Box */}
-          <div className="flex flex-col gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={inputPrompt}
-                  onChange={(e) => setInputPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleExecuteTransfer(inputPrompt)}
-                  placeholder="e.g. 'Send 5000 to Dilshan' or 'Transfer ₹8,000 to Priya'"
-                  className="w-full pl-4 pr-10 py-3 border-2 border-gray-300 rounded-md text-sm font-bold focus:outline-hidden focus:border-blue-700 bg-gray-50"
-                />
-                {inputPrompt && (
-                  <button
-                    onClick={() => setInputPrompt('')}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* Big Voice Mic Button */}
-              <button
-                type="button"
-                onClick={toggleListening}
-                className={`px-5 py-3 rounded-md font-black text-xs uppercase flex items-center gap-2 shadow-md transition-all cursor-pointer ${
-                  isListening
-                    ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-200'
-                    : 'bg-blue-900 hover:bg-blue-800 text-white'
-                }`}
-                title="Speak to transfer"
-              >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                <span>{isListening ? 'Listening...' : 'Voice Transfer'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleExecuteTransfer(inputPrompt)}
-                disabled={isProcessing || !inputPrompt.trim()}
-                className="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-md flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
-              >
-                {isProcessing ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
-                <span>Send</span>
-              </button>
-            </div>
-
-            {/* Quick Demo Voice Scenario Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1">
-                <Sparkles size={11} className="text-amber-500" /> One-Click Demo Scenarios:
+              <span className="font-black text-xs uppercase tracking-wider block leading-none">
+                BankSathi <span className="bg-amber-400 text-blue-950 text-[9px] px-1.5 py-0.5 rounded-xs font-black">FAMILY PROTECTED</span>
               </span>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInputPrompt('Send 5000 to Dilshan');
-                  handleExecuteTransfer('Send 5000 to Dilshan');
-                }}
-                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-sm text-xs font-bold cursor-pointer transition-colors"
-              >
-                🟢 Send ₹5,000 to Dilshan (3 Past Transfers → Instant Pass)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInputPrompt('Send 8000 to Priya');
-                  handleExecuteTransfer('Send 8000 to Priya');
-                }}
-                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-sm text-xs font-bold cursor-pointer transition-colors"
-              >
-                🟢 Pay ₹8,000 to Priya (Frequent Payee → Instant Pass)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInputPrompt('Send 1500 to Ramesh');
-                  handleExecuteTransfer('Send 1500 to Ramesh');
-                }}
-                className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-sm text-xs font-bold cursor-pointer transition-colors"
-              >
-                🟡 Send ₹1,500 to Ramesh (&gt;12M Inactive → Queue Hold)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInputPrompt('Send 12000 to Raj Cyber');
-                  handleExecuteTransfer('Send 12000 to Raj Cyber');
-                }}
-                className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-900 border border-red-300 rounded-sm text-xs font-bold cursor-pointer transition-colors"
-              >
-                🔴 Send ₹12,000 to Raj Cyber (0 History → Fraud Queue Hold)
-              </button>
+              <span className="text-[10px] text-blue-100 font-medium">Shared Guidance, Not Shared Access</span>
             </div>
           </div>
 
-          {/* LIVE NARRATIVE BREAKDOWN PANEL */}
-          {currentNarrative.length > 0 && (
-            <div className="mt-4 p-4 bg-gray-900 text-white rounded-md border-2 border-gray-800 shadow-inner">
-              <div className="flex items-center justify-between border-b border-gray-700 pb-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-400">
-                    AI Behavioral Voice Engine Log
+          {/* Persona Switcher Buttons */}
+          <div className="flex items-center gap-1.5 bg-blue-900/90 p-1 rounded-md border border-blue-600">
+            <button
+              onClick={() => setActivePersona('mother')}
+              className={`px-3 py-1.5 rounded-sm text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                activePersona === 'mother'
+                  ? 'bg-white text-blue-950 shadow-sm'
+                  : 'text-blue-100 hover:bg-blue-800'
+              }`}
+            >
+              <span>👵 1. Mother (Meena)</span>
+              <span className="text-[9px] bg-amber-400 text-blue-950 px-1 rounded-xs font-black">USER</span>
+            </button>
+
+            <button
+              onClick={() => setActivePersona('daughter')}
+              className={`px-3 py-1.5 rounded-sm text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer relative ${
+                activePersona === 'daughter'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'text-purple-200 hover:bg-blue-800'
+              }`}
+            >
+              <span>🛡️ 2. Daughter (Ananya)</span>
+              {activeTransfer && activeTransfer.advisoryStatus === 'PENDING' && (
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-ping absolute -top-0.5 -right-0.5" />
+              )}
+            </button>
+          </div>
+
+          {/* 1-Click Demo Story Button */}
+          <button
+            onClick={runDemoStory}
+            className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-sm flex items-center gap-1 shadow-sm cursor-pointer transition-transform active:scale-95"
+          >
+            <Play size={13} className="fill-blue-950" />
+            <span>▶️ Run ₹5,000 Demo Story</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ♿ WCAG AAA ACCESSIBILITY CONTROLS BAR */}
+      <div className={`border-b py-2 px-4 ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Senior Font Scaler */}
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-[11px] uppercase tracking-wider text-gray-500 flex items-center gap-1">
+              <ZoomIn size={14} /> Font Size:
+            </span>
+            <button
+              onClick={() => setFontScale(prev => Math.max(0.85, prev - 0.15))}
+              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs"
+              title="Decrease Font Size"
+            >
+              A-
+            </button>
+            <span className="font-bold font-mono px-1">{Math.round(fontScale * 100)}%</span>
+            <button
+              onClick={() => setFontScale(prev => Math.min(1.8, prev + 0.15))}
+              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs"
+              title="Increase Font Size (Senior Mode)"
+            >
+              A+
+            </button>
+          </div>
+
+          {/* High Contrast Toggle */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setHighContrast(!highContrast)}
+              className={`px-2.5 py-1 rounded-sm border font-bold flex items-center gap-1 text-[11px] cursor-pointer ${
+                highContrast ? 'bg-yellow-400 text-black border-yellow-300 font-black' : 'bg-gray-100 text-gray-700 border-gray-300'
+              }`}
+            >
+              <Contrast size={13} />
+              <span>{highContrast ? 'High Contrast ON' : 'Standard Contrast'}</span>
+            </button>
+
+            {/* Language Selector */}
+            <div className="flex items-center gap-1">
+              <Globe size={13} className="text-gray-400" />
+              <select
+                value={selectedLanguage}
+                onChange={(e: any) => setSelectedLanguage(e.target.value)}
+                className="p-1 border border-gray-300 rounded-sm text-[11px] font-bold bg-white"
+              >
+                <option value="en">English (India)</option>
+                <option value="hi">हिंदी (Hindi)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                <option value="mr">मराठी (Marathi)</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 🔊 SYNCHRONIZED REAL-TIME CAPTION BANNER (Hearing Accessibility) */}
+      {syncCaption && (
+        <div className="bg-amber-300 text-blue-950 font-black px-4 py-2 text-xs border-b-2 border-amber-400 shadow-inner flex items-center justify-between">
+          <div className="max-w-4xl mx-auto flex items-center gap-2 w-full">
+            <Volume2 size={16} className="text-blue-950 shrink-0" />
+            <span className="font-sans italic">{syncCaption}</span>
+          </div>
+          <button onClick={() => setSyncCaption('')} className="text-blue-950 font-black text-xs hover:opacity-75">✕</button>
+        </div>
+      )}
+
+      {/* HTTP 403 / SERVER-SIDE ENFORCEMENT ALERT BANNER */}
+      {serverErrorAlert && (
+        <div className="bg-red-600 text-white font-bold p-3 text-xs border-b-2 border-red-800 flex items-center justify-between shadow-md">
+          <div className="max-w-4xl mx-auto flex items-center gap-2 w-full">
+            <AlertTriangle size={18} className="text-yellow-300 shrink-0" />
+            <span>{serverErrorAlert}</span>
+          </div>
+          <button onClick={() => setServerErrorAlert('')} className="text-white font-black text-sm">✕</button>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 👵 VIEW 1: MOTHER (MEENA DEVI) — PRIMARY USER GPAY INTERFACE  */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {activePersona === 'mother' && (
+        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {/* User Profile Header Card */}
+          <div className={`p-6 rounded-2xl border-2 shadow-sm relative overflow-hidden ${
+            highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-full bg-amber-100 text-2xl flex items-center justify-center border-2 border-amber-300">
+                  👵
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-lg text-gray-900 leading-tight">Meena Devi</h2>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-full border border-emerald-300">
+                      Protected Senior Account
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500 font-mono font-medium">UPI ID: 9999999001@sbi</span>
+                  <p className="text-[11px] text-gray-500 font-bold mt-0.5">
+                    Spending Baseline: <span className="text-blue-700 font-black">₹1,500 / transfer</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Balance Box with Speaker Button */}
+              <div className={`p-3.5 rounded-xl border text-right flex flex-col items-end ${
+                highContrast ? 'bg-gray-800 border-gray-600' : 'bg-blue-50/70 border-blue-200'
+              }`}>
+                <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold">
+                  <span>Savings Balance</span>
+                  <button 
+                    onClick={() => setShowBalance(!showBalance)}
+                    className="text-gray-500 hover:text-gray-800 cursor-pointer"
+                    title={showBalance ? "Hide Balance" : "Show Balance"}
+                  >
+                    {showBalance ? <Eye size={13} /> : <EyeOff size={13} />}
+                  </button>
+                  <button
+                    onClick={() => speakVoice(`Your current bank balance is ₹${motherBalance.toLocaleString('en-IN')}`)}
+                    className="p-1 bg-blue-100 text-blue-900 rounded-full hover:bg-blue-200 cursor-pointer"
+                    title="🔊 Read Balance Out Loud"
+                  >
+                    <Volume2 size={13} />
+                  </button>
+                </div>
+                <div className="text-2xl font-black text-blue-950 font-mono mt-0.5">
+                  {showBalance ? `₹${motherBalance.toLocaleString('en-IN')}` : '••••••'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* GOOGLE PAY INDIA FORMAT: FULL-WIDTH PILL VOICE SEARCH BAR */}
+          <div className={`p-4 rounded-2xl border-2 shadow-md flex items-center gap-3 ${
+            highContrast ? 'bg-gray-900 border-gray-600' : 'bg-white border-gray-300'
+          }`}>
+            <div className="text-gray-400 pl-1">
+              <Globe size={20} className="text-[#1A73E8]" />
+            </div>
+
+            <input
+              type="text"
+              value={voiceTranscript}
+              onChange={(e) => setVoiceTranscript(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleVoiceCommand(voiceTranscript)}
+              placeholder="Speak or type: 'Send 5000 to Ravi Kumar'..."
+              className="flex-1 text-sm font-bold bg-transparent focus:outline-hidden text-gray-900"
+            />
+
+            {/* Oversized 56px Senior-Friendly Voice Mic Button */}
+            <button
+              onClick={toggleMic}
+              className={`w-14 h-14 rounded-full flex items-center justify-center font-black transition-all shadow-md cursor-pointer ${
+                isListening
+                  ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-200'
+                  : 'bg-[#1A73E8] hover:bg-blue-700 text-white'
+              }`}
+              title="Tap to speak"
+            >
+              {isListening ? <MicOff size={24} /> : <Mic size={24} />}
+            </button>
+          </div>
+
+          {/* GOOGLE PAY INDIA 4-COLUMN QUICK ACTION CIRCLES */}
+          <div className="grid grid-cols-4 gap-3 text-center">
+            {[
+              { icon: QrCode, label: 'Scan QR', color: 'bg-blue-100 text-blue-900' },
+              { icon: Smartphone, label: 'Pay Contacts', color: 'bg-emerald-100 text-emerald-900' },
+              { icon: Landmark, label: 'Bank Transfer', color: 'bg-purple-100 text-purple-900' },
+              { icon: HeartHandshake, label: 'Trusted Circle', color: 'bg-amber-100 text-amber-900' },
+            ].map((action, idx) => {
+              const IconComp = action.icon;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (action.label === 'Trusted Circle') {
+                      setActivePersona('daughter');
+                    } else {
+                      handleVoiceCommand('Send 5000 to Ravi Kumar');
+                    }
+                  }}
+                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 shadow-xs hover:scale-105 transition-transform cursor-pointer ${
+                    highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${action.color}`}>
+                    <IconComp size={22} />
+                  </div>
+                  <span className="text-xs font-black uppercase text-gray-800">{action.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ACTIVE TRANSACTION REVIEW & TRUSTED CIRCLE ADVISORY CARD */}
+          {activeTransfer && (
+            <div className={`p-6 rounded-2xl border-4 shadow-xl relative ${
+              activeTransfer.advisoryStatus === 'DONT_RECOGNIZE'
+                ? 'border-red-500 bg-red-50/50'
+                : activeTransfer.advisoryStatus === 'LOOKS_EXPECTED'
+                ? 'border-emerald-500 bg-emerald-50/50'
+                : 'border-amber-400 bg-amber-50/40'
+            }`}>
+              <div className="flex items-start justify-between gap-3 border-b pb-3 mb-4 border-gray-300">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-blue-950 text-white px-2 py-0.5 rounded-xs">
+                    Pending Transfer Review
+                  </span>
+                  <h3 className="text-xl font-black text-gray-900 mt-1">
+                    Paying ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
+                  </h3>
+                  <span className="text-xs font-mono text-gray-500">{activeTransfer.upiId}</span>
+                </div>
+
+                <div className="text-right">
+                  <span className={`text-xs font-black px-2.5 py-1 rounded-full uppercase ${
+                    activeTransfer.riskTier === 'HIGH' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {activeTransfer.riskTier} Risk Anomaly
                   </span>
                 </div>
-                {activeStep && (
-                  <span className="text-[11px] font-mono text-gray-300 bg-gray-800 px-2 py-0.5 rounded-sm">
-                    {activeStep}
-                  </span>
+              </div>
+
+              {/* Plain-Language Behavioral Risk Reason */}
+              <div className="p-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-800 mb-4 flex items-start gap-2">
+                <Info size={16} className="text-blue-700 mt-0.5 shrink-0" />
+                <div>
+                  <strong className="block text-gray-900 font-black">Behavioral Protection Check:</strong>
+                  {activeTransfer.riskReason}
+                </div>
+              </div>
+
+              {/* 🛡️ TRUSTED CIRCLE ADVISORY STATUS BADGE */}
+              <div className="p-4 bg-purple-50 border-2 border-purple-300 rounded-xl mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <HeartHandshake size={18} className="text-purple-700" />
+                    <span className="text-xs font-black uppercase text-purple-950">
+                      Trusted Circle Advisory (Daughter Ananya)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setActivePersona('daughter')}
+                    className="text-[11px] font-black text-purple-700 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View as Daughter</span>
+                    <ChevronRight size={12} />
+                  </button>
+                </div>
+
+                {activeTransfer.advisoryStatus === 'PENDING' ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-800 bg-amber-100/70 p-2.5 rounded-lg border border-amber-300">
+                    <Clock size={16} className="animate-spin text-amber-700" />
+                    <span>Advisory ping sent to Daughter Ananya. Awaiting her second opinion...</span>
+                  </div>
+                ) : activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-100 p-2.5 rounded-lg border border-emerald-300">
+                    <CheckCircle2 size={18} className="text-emerald-700" />
+                    <div>
+                      <span className="font-black block">✓ Daughter Ananya: &quot;Looks Expected&quot;</span>
+                      <span className="text-[11px] font-normal text-emerald-900">{activeTransfer.daughterNote || 'Verified as legitimate payment.'}</span>
+                    </div>
+                  </div>
+                ) : activeTransfer.advisoryStatus === 'DONT_RECOGNIZE' ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-red-800 bg-red-100 p-2.5 rounded-lg border border-red-300">
+                    <AlertTriangle size={18} className="text-red-700" />
+                    <div>
+                      <span className="font-black block">⚠️ Daughter Ananya: &quot;I Don&apos;t Recognize This&quot;</span>
+                      <span className="text-[11px] font-normal text-red-900">{activeTransfer.daughterNote || 'Please verify before entering your PIN.'}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-xs font-bold text-blue-800 bg-blue-100 p-2.5 rounded-lg border border-blue-300">
+                    <HelpCircle size={18} className="text-blue-700" />
+                    <span>Daughter Ananya requested voice/phone verification before approving.</span>
+                  </div>
                 )}
               </div>
 
-              <div className="space-y-1.5 font-mono text-xs">
-                {currentNarrative.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className={`leading-relaxed ${
-                      line.includes('✅')
-                        ? 'text-emerald-400 font-bold'
-                        : line.includes('🛡️') || line.includes('🔒')
-                        ? 'text-amber-300 font-bold'
-                        : line.includes('❌')
-                        ? 'text-red-400 font-bold'
-                        : 'text-gray-200'
-                    }`}
-                  >
-                    {line}
-                  </div>
-                ))}
+              {/* MOTHER'S FINAL ACTION BUTTONS (USER-ONLY AUTHORIZATION) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => setShowPinModal(true)}
+                  className="py-3.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-sm uppercase rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
+                >
+                  <KeyRound size={18} />
+                  <span>Confirm Payment (Enter PIN)</span>
+                </button>
+
+                <button
+                  onClick={handleCancelPayment}
+                  className="py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-900 font-black text-sm uppercase rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <XCircle size={18} />
+                  <span>Cancel Transfer</span>
+                </button>
               </div>
             </div>
           )}
-        </div>
 
-        {/* 2-COLUMN GRID: BENEFICIARY DIRECTORY + PROTECTIVE SAFETY HOLD QUEUE */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* COLUMN 1: BENEFICIARY DIRECTORY WITH N-MONTH HISTORY */}
-          <div className="bg-white border-2 border-gray-300 rounded-lg p-5 shadow-sm">
-            <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Users size={18} className="text-blue-900" />
-                <h3 className="text-sm font-black uppercase text-gray-900">
-                  Beneficiary Directory &amp; Past Transfers
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAddBeneficiaryModal(true)}
-                className="px-2 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-300 text-xs font-bold rounded-sm flex items-center gap-1 cursor-pointer"
-              >
-                <Plus size={12} /> Add Contact
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {beneficiaries.map((ben) => {
-                const recentTransfers = ben.history.filter(h => h.monthsAgo <= lookbackMonths);
-                const isTrusted = recentTransfers.length >= minPriorTransactions;
-
-                return (
-                  <div
-                    key={ben.id}
-                    className={`p-3.5 rounded-md border-2 transition-all ${
-                      isTrusted ? 'border-emerald-200 bg-emerald-50/40' : 'border-amber-200 bg-amber-50/30'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{ben.avatar}</span>
-                        <div>
-                          <h4 className="font-black text-xs text-gray-900">{ben.name}</h4>
-                          <span className="text-[10px] text-gray-500 font-mono">{ben.upiId}</span>
-                        </div>
-                      </div>
-
-                      <span
-                        className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-xs ${
-                          isTrusted ? 'bg-emerald-700 text-white' : 'bg-amber-700 text-white'
-                        }`}
-                      >
-                        {isTrusted ? `Verified (In ${lookbackMonths}M)` : `Unverified / Dormant`}
-                      </span>
-                    </div>
-
-                    {/* Past Transfers in Window */}
-                    <div className="text-[11px] text-gray-600 bg-white p-2 rounded-sm border border-gray-200 mb-2">
-                      <div className="font-bold text-gray-700 mb-1 flex items-center justify-between text-[10px] uppercase">
-                        <span>Past History ({lookbackMonths}M Window):</span>
-                        <span className="font-black text-blue-900">{recentTransfers.length} Transfers</span>
-                      </div>
-                      {ben.history.length === 0 ? (
-                        <span className="text-red-600 italic text-[10px]">No historical payments found.</span>
-                      ) : (
-                        <div className="space-y-0.5">
-                          {ben.history.map((h, hidx) => (
-                            <div key={hidx} className="flex items-center justify-between text-[10px]">
-                              <span className={h.monthsAgo <= lookbackMonths ? 'text-gray-800' : 'text-gray-400 line-through'}>
-                                • {h.date} ({h.description})
-                              </span>
-                              <span className="font-mono font-bold text-gray-900">
-                                ₹{h.amount.toLocaleString('en-IN')}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quick Transfer Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const amt = isTrusted ? 5000 : 2500;
-                        setInputPrompt(`Send ${amt} to ${ben.name.split(' ')[0]}`);
-                        handleExecuteTransfer(`Send ${amt} to ${ben.name.split(' ')[0]}`);
-                      }}
-                      className="w-full py-1.5 bg-white hover:bg-gray-50 border border-gray-300 text-xs font-black uppercase text-blue-900 rounded-sm flex items-center justify-center gap-1 cursor-pointer shadow-xs"
-                    >
-                      <ArrowUpRight size={13} /> Send Money to {ben.name.split(' ')[0]}
-                    </button>
+          {/* HORIZONTAL SCROLLABLE PEOPLE AVATARS */}
+          <div className={`p-5 rounded-2xl border-2 shadow-sm ${
+            highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <h3 className="font-black text-xs uppercase tracking-wider text-gray-500 mb-3">
+              Frequent Contacts (1-Tap Pay)
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {FREQUENT_PEOPLE.map((p, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleVoiceCommand(`Send ${p.baseline || 2000} to ${p.name}`)}
+                  className="p-3 rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50/50 flex flex-col items-center text-center transition-all cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-100 text-2xl flex items-center justify-center mb-1.5 shadow-xs">
+                    {p.avatar}
                   </div>
-                );
-              })}
+                  <span className="font-black text-xs text-gray-900 truncate w-full">{p.name}</span>
+                  <span className="text-[10px] text-gray-500">{p.lastPaid}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* COLUMN 2: PROTECTIVE SAFETY HOLD QUEUE */}
-          <div className="bg-white border-2 border-gray-300 rounded-lg p-5 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
+          {/* RECENT TRANSACTION HISTORY */}
+          <div className={`p-5 rounded-2xl border-2 shadow-sm ${
+            highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <h3 className="font-black text-xs uppercase tracking-wider text-gray-500 mb-3">
+              Recent Transactions
+            </h3>
+            <div className="divide-y divide-gray-200">
+              {transactions.map((txn, idx) => (
+                <div key={idx} className="py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                      <ArrowUpRight size={16} />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-xs text-gray-900">{txn.recipient}</h4>
+                      <span className="text-[10px] text-gray-500 font-mono">{txn.date} · {txn.advisory}</span>
+                    </div>
+                  </div>
+                  <span className="font-black text-sm text-gray-900 font-mono">
+                    -₹{txn.amount.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 🛡️ VIEW 2: DAUGHTER (ANANYA) — TRUSTED CIRCLE ADVISORY DASHBOARD */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {activePersona === 'daughter' && (
+        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {/* Guardian Profile Header */}
+          <div className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-6 rounded-2xl shadow-lg border-2 border-purple-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-full bg-purple-200 text-purple-950 text-2xl flex items-center justify-center font-black">
+                  👩🏻
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-lg">Ananya (Daughter &amp; Trusted Guardian)</h2>
+                    <span className="text-[10px] bg-purple-300 text-purple-950 font-black px-2 py-0.5 rounded-full">
+                      Trusted Circle
+                    </span>
+                  </div>
+                  <span className="text-xs text-purple-200 font-mono">Phone: 9999999002 · Protecting Meena Devi</span>
+                  <p className="text-[11px] text-purple-100 font-medium mt-1">
+                    🛡️ Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActivePersona('mother')}
+                className="px-3.5 py-2 bg-white text-purple-950 font-black text-xs uppercase rounded-xl hover:bg-purple-50 shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+              >
+                <span>Switch to Mother View</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* ACTIVE ADVISORY REQUEST FROM MOTHER */}
+          {activeTransfer ? (
+            <div className="bg-white border-4 border-purple-600 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <ShieldAlert size={18} className="text-amber-600" />
-                  <h3 className="text-sm font-black uppercase text-gray-900">
-                    Protective Safety Hold Queue
+                  <div className="w-3 h-3 rounded-full bg-purple-600 animate-ping" />
+                  <h3 className="font-black text-sm uppercase tracking-wide text-purple-950">
+                    Incoming Advisory Request for Meena Devi
                   </h3>
                 </div>
-                <span className="text-xs font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
-                  {queue.length} Active Holds
+                <span className="text-xs font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
+                  {activeTransfer.riskTier} RISK
                 </span>
               </div>
 
-              {queue.length === 0 ? (
-                <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-md bg-gray-50 my-4">
-                  <ShieldCheck size={36} className="mx-auto text-emerald-500 mb-2" />
-                  <h4 className="text-xs font-black uppercase text-gray-700">Safety Queue Empty</h4>
-                  <p className="text-[11px] text-gray-500 mt-1 max-w-xs mx-auto">
-                    When you transfer to an unverified contact without prior history in the last {lookbackMonths} months, it safely enters this protective cooling-off queue.
-                  </p>
+              {/* Transaction Summary */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-purple-50/60 rounded-xl border border-purple-200 text-xs">
+                <div>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Recipient</span>
+                  <span className="font-black text-sm text-gray-900">{activeTransfer.recipientName}</span>
+                  <span className="text-[10px] font-mono text-gray-500 block">{activeTransfer.upiId}</span>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {queue.map((q) => (
-                    <div
-                      key={q.id}
-                      className="p-4 bg-amber-50/60 border-2 border-amber-300 rounded-md shadow-xs relative"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <span className="text-[10px] font-black uppercase text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded-xs">
-                            Cooling-Off Period (4-Hour Hold)
-                          </span>
-                          <h4 className="font-black text-sm text-gray-900 mt-1">
-                            ₹{q.amount.toLocaleString('en-IN')} to {q.recipientName}
-                          </h4>
-                          <span className="text-[10px] font-mono text-gray-500">{q.upiId}</span>
-                        </div>
-
-                        <div className="text-right">
-                          <span className="text-[10px] text-gray-400 font-bold block">Queued At</span>
-                          <span className="text-xs font-bold text-gray-700">{q.queuedAt}</span>
-                        </div>
-                      </div>
-
-                      <div className="p-2 bg-white border border-amber-200 rounded-sm text-xs text-amber-900 font-medium mb-3">
-                        <strong>Reason:</strong> {q.reason}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowVerifyOtpModal(q);
-                            setOtpInput('');
-                            setOtpError('');
-                          }}
-                          className="py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-sm flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <KeyRound size={13} /> Verify &amp; Send
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleTwilioVerificationCall(q)}
-                          disabled={callingId === q.id}
-                          className="py-1.5 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs uppercase rounded-sm flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                          title="Trigger AI call to +919461284678"
-                        >
-                          {callingId === q.id ? <RefreshCw size={13} className="animate-spin" /> : <Phone size={13} />}
-                          <span>AI Phone Call</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleCancelQueuedTransfer(q.id)}
-                          className="py-1.5 bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 font-black text-xs uppercase rounded-sm flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <XCircle size={13} /> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Requested Amount</span>
+                  <span className="font-black text-base text-red-600 font-mono">
+                    ₹{activeTransfer.amount.toLocaleString('en-IN')}
+                  </span>
                 </div>
-              )}
-            </div>
-
-            {callStatus && (
-              <div className={`mt-4 p-2.5 text-xs font-bold border rounded-md ${
-                callStatus.startsWith('✓') ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-red-50 border-red-300 text-red-700'
-              }`}>
-                {callStatus}
+                <div>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Mother&apos;s Baseline</span>
+                  <span className="font-bold text-gray-700">₹{activeTransfer.baselineAmount.toLocaleString('en-IN')}</span>
+                  <span className="text-[10px] text-red-600 font-bold block">(3.3x deviation)</span>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* RECENT TRANSACTION LEDGER & DIGITAL AUDIT TRAIL */}
-        <div className="bg-white border-2 border-gray-300 rounded-lg p-5 shadow-sm">
-          <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
-            <div className="flex items-center gap-2">
-              <History size={18} className="text-blue-900" />
-              <h3 className="text-sm font-black uppercase text-gray-900">
-                Live Transaction Ledger &amp; Digital Receipts
-              </h3>
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900">
+                <strong>Why You&apos;re Seeing This:</strong> Meena Devi rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.
+              </div>
+
+              {/* 3 ADVISORY FEEDBACK OPTIONS FOR DAUGHTER */}
+              <div>
+                <h4 className="font-black text-xs uppercase tracking-wider text-gray-700 mb-2">
+                  Select Your Advisory Recommendation:
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button
+                    onClick={() => handleDaughterAdvisory('LOOKS_EXPECTED', 'I recognize Ravi Kumar for medical/home expenses.')}
+                    className="p-3.5 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
+                  >
+                    <CheckCircle2 size={22} className="text-emerald-600" />
+                    <span>✓ Looks Expected</span>
+                    <span className="text-[10px] text-emerald-700 font-normal">I recognize this recipient and amount.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleDaughterAdvisory('DONT_RECOGNIZE', 'Unknown recipient. Please hold or verify.')}
+                    className="p-3.5 bg-red-50 hover:bg-red-100 border-2 border-red-400 text-red-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
+                  >
+                    <AlertTriangle size={22} className="text-red-600" />
+                    <span>⚠️ Don&apos;t Recognize This</span>
+                    <span className="text-[10px] text-red-700 font-normal">Warn mother of potential scam.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleDaughterAdvisory('REQUEST_VERIFY', 'Call me before proceeding.')}
+                    className="p-3.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-400 text-blue-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
+                  >
+                    <HelpCircle size={22} className="text-blue-600" />
+                    <span>❓ Request Verification</span>
+                    <span className="text-[10px] text-blue-700 font-normal">Ask mother to call before paying.</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* DEMO: HELPER ATTEMPTING AUTHORIZATION (SHOWS HTTP 403 ENFORCEMENT) */}
+              <div className="pt-3 border-t border-gray-200">
+                <button
+                  onClick={handleHelperAttemptAuthorization}
+                  className="text-xs text-gray-500 hover:text-red-600 font-bold underline flex items-center gap-1 cursor-pointer"
+                  title="Test security: helper cannot confirm payment"
+                >
+                  <ShieldAlert size={14} />
+                  <span>Test Security: Attempt to confirm payment as daughter (Simulate HTTP 403)</span>
+                </button>
+              </div>
             </div>
-            <span className="text-xs font-bold text-gray-500">
-              {transactions.length} Total Records
-            </span>
-          </div>
+          ) : (
+            <div className="p-8 text-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm">
+              <ShieldCheck size={40} className="mx-auto text-emerald-500 mb-2" />
+              <h3 className="font-black text-sm uppercase text-gray-800">All Clear — No Pending Alerts</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1">
+                Mother Meena Devi has no active anomalous transfers. Click <strong>&quot;▶️ Run ₹5,000 Demo Story&quot;</strong> above to simulate a new transfer alert.
+              </p>
+            </div>
+          )}
+        </main>
+      )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-gray-100 border-b-2 border-gray-300 text-gray-700 uppercase font-black text-[10px]">
-                  <th className="p-2.5">Transaction ID</th>
-                  <th className="p-2.5">Recipient</th>
-                  <th className="p-2.5">Amount</th>
-                  <th className="p-2.5">Date &amp; Time</th>
-                  <th className="p-2.5">Safety Status</th>
-                  <th className="p-2.5 text-right">Receipt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 font-medium">
-                {transactions.map((txn) => (
-                  <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-2.5 font-mono text-[11px] font-bold text-gray-600">{txn.id}</td>
-                    <td className="p-2.5 font-bold text-gray-900">
-                      {txn.recipientName}
-                      <span className="block text-[10px] text-gray-400 font-normal font-mono">{txn.upiId}</span>
-                    </td>
-                    <td className="p-2.5 font-black text-sm text-gray-900">
-                      ₹{txn.amount.toLocaleString('en-IN')}
-                    </td>
-                    <td className="p-2.5 text-gray-500 text-[11px]">
-                      {txn.date} · {txn.time}
-                    </td>
-                    <td className="p-2.5">
-                      <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-xs ${
-                          txn.status === 'SUCCESS'
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                            : txn.status === 'CANCELLED'
-                            ? 'bg-red-100 text-red-800 border border-red-300'
-                            : 'bg-amber-100 text-amber-800 border border-amber-300'
-                        }`}
-                      >
-                        {txn.status === 'SUCCESS' ? '✓ Completed' : txn.status}
-                      </span>
-                    </td>
-                    <td className="p-2.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setShowReceiptModal(txn)}
-                        className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded-sm text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
-                      >
-                        <FileText size={12} /> Receipt
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* STEP-UP PIN VERIFICATION MODAL (MOTHER ONLY)                  */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showPinModal && activeTransfer && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-4 border-blue-950 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+            <div className="w-12 h-12 bg-blue-100 text-blue-950 rounded-full flex items-center justify-center mx-auto mb-3">
+              <KeyRound size={26} />
+            </div>
+
+            <h3 className="text-base font-black uppercase text-gray-900">
+              Authorize Payment (Meena Devi)
+            </h3>
+            <span className="text-2xl font-black text-blue-950 block my-1 font-mono">
+              ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
+            </span>
+
+            <p className="text-xs text-gray-500 mb-4 font-medium">
+              Enter your 4-digit UPI PIN. Never share this PIN with anyone, including family members.
+            </p>
+
+            <div className="mb-4">
+              <input
+                type="password"
+                maxLength={4}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                placeholder="••••"
+                className="w-full text-center tracking-widest text-3xl py-2.5 border-2 border-gray-300 rounded-xl font-mono focus:outline-hidden focus:border-blue-700 bg-gray-50"
+              />
+              <span className="text-[10px] text-gray-400 font-bold block mt-1">Demo PIN: 1234</span>
+              {pinError && <p className="text-xs text-red-600 font-bold mt-1">{pinError}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowPinModal(false)}
+                className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-black text-xs uppercase rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMotherConfirmPayment}
+                className="py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-xl shadow-md"
+              >
+                Confirm &amp; Pay
+              </button>
+            </div>
           </div>
         </div>
-      </main>
+      )}
 
-      {/* DIGITAL RECEIPT MODAL */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* DIGITAL RECEIPT MODAL                                         */}
+      {/* ───────────────────────────────────────────────────────────── */}
       {showReceiptModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-blue-950 w-full max-w-sm rounded-lg shadow-2xl p-6 text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 size={28} />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-4 border-blue-950 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <CheckCircle2 size={32} />
             </div>
 
             <h3 className="text-lg font-black uppercase text-gray-900">
-              {showReceiptModal.status === 'SUCCESS' ? 'Payment Successful' : 'Transaction Summary'}
+              Payment Successful
             </h3>
-            <span className="text-3xl font-black text-gray-900 block my-2">
+            <span className="text-3xl font-black text-gray-900 block my-2 font-mono">
               ₹{showReceiptModal.amount.toLocaleString('en-IN')}
             </span>
 
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-md text-left text-xs space-y-1.5 my-4">
+            <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-left text-xs space-y-2 my-4">
               <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Paid To:</span>
-                <span className="font-black text-gray-900">{showReceiptModal.recipientName}</span>
+                <span className="text-gray-500 font-bold">Recipient:</span>
+                <span className="font-black text-gray-900">{showReceiptModal.recipient}</span>
               </div>
               <div className="flex justify-between font-mono text-[11px]">
                 <span className="text-gray-500 font-bold">UPI ID:</span>
-                <span className="text-gray-700">{showReceiptModal.upiId}</span>
+                <span className="text-gray-700">{showReceiptModal.upi}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500 font-bold">Reference:</span>
                 <span className="font-mono text-[11px] font-bold text-gray-900">{showReceiptModal.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Verification:</span>
-                <span className="text-emerald-700 font-bold">
-                  {showReceiptModal.verifiedViaHistory ? '✓ N-Month History Pass' : '✓ Authorized via PIN'}
-                </span>
+                <span className="text-gray-500 font-bold">Trusted Circle:</span>
+                <span className="text-purple-800 font-bold">{showReceiptModal.advisory}</span>
               </div>
             </div>
 
             <button
-              type="button"
               onClick={() => setShowReceiptModal(null)}
-              className="w-full py-2 bg-blue-950 hover:bg-blue-900 text-white font-black text-xs uppercase rounded-sm cursor-pointer"
+              className="w-full py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-black text-xs uppercase rounded-xl cursor-pointer"
             >
-              Close Receipt
+              Done
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP-UP PIN VERIFICATION MODAL */}
-      {showVerifyOtpModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-amber-500 w-full max-w-sm rounded-lg shadow-2xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <KeyRound size={20} className="text-amber-600" />
-              <h3 className="text-sm font-black uppercase text-gray-900">
-                Step-Up PIN Verification
-              </h3>
-            </div>
-
-            <p className="text-xs text-gray-600 mb-4 font-medium leading-relaxed">
-              Confirm transfer of <strong>₹{showVerifyOtpModal.amount.toLocaleString('en-IN')}</strong> to{' '}
-              <strong>{showVerifyOtpModal.recipientName}</strong>. Enter your 4-digit UPI PIN to override safety hold.
-            </p>
-
-            <div className="mb-4">
-              <label className="block text-[11px] font-black uppercase text-gray-600 mb-1">
-                Enter 4-Digit UPI PIN (Demo: 1234)
-              </label>
-              <input
-                type="password"
-                maxLength={4}
-                value={otpInput}
-                onChange={(e) => setOtpInput(e.target.value)}
-                placeholder="••••"
-                className="w-full text-center tracking-widest text-2xl py-2 border-2 border-gray-300 rounded-md font-mono focus:outline-hidden focus:border-amber-600"
-              />
-              {otpError && <p className="text-xs text-red-600 font-bold mt-1">{otpError}</p>}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowVerifyOtpModal(null)}
-                className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs uppercase rounded-sm cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleReleaseQueuedTransfer(showVerifyOtpModal)}
-                className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-sm cursor-pointer"
-              >
-                Authorize &amp; Pay
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ADD BENEFICIARY MODAL */}
-      {showAddBeneficiaryModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-blue-900 w-full max-w-md rounded-lg shadow-2xl p-6">
-            <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
-              <h3 className="text-sm font-black uppercase text-gray-900 flex items-center gap-1.5">
-                <Users size={16} className="text-blue-900" /> Add New Beneficiary
-              </h3>
-              <button onClick={() => setShowAddBeneficiaryModal(false)} className="font-bold text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-
-            <form onSubmit={handleAddBeneficiary} className="space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ananya Roy"
-                  value={newBenName}
-                  onChange={(e) => setNewBenName(e.target.value)}
-                  className="w-full p-2.5 border-2 border-gray-300 rounded-sm text-xs font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-1">UPI ID</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. ananya@okaxis"
-                  value={newBenUpi}
-                  onChange={(e) => setNewBenUpi(e.target.value)}
-                  className="w-full p-2.5 border-2 border-gray-300 rounded-sm text-xs font-mono font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-1">Simulated Past History</label>
-                <select
-                  value={newBenHistoryMonths}
-                  onChange={(e) => setNewBenHistoryMonths(e.target.value)}
-                  className="w-full p-2.5 border-2 border-gray-300 rounded-sm text-xs font-bold"
-                >
-                  <option value="none">Zero Past Transfers (New Unverified Recipient)</option>
-                  <option value="recent">Recent Transfers (2 payments in last 3 months - Trusted)</option>
-                  <option value="old">Dormant Transfer (1 payment 24 months ago - Stale)</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddBeneficiaryModal(false)}
-                  className="px-4 py-2 border-2 border-gray-300 text-xs font-bold uppercase rounded-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-blue-900 text-white text-xs font-black uppercase rounded-sm"
-                >
-                  Save Beneficiary
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
