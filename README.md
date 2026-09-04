@@ -1,75 +1,82 @@
-# AI FINANCIAL SAFETY & LENDING COPILOT (INDIAN BANKING ECOSYSTEM)
+# 🏦 AI FINANCIAL SAFETY & LENDING COPILOT (INDIAN BANKING ECOSYSTEM)
 
-An enterprise-grade financial safety and decision intelligence platform designed for the Indian digital banking ecosystem. The platform unifies **Consumer-Facing Voice Transfer Safety & Behavioral Verification** with **Institutional Bank Officer Decision Support (Grounded RAG + Statistical ML + Human-in-the-Loop Governance)**.
+An enterprise-grade financial safety and decision intelligence platform designed for the Indian digital banking ecosystem. The platform unifies **BankSathi: Family-Protected Accessible Senior Banking ("Shared guidance, not shared access")** with **Institutional Bank Officer Decision Support (Grounded TheSuperRAG + Statistical ML + Human-in-the-Loop Governance)**.
 
 ---
 
 ## 🚀 SYSTEM ARCHITECTURE & RUNNING SERVICES
 
-| Component | Technology | Local Port | Key Capabilities |
+| Component | Technology | Port | Key Capabilities |
 | :--- | :--- | :--- | :--- |
-| **User-Side Banking App** | Next.js 16 + Web Speech API | **`http://localhost:3002`** | Narrative voice transfers, behavioral $N$-month history checks, protective hold queue, digital receipts |
-| **Bank Officer Copilot UI** | Next.js 16 + Tailwind CSS | **`http://localhost:3001`** | Live triage queue, case evaluation, interactive policy base, immutable audit log |
-| **Core AI Backend** | FastAPI + LangGraph + TheSuperRAG | **`http://localhost:8000`** | 10-node LangGraph DAG, hybrid vector search, dynamic policy RAG, 2-way Twilio speech webhooks |
-| **ML Inference Service** | LightGBM / XGBoost + FastAPI | **`http://localhost:8001`** | Calibrated Indian credit distress scoring (DTI, FOIR, anomaly scores) |
+| **BankSathi Senior & Guardian App** | Next.js 16 + Web Speech API + Tailwind CSS | **`http://localhost:3002`** | Voice-first banking, behavioral anomaly engine, Trusted Circle advisory review, Twilio out-of-band verification calling, 5-step guided story walkthrough |
+| **Bank Officer Copilot & Triage Portal** | Next.js 16 + Tailwind CSS | **`http://localhost:3001`** | Golden Path 5-step guided triage, ML distress scoring (SHAP factors), TheSuperRAG regulatory retrieval, multilingual voice call dispatcher, immutable audit ledger |
+| **Core AI & RAG Backend** | FastAPI + LangGraph + Qdrant + Twilio | **`http://localhost:8000`** | 10-node LangGraph DAG, hybrid vector search, dynamic policy RAG, 2-way Twilio conversational webhooks |
+| **ML Inference Service** | LightGBM / XGBoost + FastAPI | **`http://localhost:8001`** | Calibrated Indian credit distress scoring (DTI, FOIR, anomaly scores, SHAP explanations) |
 
 ---
 
-## 📱 1. USER-SIDE: SAFE-PAY AI VOICE TRANSFER SIMULATOR (PORT 3002)
+## 👵 1. USER-SIDE: BANKSATHI ACCESSIBLE VOICE BANKING (PORT 3002)
 
-The consumer side (`user_app/`) provides an interactive digital banking simulator demonstrating **Narrative Voice Transfers** and **Behavioral $N$-Month Beneficiary Verification**:
+Tailored for Indian seniors and digitally inexperienced citizens, BankSathi redesigns digital payments around **dignity, clarity, and safety**.
 
-### 🗣️ Narrative Voice & Text Transfers
-- **Voice Mic Input**: Speak commands naturally (e.g., *"Send 5000 to Dilshan"* or *"Pay ₹8,000 to Priya"*).
-- **Step-by-Step Spoken Narration**: The system audibly narrates intent extraction, lookback verification, and final decision in real time.
+### 🌟 Key Architectural Principles: "Shared guidance, not shared access"
+* **Conversational Voice Banking**: Speak naturally in native languages (*"Send ₹5,000 to Dilshan"*).
+* **Behavioral Risk Engine**: Automatically detects unusual transfers that deviate from established baselines (e.g. ₹5,000 vs. ₹1,500 baseline).
+* **Trusted Circle Protocol**: Sends a privacy-safe alert to a trusted family member (e.g., Daughter Ananya) for a second-opinion check with **zero screen-sharing** (no AnyDesk/TeamViewer).
+* **Server-Enforced 403 Security Boundary**: Trusted Circle guardians can only advise ("Looks Expected" / "Unrecognized"); they **cannot** execute payments or enter PINs on the senior's behalf.
+* **Why the Senior's PIN is Still Required**: Under NPCI/RBI 2FA Zero-Trust regulations, the phone call clears the *fraud advisory check*, while the senior's secret UPI PIN on their own device ensures *cryptographic debit authorization* with zero proxy execution.
 
-### 🔍 $N$-Month Historical Lookback Verification Logic
-Before any fund leaves the account, the engine analyzes past transaction logs over a configurable lookback window ($N$ months, default: 6 months):
-1. **Verified Beneficiary (e.g., Dilshan Kumar / Priya Sharma)**:
-   - Recipient has $\ge 1$ successful transfers in the last $N$ months.
-   - **Outcome**: `INSTANT TRANSFER SUCCESS` $\rightarrow$ Balance debited, verified receipt generated, voice confirmation spoken.
-2. **Unverified / First-Time / Dormant Recipient (e.g., Ramesh Patel >12M inactive, or Raj Cyber / 0 history)**:
-   - Recipient has **zero** qualifying transactions within the $N$-month lookback window.
-   - **Outcome**: `PROTECTIVE SAFETY HOLD QUEUE (4-Hour Cooling-Off)` $\rightarrow$ Funds stay protected in user account, fraud alert spoken.
-   - **Override Actions**: User can authorize immediately via 4-digit PIN (`1234`), cancel transfer, or trigger an automated Twilio AI safety verification call to their phone (`+919461284678`).
+### 🗺️ Interactive 5-Step Guided Story Tour (Port 3002):
+1. **Step 1: Senior Voice Transfer**: Senior Sunita speaks *"Send ₹5,000 to Dilshan"*. Engine flags the transfer against her ₹1,500 baseline.
+2. **Step 2: Guardian Advisory & Twilio Call**: Daughter Ananya triggers an automated out-of-band Twilio call to Sunita to verify legitimacy, streaming the live transcript to the daughter's screen.
+3. **Step 3: Security Defense Block**: Demonstrates the security model by attempting helper proxy payment $ightarrow$ **Server returns HTTP 403 Forbidden**.
+4. **Step 4: Senior Independent PIN**: Once cleared by advisory feedback, Sunita enters her 4-digit UPI PIN on her device.
+5. **Step 5: Settlement & Receipt**: Completes instant settlement with a tamper-evident cryptographic receipt.
 
----
-
-## 🏛️ 2. INSTITUTIONAL BANK COPILOT & TRIAGE PORTAL (PORT 3001)
-
-The bank officer portal (`frontend/`) enables human-in-the-loop oversight across high-risk lending, fraud anomalies, and distress workouts:
-
-- **Triage Queue (`/triage`)**: Real-time evaluation feed of synthetic Indian borrowers and payment anomalies with instant risk categorization (*Critical Risk*, *Moderate Risk*, *Low Risk*).
-- **Evaluate Case (`/evaluate`)**: Interactive form to run real-time ML risk inference + 10-node LangGraph DAG + policy citations.
-- **Policy Knowledge Base (`/policies`)**:
-  - **Create Policy**: Direct markdown policy editor with quick templates (*Kisan Agricultural Moratorium*, *MSME Working Capital SOP*, *Digital Fraud Defense*).
-  - **Upload Doc**: Drag & drop `.md`, `.pdf`, `.txt`, `.csv`, `.docx` for instant chunking and vector indexing into Qdrant.
-  - **Live Voice Policy Explanation**: One-click button to have Twilio call your phone and explain any policy in Hindi, Kannada, or English.
-- **Immutable Audit Trail (`/audit`)**: Tamper-evident ledger logging all risk calculations, policy chunks, human decisions, and voice interaction turns.
+### 🌐 5 Supported Native Languages
+Full UI localization and voice prompt support across:
+* **English (`en`)**
+* **हिन्दी / Hindi (`hi`)**
+* **ಕನ್ನಡ / Kannada (`kn`)**
+* **मराठी / Marathi (`mr`)**
+* **தமிழ் / Tamil (`ta`)**
 
 ---
 
-## 📞 3. TWILIO MULTILINGUAL 2-WAY CONVERSATIONAL VOICE COPILOT
+## 🏛️ 2. INSTITUTIONAL BANK OFFICER COPILOT (PORT 3001)
 
-Integrated with Twilio Voice APIs and public tunneling:
-- **Languages Supported**: **Hindi (हिंदी)**, **Kannada (ಕನ್ನಡ)**, and **English (Indian)**.
-- **2-Way Continuous Conversation**: Uses continuous `<Gather>` speech recognition webhooks to converse with the customer, answer questions about relief schemes or loan moratoriums, and explain specific policy clauses dynamically retrieved via RAG.
-- **Target Recipient Number**: Configured for `+919461284678`.
+The Bank Officer portal (`frontend/`) provides evidence-grounded decision support to prevent default and resolve distressed borrower cases proactively:
+
+### 🗺️ Interactive 5-Step Golden Path Walkthrough (Port 3001):
+1. **Step 1: Continuous Ingestion & ML Risk Scoring**: Evaluates real-time banking telemetry (DTI 46%, rolling cashflows) to flag 85% distress probability for `CASE-2026-001` (Ramesh Kumar).
+2. **Step 2: TheSuperRAG Policy Retrieval**: Qdrant hybrid vector store retrieves exact regulatory clauses (e.g., *RBI Hardship Relief Clause 4.2*) with 92% semantic similarity.
+3. **Step 3: Human-in-the-Loop Decision**: Officer Priya Nair (`OFFICER-402`) authorizes a 36-month restructuring plan with a 2.5% interest rate discount.
+4. **Step 4: AI Multilingual Voice Copilot**: Dispatches an empathetic outbound phone call via Twilio in the borrower's preferred native language.
+5. **Step 5: Cryptographic Audit Trail**: Seals the complete transaction context with SHA-256 and commits it to the immutable regulatory audit ledger (`/audit`).
+
+---
+
+## 📞 3. TWILIO MULTILINGUAL VOICE ENGINE (`voice_service.py`)
+
+Integrated with Twilio Voice APIs and webhooks for live conversational outreach:
+* **Languages**: Hindi, Kannada, Marathi, Tamil, and Indian English.
+* **Continuous Conversation**: Employs `<Gather>` speech recognition webhooks to transcribe spoken responses in real time and store conversational audit turns.
+* **Target Recipient**: Configurable live outbound calling (default verified: `+919461284678`).
 
 ---
 
 ## 🛠️ HOW TO RUN LOCALLY
 
 ### Prerequisites
-- Python 3.10+
-- Node.js 18+
+* Python 3.10+
+* Node.js 18+
 
 ### Step 1: Start ML Inference Service (Port 8001)
 ```bash
 PYTHONPATH=ml_research uv run uvicorn services.predict_api:app --host 0.0.0.0 --port 8001
 ```
 
-### Step 2: Start Core AI Backend (Port 8000)
+### Step 2: Start Core AI & RAG Backend (Port 8000)
 ```bash
 PYTHONPATH=backend uv run uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000
 ```
@@ -80,7 +87,7 @@ cd frontend
 npm run start -- -p 3001
 ```
 
-### Step 4: Start User-Side Banking Simulator (Port 3002)
+### Step 4: Start BankSathi Senior & Guardian App (Port 3002)
 ```bash
 cd user_app
 npm run start -- -p 3002
@@ -89,8 +96,9 @@ npm run start -- -p 3002
 ---
 
 ## 🧪 RUNNING TESTS
+
 To run all 21 backend unit and integration test suites:
 ```bash
 PYTHONPATH=backend uv run pytest backend/tests/ -v --tb=short
 ```
-*100% passing across API endpoints, LangGraph 10-node DAG, RAG policy store, and ML client.*
+*100% passing across API endpoints, LangGraph 10-node DAG, RAG policy store, voice service, and ML client.*
