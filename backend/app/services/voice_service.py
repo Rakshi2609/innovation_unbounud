@@ -47,9 +47,9 @@ class VoiceNotificationService:
         elif lang in ("kn", "kannada"):
             return "Google.kn-IN-Standard-A", "kn-IN"
         elif lang in ("mr", "marathi"):
-            return "Polly.Aditi", "mr-IN"
+            return "Google.mr-IN-Standard-A", "mr-IN"
         elif lang in ("ta", "tamil"):
-            return "Polly.Aditi", "ta-IN"
+            return "Google.ta-IN-Standard-A", "ta-IN"
         else:
             return "Polly.Aditi", "en-IN"
 

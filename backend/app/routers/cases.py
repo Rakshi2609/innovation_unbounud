@@ -351,6 +351,12 @@ async def voice_webhook_respond(
         elif language in ("kn", "kannada"):
             no_input_text = "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಮಾತು ನನಗೆ ಸರಿಯಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಇನ್ನೊಮ್ಮೆ ಹೇಳಿ."
             no_input_end = "ಧನ್ಯವಾದಗಳು, ನೀವು ನಮ್ಮ ಬ್ಯಾಂಕಿಂಗ್ ಆ್ಯಪ್ ಮೂಲಕ ಸಂಪರ್ಕಿಸಬಹುದು. ನಮಸ್ಕಾರ!"
+        elif language in ("mr", "marathi"):
+            no_input_text = "क्षमस्व, मला आपला आवाज ऐकू आला नाही. आपण कृपया पुन्हा सांगू शकाल का?"
+            no_input_end = "धन्यवाद, आपण आमच्या बँकिंग ॲपवर कधीही संपर्क करू शकता. नमस्कार!"
+        elif language in ("ta", "tamil"):
+            no_input_text = "மன்னிக்கவும், உங்கள் குரல் எனக்கு கேட்கவில்லை. தயவுசெய்து மீண்டும் சொல்ல முடியுமா?"
+            no_input_end = "நன்றி, நீங்கள் எங்கள் வங்கி செயலியில் எப்போது வேண்டுமானாலும் தொடர்பு கொள்ளலாம். வணக்கம்!"
         else:
             no_input_text = "I am sorry, I could not hear your response. Could you please repeat that?"
             no_input_end = "Thank you for your time. You can reach our support team anytime in the banking app. Goodbye!"
@@ -413,7 +419,15 @@ async def voice_webhook_respond(
             else (
                 "ಧನ್ಯವಾದಗಳು, ಶುಭ ದಿನ! ನಮಸ್ಕಾರ!"
                 if language in ("kn", "kannada")
-                else "Thank you for your time. Have a wonderful day. Goodbye!"
+                else (
+                    "धन्यवाद, आपला दिवस शुभ जावो. नमस्कार!"
+                    if language in ("mr", "marathi")
+                    else (
+                        "நன்றி, நல்ல நாளாக அமையட்டும். வணக்கம்!"
+                        if language in ("ta", "tamil")
+                        else "Thank you for your time. Have a wonderful day. Goodbye!"
+                    )
+                )
             )
         )
         vr.say(closing, voice=voice_name, language=lang_code)
