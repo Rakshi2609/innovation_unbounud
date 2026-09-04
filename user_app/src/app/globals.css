@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Jost', sans-serif;
+  
+  --breakpoint-xs: 375px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --spacing-page-x-mobile: 16px;
+  --spacing-page-x-tablet: 32px;
+  --spacing-page-x-desktop: 48px;
+
+  --spacing-section-mobile: 24px;
+  --spacing-section-tablet: 40px;
+  --spacing-section-desktop: 64px;
+}
+
+:root {
+  /* Fluid Typography */
+  --text-xs: clamp(0.7rem, 1.5vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 1.8vw, 0.875rem);
+  --text-base: clamp(0.9rem, 2vw, 1rem);
+  --text-lg: clamp(1rem, 2.5vw, 1.125rem);
+  --text-xl: clamp(1.1rem, 3vw, 1.25rem);
+  --text-2xl: clamp(1.25rem, 4vw, 1.5rem);
+  --text-3xl: clamp(1.5rem, 5vw, 1.875rem);
+  --text-4xl: clamp(1.75rem, 6vw, 2.25rem);
+
+  /* Theme Colors - Light (Modern SaaS) */
+  --bg-primary: #FDFDFD;
+  --bg-secondary: #F9FAFB;
+  --bg-tertiary: #FFFFFF;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  
+  /* Lighter, subtle borders */
+  --border: #F3F4F6;
+  --border-strong: #E5E7EB; /* Sleek gray-200 borders */
+  
+  /* SaaS Accents */
+  --accent: #2563EB; /* Modern royal blue */
+  --accent-hover: #1D4ED8;
+  --accent-muted: rgba(37, 99, 235, 0.1);
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  
+  /* Soft, elevated shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+
+  --bauhaus-red: #DC2626;
+  --bauhaus-blue: #2563EB;
+  --bauhaus-yellow: #D97706;
+  --bauhaus-black: #111827;
+  --bauhaus-white: #FFFFFF;
+  --bauhaus-gray: #F3F4F6;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border: #374151;
+  --border-strong: #6B7280;
+  
+  --accent: #F45D48; 
+  --accent-hover: #2F6C91;
+  --accent-muted: rgba(244, 93, 72, 0.15);
+  
+  --shadow-sm: 2px 2px 0px 0px rgba(107, 114, 128, 0.5);
+  --shadow-md: 4px 4px 0px 0px rgba(107, 114, 128, 0.5);
+  --shadow-lg: 6px 6px 0px 0px rgba(107, 114, 128, 0.5);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Touch Targets */
+@media (pointer: coarse) { 
+  button, [role="button"], a { 
+    min-height: 44px; 
+    min-width: 44px; 
+  } 
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ── Soft Bauhaus Utilities ─────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  border-radius: 4px;
+}
+
+.bauhaus-btn, .finance-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 1rem;
+}
+
+.bauhaus-btn:hover, .finance-btn:hover {
+  background: var(--warning);
+  color: #1F2937;
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.bauhaus-btn:active, .finance-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.bauhaus-btn.primary, .finance-btn.primary {
+  background: var(--accent);
+  color: #F9FAFB;
+  border-color: var(--accent);
+}
+
+.bauhaus-btn.primary:hover, .finance-btn.primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #F9FAFB;
+}
+
+[data-theme="dark"] .invert-pdf-dark {
+  filter: invert(1) hue-rotate(180deg);
+}
