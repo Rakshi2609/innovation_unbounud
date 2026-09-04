@@ -93,11 +93,27 @@ export default function TriagePage() {
   const [isTourActive, setIsTourActive] = useState<boolean>(true);
   const [isSpeakingTour, setIsSpeakingTour] = useState<boolean>(false);
 
-  // Voice Call State
   const [callPhone, setCallPhone] = useState<string>('+919461284678');
   const [callLang, setCallLang] = useState<string>('hi');
   const [isCalling, setIsCalling] = useState<boolean>(false);
   const [callResult, setCallResult] = useState<any | null>(null);
+
+  const getLocalizedVoiceScript = (lang: string, customerName: string = 'Valued Customer', status: string = 'ELEVATED_RISK') => {
+    const name = customerName || 'Valued Customer';
+    if (lang === 'hi' || lang === 'hindi') {
+      return `नमस्ते ${name} जी! मैं आपके बैंक से AI फाइनेंशियल सेफ्टी कोपायलट बोल रहा हूँ। हम आपके खाते की सुरक्षा और सहायता के लिए संपर्क कर रहे हैं। आपके कैशफ्लो को आसान बनाने के लिए हमारे पास एक विशेष राहत और ऋण पुनर्गठन योजना उपलब्ध है। आप बिना किसी पेनल्टी के अपनी मासिक ईएमआई को आसान किस्तों में बदल सकते हैं। क्या आपके पास इस योजना के बारे में कोई प्रश्न या सवाल है, या क्या आप इसके नियम जानना चाहते हैं? कृपया बोलकर बताएं, मैं सुन रहा हूँ।`;
+    }
+    if (lang === 'kn' || lang === 'kannada') {
+      return `ನಮಸ್ಕಾರ ${name} ಅವರೇ! ನಾನು ನಿಮ್ಮ ಬ್ಯಾಂಕ್‌ನ AI ಫೈನಾನ್ಷಿಯಲ್ ಸೇಫ್ಟಿ ಕೋಪೈಲಟ್‌ನಿಂದ ಮಾತನಾಡುತ್ತಿದ್ದೇನೆ. ನಿಮ್ಮ ಖಾತೆಯ ಹಣಕಾಸಿನ ನೆರವಿಗಾಗಿ ನಾವು ಕರೆ ಮಾಡುತ್ತಿದ್ದೇವೆ. ನಿಮ್ಮ ಮಾಸಿಕ ಪಾವತಿಗಳನ್ನು ಸುಲಭಗೊಳಿಸಲು ವಿಶೇಷ ಸಾಲ ಮರುಹೊಂದಾಣಿಕೆ ಯೋಜನೆ ಲಭ್ಯವಿದೆ. ನಿಮಗೆ ಈ ಯೋಜನೆ ಅಥವಾ ಬಡ್ಡಿ ದರದ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ? ದಯವಿಟ್ಟು ಮಾತನಾಡಿ ತಿಳಿಸಿ, ನಾನು ಕೇಳುತ್ತಿದ್ದೇನೆ.`;
+    }
+    if (lang === 'mr' || lang === 'marathi') {
+      return `नमस्कार ${name} जी! मी आपल्या बँकेचा AI फायनान्शियल सेफ्टी कोपायलट बोलत आहे. आम्ही आपल्या खात्याच्या आर्थिक साहाय्यासाठी आणि सुरक्षिततेसाठी संपर्क करत आहोत. आपला मासिक हप्ता सुलभ करण्यासाठी विशेष कर्ज पुनर्रचना आणि व्याज सवलत योजना उपलब्ध आहे. या योजनेबद्दल आपले काही प्रश्न किंवा शंका आहेत का? कृपया बोलून सांगा, मी ऐकत आहे.`;
+    }
+    if (lang === 'ta' || lang === 'tamil') {
+      return `வணக்கம் ${name}! நான் உங்கள் வங்கியின் AI நிதி பாதுகாப்பு கோபிலட் (Financial Safety Copilot) பேசுகிறேன். உங்கள் கணக்கின் நிதி நிலையை எளிதாக்க நாங்கள் இந்த முன்னெச்சரிக்கை அழைப்பை மேற்கொண்டுள்ளோம். உங்கள் மாதாந்திர தவணையை எளிதாக்க சிறப்பு கடன் மறுசீரமைப்பு திட்டம் மற்றும் வட்டி சலுகை கிடைக்கிறது. இந்த திட்டம் குறித்து உங்களுக்கு ஏதேனும் கேள்விகள் உள்ளதா? அல்லது கூடுதல் விவரங்கள் அறிய விரும்புகிறீர்களா? தயவுசெய்து சொல்லுங்கள், நான் கேட்கிறேன்.`;
+    }
+    return `Hello ${name}! This is your AI Financial Safety Copilot calling from your bank. We are reaching out with proactive support regarding your recent account review. To assist with your monthly cashflow, you have been pre-approved for a non-punitive debt restructuring plan with reduced interest. Do you have any questions about this repayment plan, or would you like more details on how it works? Please speak after the tone, I am listening.`;
+  };
 
   // Decision Modal State
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
@@ -740,6 +756,22 @@ export default function TriagePage() {
                   </div>
                 </div>
 
+                {/* Dynamic Spoken Script Preview for Selected Language */}
+                <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      Live Spoken Script Preview ({callLang === 'ta' ? 'தமிழ் · Tamil' : callLang === 'hi' ? 'हिन्दी · Hindi' : callLang === 'kn' ? 'ಕನ್ನಡ · Kannada' : callLang === 'mr' ? 'मराठी · Marathi' : 'English (Indian)'}):
+                    </span>
+                    <span className="text-[9px] font-mono font-bold bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded uppercase">
+                      TTS Voice: {callLang === 'kn' ? 'Google.kn-IN' : 'Polly.Aditi (' + callLang + '-IN)'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-800 leading-relaxed italic bg-white p-2.5 rounded border border-gray-200">
+                    "{getLocalizedVoiceScript(callLang, currentDetail?.customer_name, currentDetail?.status)}"
+                  </p>
+                </div>
+
                 {/* Call Dispatch Status / Feedback */}
                 {callResult && (
                   <div className={`p-3.5 rounded border text-xs font-medium mt-3 ${
@@ -749,19 +781,24 @@ export default function TriagePage() {
                       <span className="font-black uppercase tracking-widest text-[10px]">
                         {callResult.success ? '✅ Call Dispatched via Twilio' : '❌ Dispatch Error'}
                       </span>
-                      {callResult.call_sid && (
-                        <span className="font-mono text-[10px] text-gray-500">
-                          SID: {callResult.call_sid}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black bg-green-200 text-green-900 px-1.5 py-0.5 rounded uppercase">
+                          Language: {callLang.toUpperCase()}
                         </span>
-                      )}
+                        {callResult.call_sid && (
+                          <span className="font-mono text-[10px] text-gray-500">
+                            SID: {callResult.call_sid}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {callResult.script_spoken && (
-                      <p className="italic text-gray-700 bg-white/80 p-2 rounded border border-green-100 mt-1">
-                        "{callResult.script_spoken}"
-                      </p>
-                    )}
+                    <p className="italic text-gray-800 bg-white/90 p-2.5 rounded border border-green-200 mt-1">
+                      "{callResult.language === callLang && callResult.script_spoken 
+                        ? callResult.script_spoken 
+                        : getLocalizedVoiceScript(callLang, currentDetail?.customer_name, currentDetail?.status)}"
+                    </p>
                     {callResult.error && (
-                      <p className="font-bold text-red-700">{callResult.error}</p>
+                      <p className="font-bold text-red-700 mt-1">{callResult.error}</p>
                     )}
                   </div>
                 )}

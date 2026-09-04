@@ -396,6 +396,8 @@ export default function EvaluateCasePage() {
                   <option value="en">English (Indian Voice)</option>
                   <option value="hi">हिन्दी (Hindi)</option>
                   <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="ta">தமிழ் (Tamil)</option>
                 </select>
               </div>
             </div>
@@ -443,6 +445,23 @@ export default function EvaluateCasePage() {
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Dynamic Spoken Script Preview for Selected Language */}
+            <div className="bg-gray-50 border border-gray-200 rounded p-2.5 mt-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  Live Spoken Script Preview ({callLang === 'ta' ? 'தமிழ்' : callLang === 'hi' ? 'हिन्दी' : callLang === 'kn' ? 'ಕನ್ನಡ' : callLang === 'mr' ? 'मराठी' : 'English'}):
+                </span>
+              </div>
+              <p className="text-xs text-gray-800 italic bg-white p-2 rounded border border-gray-200">
+                {callLang === 'ta' && `வணக்கம் ${form.name || 'வாடிக்கையாளர்'}! உங்கள் கடன் மதிப்பீடு தயாராக உள்ளது. உங்களின் சிறந்த கடன் வரலாற்றை முன்னிட்டு தங்களுக்கு கடன் சலுகை அங்கீகரிக்கப்பட்டுள்ளது. கூடுதல் விவரங்கள் அறிய விரும்புகிறீர்களா?`}
+                {callLang === 'hi' && `नमस्ते ${form.name || 'ग्राहक'} जी! आपके ऋण आवेदन का मूल्यांकन तैयार है। क्या आप इसके नियम या ब्याज दर के बारे में कुछ पूछना चाहते हैं?`}
+                {callLang === 'kn' && `ನಮಸ್ಕಾರ ${form.name || 'ಗ್ರಾಹಕರೇ'}! ನಿಮ್ಮ ಸಾಲದ ಮೌಲ್ಯಮಾಪನ ಸಿದ್ಧವಾಗಿದೆ. ನಿಮಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ?`}
+                {callLang === 'mr' && `नमस्कार ${form.name || 'ग्राहक'} जी! आपल्या कर्ज अर्जाचे मूल्यांकन तयार आहे. आपल्याला काही विचारायचे आहे का?`}
+                {callLang === 'en' && `Hello ${form.name || 'Valued Customer'}! This is your AI Lending Copilot with your assessment report. Do you have any questions regarding your eligibility or rates?`}
+              </p>
             </div>
 
             {callResult && (

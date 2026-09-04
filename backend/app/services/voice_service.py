@@ -232,6 +232,58 @@ class VoiceNotificationService:
                     f"ನಿಮಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ? ದಯವಿಟ್ಟು ಮಾತನಾಡಿ ತಿಳಿಸಿ."
                 )
 
+        elif lang in ("mr", "marathi"):
+            if "RESTRUCTURE" in primary_recommendation.upper() or "DISTRESS" in status.upper() or "WORKOUT" in primary_recommendation.upper():
+                return (
+                    f"नमस्कार {customer_name} जी! मी आपल्या बँकेचा AI फायनान्शियल सेफ्टी कोपायलट बोलत आहे. "
+                    f"आम्ही आपल्या खात्याच्या आर्थिक साहाय्यासाठी आणि सुरक्षिततेसाठी संपर्क करत आहोत. "
+                    f"आपला मासिक हप्ता सुलभ करण्यासाठी विशेष कर्ज पुनर्रचना आणि व्याज सवलत योजना उपलब्ध आहे. "
+                    f"या योजनेबद्दल आपले काही प्रश्न किंवा शंका आहेत का? कृपया बोलून सांगा, मी ऐकत आहे."
+                )
+            elif "FRAUD" in primary_recommendation.upper() or "STEP_UP" in primary_recommendation.upper() or "FLAG" in status.upper():
+                return (
+                    f"नमस्कार {customer_name} जी! हा आपल्या बँकेकडून महत्त्वाचा सुरक्षा अलर्ट आहे. "
+                    f"आपल्या खात्यावर एका नवीन डिव्हाइसवरून संशयास्पद व्यवहार आढळला असून सुरक्षेच्या कारणास्तव तो तात्पुरता रोखण्यात आला आहे. "
+                    f"आपण हा व्यवहार केला होता का? कृपया बोलून सांगा."
+                )
+            elif "APPROVE" in primary_recommendation.upper() or "APPROVED" in status.upper():
+                return (
+                    f"अभिनंदन {customer_name} जी! मी आपल्या बँकेचा AI लेंडिंग कोपायलट बोलत आहे. "
+                    f"आपल्या उत्तम क्रेडिट रेकॉर्डच्या आधारे आपल्या कर्ज सुविधेला मंजुरी मिळाली आहे. "
+                    f"या योजनेबद्दल आपल्याला काही विचारायचे आहे का? कृपया बोला."
+                )
+            else:
+                return (
+                    f"नमस्कार {customer_name} जी! आपल्या बँक खात्याच्या मूल्यांकनाबाबत नवीन माहिती उपलब्ध आहे. "
+                    f"आपल्याला काही विचारायचे असल्यास कृपया बोलून सांगा."
+                )
+
+        elif lang in ("ta", "tamil"):
+            if "RESTRUCTURE" in primary_recommendation.upper() or "DISTRESS" in status.upper() or "WORKOUT" in primary_recommendation.upper():
+                return (
+                    f"வணக்கம் {customer_name}! நான் உங்கள் வங்கியின் AI நிதி பாதுகாப்பு கோபிலட் (Financial Safety Copilot) பேசுகிறேன். "
+                    f"உங்கள் கணக்கின் நிதி நிலையை எளிதாக்க நாங்கள் இந்த முன்னெச்சரிக்கை அழைப்பை மேற்கொண்டுள்ளோம். "
+                    f"உங்கள் மாதாந்திர தவணையை எளிதாக்க சிறப்பு கடன் மறுசீரமைப்பு திட்டம் மற்றும் வட்டி சலுகை கிடைக்கிறது. "
+                    f"இந்த திட்டம் குறித்து உங்களுக்கு ஏதேனும் கேள்விகள் உள்ளதா? அல்லது கூடுதல் விவரங்கள் அறிய விரும்புகிறீர்களா? தயவுசெய்து சொல்லுங்கள், நான் கேட்கிறேன்."
+                )
+            elif "FRAUD" in primary_recommendation.upper() or "STEP_UP" in primary_recommendation.upper() or "FLAG" in status.upper():
+                return (
+                    f"வணக்கம் {customer_name}! இது உங்கள் வங்கியின் AI பாதுகாப்பு அமைப்பிலிருந்து அவசர பாதுகாப்பு எச்சரிக்கை. "
+                    f"உங்கள் கணக்கில் புதிய சாதனத்திலிருந்து சந்தேகத்திற்குரிய பரிவர்த்தனை முயற்சி கண்டறியப்பட்டு தற்காலிகமாக நிறுத்தப்பட்டுள்ளது. "
+                    f"நீங்கள் இந்த பரிவர்த்தனையை செய்தீர்களா? அல்லது கணக்கை பாதுகாக்க உதவி தேவையா? தயவுசெய்து பேசுங்கள்."
+                )
+            elif "APPROVE" in primary_recommendation.upper() or "APPROVED" in status.upper():
+                return (
+                    f"வாழ்த்துகள் {customer_name}! நான் உங்கள் வங்கியின் AI கடன் கோபிலட் பேசுகிறேன். "
+                    f"உங்களின் சிறந்த கடன் வரலாற்றை முன்னிட்டு உங்கள் கடன் கோரிக்கை அங்கீகரிக்கப்பட்டுள்ளது. "
+                    f"வட்டி விகிதம் அல்லது கடன் வழங்கல் குறித்து ஏதேனும் கேள்விகள் உள்ளதா? தயவுசெய்து பேசுங்கள்."
+                )
+            else:
+                return (
+                    f"வணக்கம் {customer_name}! உங்கள் வங்கிக் கணக்கு மதிப்பீடு குறித்து புதிய தகவல் உள்ளது. "
+                    f"உங்களுக்கு ஏதேனும் கேள்விகள் உள்ளதா? தயவுசெய்து சொல்லுங்கள்."
+                )
+
         else: # Default: English
             if "RESTRUCTURE" in primary_recommendation.upper() or "DISTRESS" in status.upper() or "WORKOUT" in primary_recommendation.upper():
                 return (
@@ -309,7 +361,15 @@ class VoiceNotificationService:
             else (
                 "ಕ್ಷಮಿಸಿ, ಧ್ವನಿ ಕೇಳಿಸಲಿಲ್ಲ. ನಿಮ್ಮ ಬ್ಯಾಂಕಿಂಗ್ ಆ್ಯಪ್ ಮೂಲಕ ಸಂಪರ್ಕಿಸಿ. ಧನ್ಯವಾದಗಳು!"
                 if language in ("kn", "kannada")
-                else "I did not hear a response. If you have any further questions, you can always reach us in your banking app. Thank you and goodbye!"
+                else (
+                    "क्षमस्व, आवाज ऐकू आला नाही. अधिक माहितीसाठी आपल्या बँकिंग ॲपवर संपर्क साधा. धन्यवाद!"
+                    if language in ("mr", "marathi")
+                    else (
+                        "மன்னிக்கவும், உங்கள் குரல் கேட்கவில்லை. கூடுதல் விவரங்களுக்கு வங்கி செயலியை தொடர்பு கொள்ளவும். நன்றி!"
+                        if language in ("ta", "tamil")
+                        else "I did not hear a response. If you have any further questions, you can always reach us in your banking app. Thank you and goodbye!"
+                    )
+                )
             )
         )
         vr.say(fallback_msg, voice=voice_name, language=lang_code)
