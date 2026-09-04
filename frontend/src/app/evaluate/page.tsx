@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, TrendingDown, BookOpen, CheckCircle, Scale, AlertCircle } from 'lucide-react';
+import { Plus, TrendingDown, BookOpen, CheckCircle, Scale, AlertCircle, PhoneCall, PhoneOutgoing, Globe, Activity } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -16,6 +16,12 @@ export default function EvaluateCasePage() {
   const [loading, setLoading] = useState(false);
   const [assessmentResult, setAssessmentResult] = useState<any | null>(null);
   const [apiError, setApiError] = useState('');
+
+  // Voice Call State
+  const [callPhone, setCallPhone] = useState<string>('+919461284678');
+  const [callLang, setCallLang] = useState<string>('hi');
+  const [isCalling, setIsCalling] = useState<boolean>(false);
+  const [callResult, setCallResult] = useState<any | null>(null);
 
   const [form, setForm] = useState({
     name: "Sunita Verma",
@@ -348,7 +354,7 @@ export default function EvaluateCasePage() {
 
           {/* Citations */}
           <h4 className="text-xs font-black uppercase text-[#8A8A8A] mb-2">Retrieved Policy Evidence:</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             {assessmentResult.rag_citations?.map((c: any, i: number) => (
               <div key={i} className="p-3 border-2 border-[var(--border-strong)] bg-white">
                 <span className="text-[10px] font-black px-1.5 py-0.5 bg-gray-800 text-white uppercase">
@@ -358,6 +364,111 @@ export default function EvaluateCasePage() {
                 <p className="text-[11px] text-gray-600 italic mt-1">"{c.snippet}"</p>
               </div>
             ))}
+          </div>
+
+          {/* AI Voice Call Section */}
+          <div className="p-4 bg-gray-50 border-2 border-gray-900 rounded">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 border-b border-gray-200 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded bg-gray-900 text-white flex items-center justify-center">
+                  <PhoneCall size={14} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase text-gray-900 flex items-center gap-2">
+                    Notify Customer via AI Voice Call
+                    <span className="text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
+                      Twilio Live
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 font-medium">
+                    Call the customer instantly with a friendly spoken summary in their native language.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Globe size={14} className="text-gray-400" />
+                <select
+                  value={callLang}
+                  onChange={e => setCallLang(e.target.value)}
+                  className="text-xs font-bold uppercase bg-white border border-gray-300 rounded px-2 py-1 text-gray-800"
+                >
+                  <option value="en">English (Indian Voice)</option>
+                  <option value="hi">हिन्दी (Hindi)</option>
+                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <input
+                type="text"
+                value={callPhone}
+                onChange={e => setCallPhone(e.target.value)}
+                placeholder="+919461284678"
+                className="w-full sm:w-2/3 text-xs font-mono font-bold p-2 border border-gray-300 rounded bg-white text-gray-900"
+              />
+              <button
+                onClick={async () => {
+                  if (!assessmentResult) return;
+                  setIsCalling(true);
+                  setCallResult(null);
+                  try {
+                    const res = await fetch(`${API_BASE}/api/v1/cases/${assessmentResult.case_id}/call`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        phone_number: callPhone,
+                        language: callLang
+                      })
+                    });
+                    const data = await res.json();
+                    setCallResult(data);
+                  } catch (e: any) {
+                    setCallResult({ success: false, error: e.message || 'Call failed' });
+                  } finally {
+                    setIsCalling(false);
+                  }
+                }}
+                disabled={isCalling}
+                className="w-full sm:w-1/3 px-4 py-2 bg-gray-900 hover:bg-black text-white font-black text-xs uppercase flex items-center justify-center gap-2 rounded disabled:opacity-50 cursor-pointer"
+              >
+                {isCalling ? (
+                  <>
+                    <Activity size={14} className="animate-spin text-blue-400" /> Connecting...
+                  </>
+                ) : (
+                  <>
+                    <PhoneOutgoing size={14} /> Call Customer Now
+                  </>
+                )}
+              </button>
+            </div>
+
+            {callResult && (
+              <div className={`p-3 rounded border text-xs font-medium mt-3 ${
+                callResult.success ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-black uppercase tracking-widest text-[10px]">
+                    {callResult.success ? '✅ Call Dispatched via Twilio' : '❌ Dispatch Error'}
+                  </span>
+                  {callResult.call_sid && (
+                    <span className="font-mono text-[10px] text-gray-500">
+                      SID: {callResult.call_sid}
+                    </span>
+                  )}
+                </div>
+                {callResult.script_spoken && (
+                  <p className="italic text-gray-700 bg-white/80 p-2 rounded border border-green-100 mt-1">
+                    "{callResult.script_spoken}"
+                  </p>
+                )}
+                {callResult.error && (
+                  <p className="font-bold text-red-700">{callResult.error}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

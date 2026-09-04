@@ -236,3 +236,77 @@ def _answer_with_history(question: str, history: List, citations: List) -> str:
         f"making the final human decision."
     )
     return "\n".join(parts)
+
+
+class VoiceCallRequest(BaseModel):
+    phone_number: str = "+919461284678"
+    language: str = "en"  # "en", "hi", "kn"
+    custom_message: Optional[str] = None
+
+
+@router.post("/voice/direct-call")
+def direct_voice_call(payload: VoiceCallRequest):
+    """Directly initiate an AI Voice Call via Twilio in English, Hindi, or Kannada."""
+    from app.services.voice_service import voice_service
+    res = voice_service.trigger_voice_call(
+        to_phone=payload.phone_number,
+        customer_name="Valued Customer",
+        status="APPROVED",
+        case_id="DEMO-CALL",
+        summary="Your financial assessment and safety copilot review is complete.",
+        primary_recommendation="APPROVE",
+        language=payload.language,
+        custom_script=payload.custom_message
+    )
+    return res
+
+
+@router.post("/{case_id}/call")
+def call_customer_for_case(
+    case_id: str,
+    payload: VoiceCallRequest,
+    db: Session = Depends(get_db)
+):
+    """Initiate an AI Voice Call notifying the customer about their specific case assessment."""
+    record = db.query(CaseRecord).filter(CaseRecord.id == case_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Case {case_id} not found")
+
+    from app.services.voice_service import voice_service
+    customer_name = record.customer_name or "Valued Customer"
+    status = record.status or "PENDING_REVIEW"
+    summary = ""
+    recommendation = ""
+
+    if record.explanation and isinstance(record.explanation, dict):
+        summary = record.explanation.get("summary", "")
+        recs = record.explanation.get("recommendations", [])
+        if recs and isinstance(recs, list) and len(recs) > 0:
+            recommendation = recs[0].get("title", "") or recs[0].get("action_type", "")
+
+    res = voice_service.trigger_voice_call(
+        to_phone=payload.phone_number,
+        customer_name=customer_name,
+        status=status,
+        case_id=case_id,
+        summary=summary,
+        primary_recommendation=recommendation,
+        language=payload.language,
+        custom_script=payload.custom_message
+    )
+
+    from app.models.database import AuditTrailRecord
+    import uuid
+    audit_entry = AuditTrailRecord(
+        id=f"AUD-{uuid.uuid4().hex[:8].upper()}",
+        case_id=case_id,
+        event_type="VOICE_CALL_DISPATCHED",
+        actor="AI_VOICE_COPILOT",
+        action=f"Dispatched AI Voice Call ({payload.language.upper()}) to {payload.phone_number}",
+        decision=status,
+        notes=f"Call SID: {res.get('call_sid', 'N/A')}. Script: {res.get('script_spoken', '')[:200]}"
+    )
+    db.add(audit_entry)
+    db.commit()
+
+    return res

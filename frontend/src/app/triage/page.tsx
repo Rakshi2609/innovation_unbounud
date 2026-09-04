@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Layers, RefreshCw, Search, Plus, Scale, TrendingDown, BookOpen, 
   ShieldCheck, AlertTriangle, UserCheck, CheckCircle2, Lock, Sparkles, 
-  Activity, FileText
+  Activity, FileText, PhoneCall, PhoneOutgoing, Volume2, Globe
 } from 'lucide-react';
 
 const API_BASE = "http://localhost:8000";
@@ -23,6 +23,12 @@ export default function TriagePage() {
   const [trackFilter, setTrackFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [userRole, setUserRole] = useState<'OFFICER' | 'CUSTOMER'>('OFFICER');
+
+  // Voice Call State
+  const [callPhone, setCallPhone] = useState<string>('+919461284678');
+  const [callLang, setCallLang] = useState<string>('hi');
+  const [isCalling, setIsCalling] = useState<boolean>(false);
+  const [callResult, setCallResult] = useState<any | null>(null);
 
   // Decision Modal State
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
@@ -397,6 +403,122 @@ export default function TriagePage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Multilingual Voice Copilot Dispatch Card */}
+              <div className="bg-white border-2 border-gray-900 rounded shadow-md p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-gray-200 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center">
+                      <PhoneCall size={16} />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                        AI Multilingual Voice Copilot
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
+                          Twilio Live
+                        </span>
+                      </h3>
+                      <p className="text-xs text-gray-500 font-medium">
+                        Direct empathetic outbound phone call in customer's preferred language.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Globe size={14} className="text-gray-400" />
+                    <select
+                      value={callLang}
+                      onChange={e => setCallLang(e.target.value)}
+                      className="text-xs font-bold uppercase bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="en">English (Indian Voice)</option>
+                      <option value="hi">हिन्दी (Hindi)</option>
+                      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">
+                      Customer Contact Number:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={callPhone}
+                        onChange={e => setCallPhone(e.target.value)}
+                        placeholder="+919461284678"
+                        className="w-full text-xs font-mono font-bold p-2.5 border border-gray-300 rounded bg-gray-50 text-gray-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      onClick={async () => {
+                        if (!currentDetail) return;
+                        setIsCalling(true);
+                        setCallResult(null);
+                        try {
+                          const res = await fetch(`${API_BASE}/api/v1/cases/${currentDetail.case_id}/call`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              phone_number: callPhone,
+                              language: callLang
+                            })
+                          });
+                          const data = await res.json();
+                          setCallResult(data);
+                        } catch (e: any) {
+                          setCallResult({ success: false, error: e.message || 'Call dispatch failed' });
+                        } finally {
+                          setIsCalling(false);
+                        }
+                      }}
+                      disabled={isCalling}
+                      className="w-full bg-gray-900 hover:bg-black text-white px-4 py-2.5 rounded font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow transition-all disabled:opacity-50"
+                    >
+                      {isCalling ? (
+                        <>
+                          <Activity size={14} className="animate-spin text-blue-400" /> Connecting Twilio...
+                        </>
+                      ) : (
+                        <>
+                          <PhoneOutgoing size={14} /> Call Customer Now
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Call Dispatch Status / Feedback */}
+                {callResult && (
+                  <div className={`p-3.5 rounded border text-xs font-medium mt-3 ${
+                    callResult.success ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900'
+                  }`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-black uppercase tracking-widest text-[10px]">
+                        {callResult.success ? '✅ Call Dispatched via Twilio' : '❌ Dispatch Error'}
+                      </span>
+                      {callResult.call_sid && (
+                        <span className="font-mono text-[10px] text-gray-500">
+                          SID: {callResult.call_sid}
+                        </span>
+                      )}
+                    </div>
+                    {callResult.script_spoken && (
+                      <p className="italic text-gray-700 bg-white/80 p-2 rounded border border-green-100 mt-1">
+                        "{callResult.script_spoken}"
+                      </p>
+                    )}
+                    {callResult.error && (
+                      <p className="font-bold text-red-700">{callResult.error}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
             </div>

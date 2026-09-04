@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     default_llm_model: str = "llama-3.1-8b-instant"
     llm_temperature: float = 0.1
 
+    # Mistral AI Settings
+    mistral_api_key: str = os.getenv("MISTRAL_API_KEY", "")
+    mistral_model: str = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+
+    # Twilio Telephony Settings
+    twilio_account_sid: str = os.getenv("TWILIO_ACCOUNT_SID", "")
+    twilio_auth_token: str = os.getenv("TWILIO_AUTH_TOKEN", "")
+    twilio_from_number: str = os.getenv("TWILIO_FROM_NUMBER", "+19788308965")
+
     # RAG parameters
     retrieval_k: int = 5
     rerank_top_k: int = 3
