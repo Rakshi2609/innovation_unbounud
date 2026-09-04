@@ -42,6 +42,7 @@ export default function TriagePage() {
   const [overrideReason, setOverrideReason] = useState('');
 
   const fetchCaseDetail = useCallback(async (id: string) => {
+    if (!id) return;
     try {
       const res = await fetch(`${API_BASE}/api/v1/cases/${id}`);
       if (res.ok) {
@@ -62,15 +63,12 @@ export default function TriagePage() {
         const list = data.cases || [];
         setCases(list);
         if (list.length > 0) {
-          const currentExists = list.some((c: any) => c.case_id === selectedCaseId);
-          if (!currentExists) {
-            const scenarioA = list.find((c: any) => c.case_id === 'CASE-2026-001');
-            const targetId = scenarioA ? scenarioA.case_id : list[0].case_id;
-            setSelectedCaseId(targetId);
-            fetchCaseDetail(targetId);
-          } else {
-            fetchCaseDetail(selectedCaseId);
-          }
+          setSelectedCaseId(prev => {
+            const exists = list.some((c: any) => c.case_id === prev);
+            const chosenId = exists ? prev : list[0].case_id;
+            fetchCaseDetail(chosenId);
+            return chosenId;
+          });
         }
       }
     } catch (e) {
@@ -78,16 +76,23 @@ export default function TriagePage() {
     } finally {
       setIsFetchingList(false);
     }
-  }, [selectedCaseId, fetchCaseDetail]);
+  }, [fetchCaseDetail]);
 
-  useEffect(() => { fetchCases(); }, []);
   useEffect(() => {
-    if (selectedCaseId && !caseDetailsCache[selectedCaseId]) {
-      fetchCaseDetail(selectedCaseId);
-    }
-  }, [selectedCaseId, caseDetailsCache, fetchCaseDetail]);
+    fetchCases();
+  }, [fetchCases]);
 
-  const currentDetail = useMemo(() => caseDetailsCache[selectedCaseId] || null, [caseDetailsCache, selectedCaseId]);
+  const handleSelectCase = (id: string) => {
+    setSelectedCaseId(id);
+    if (!caseDetailsCache[id]) {
+      fetchCaseDetail(id);
+    }
+  };
+
+  const currentDetail = useMemo(() => {
+    if (!selectedCaseId) return null;
+    return caseDetailsCache[selectedCaseId] || null;
+  }, [caseDetailsCache, selectedCaseId]);
 
   const handleSubmitDecision = async () => {
     if (!selectedCaseId) return;
@@ -201,7 +206,7 @@ export default function TriagePage() {
               return (
                 <div
                   key={c.case_id}
-                  onClick={() => setSelectedCaseId(c.case_id)}
+                  onClick={() => handleSelectCase(c.case_id)}
                   className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
                     isSelected ? 'bg-blue-50/50 border-l-4 border-l-blue-600' : 'bg-white hover:bg-gray-50 border-l-4 border-l-transparent'
                   }`}
