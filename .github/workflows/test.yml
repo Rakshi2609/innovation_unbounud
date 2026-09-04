@@ -15,10 +15,12 @@ jobs:
     timeout-minutes: 10
 
     env:
-      GROQ_API_KEY: ""
-      MISTRAL_API_KEY: ""
-      TWILIO_ACCOUNT_SID: ""
-      TWILIO_AUTH_TOKEN: ""
+      GROQ_API_KEY: "mock-groq-key-for-tests"
+      MISTRAL_API_KEY: "mock-mistral-key-for-tests"
+      TWILIO_ACCOUNT_SID: "ACmockaccountidsidforci"
+      TWILIO_AUTH_TOKEN: "mockauthtokenforci"
+      DATABASE_URL: "sqlite:///./test.db"
+      ENVIRONMENT: "test"
 
     steps:
       - name: Checkout
@@ -38,4 +40,5 @@ jobs:
 
       - name: Run pytest
         run: |
-          PYTHONPATH=backend uv run pytest backend/tests/ -v --tb=short
+          source .venv/bin/activate
+          PYTHONPATH=backend pytest backend/tests/ -v --tb=short
