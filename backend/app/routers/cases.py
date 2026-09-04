@@ -341,26 +341,33 @@ async def voice_webhook_respond(
     next_turn = turn_num + 1
     next_webhook = f"{public_base}/api/v1/cases/voice/webhook/respond?case_id={case_id}&lang={language}&turn={next_turn}"
 
+    from twilio.twiml.voice_response import VoiceResponse, Gather, Say, Pause, Hangup
+
     if not user_speech:
         # Prompt the user again if nothing was heard
         if language in ("hi", "hindi"):
             no_input_text = "क्षमा करें, मुझे आपकी आवाज सुनाई नहीं दी। क्या आप कृपया दोहरा सकते हैं?"
+            no_input_end = "धन्यवाद, आप हमारे बैंकिंग ऐप पर कभी भी संपर्क कर सकते हैं। अलविदा!"
         elif language in ("kn", "kannada"):
             no_input_text = "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಮಾತು ನನಗೆ ಸರಿಯಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಇನ್ನೊಮ್ಮೆ ಹೇಳಿ."
+            no_input_end = "ಧನ್ಯವಾದಗಳು, ನೀವು ನಮ್ಮ ಬ್ಯಾಂಕಿಂಗ್ ಆ್ಯಪ್ ಮೂಲಕ ಸಂಪರ್ಕಿಸಬಹುದು. ನಮಸ್ಕಾರ!"
         else:
             no_input_text = "I am sorry, I could not hear your response. Could you please repeat that?"
+            no_input_end = "Thank you for your time. You can reach our support team anytime in the banking app. Goodbye!"
 
-        twiml = f"""<Response>
-    <Gather input="speech" action="{next_webhook}" method="POST" speechTimeout="auto" timeout="6" language="{lang_code}">
-        <Say voice="{voice_name}" language="{lang_code}">
-            {no_input_text}
-        </Say>
-    </Gather>
-    <Say voice="{voice_name}" language="{lang_code}">
-        Thank you for your time. You can reach our support team anytime in the banking app. Goodbye!
-    </Say>
-</Response>"""
-        return Response(content=twiml, media_type="application/xml")
+        vr = VoiceResponse()
+        gather = Gather(
+            input="speech",
+            action=next_webhook,
+            method="POST",
+            speech_timeout="auto",
+            timeout=6,
+            language=lang_code
+        )
+        gather.say(no_input_text, voice=voice_name, language=lang_code)
+        vr.append(gather)
+        vr.say(no_input_end, voice=voice_name, language=lang_code)
+        return Response(content=str(vr), media_type="application/xml; charset=utf-8")
 
     # Generate contextual conversational reply
     ai_reply, should_continue = voice_service.generate_conversational_reply(
@@ -385,24 +392,32 @@ async def voice_webhook_respond(
     db.add(audit_entry)
     db.commit()
 
+    vr = VoiceResponse()
     if should_continue:
-        twiml = f"""<Response>
-    <Gather input="speech" action="{next_webhook}" method="POST" speechTimeout="auto" timeout="6" language="{lang_code}">
-        <Say voice="{voice_name}" language="{lang_code}">
-            {ai_reply}
-        </Say>
-    </Gather>
-    <Say voice="{voice_name}" language="{lang_code}">
-        Thank you for your time. Have a wonderful day. Goodbye!
-    </Say>
-</Response>"""
+        gather = Gather(
+            input="speech",
+            action=next_webhook,
+            method="POST",
+            speech_timeout="auto",
+            timeout=6,
+            language=lang_code
+        )
+        gather.say(ai_reply, voice=voice_name, language=lang_code)
+        vr.append(gather)
+        
+        closing = (
+            "धन्यवाद और आपका दिन शुभ हो। अलविदा!"
+            if language in ("hi", "hindi")
+            else (
+                "ಧನ್ಯವಾದಗಳು, ಶುಭ ದಿನ! ನಮಸ್ಕಾರ!"
+                if language in ("kn", "kannada")
+                else "Thank you for your time. Have a wonderful day. Goodbye!"
+            )
+        )
+        vr.say(closing, voice=voice_name, language=lang_code)
     else:
-        twiml = f"""<Response>
-    <Say voice="{voice_name}" language="{lang_code}">
-        {ai_reply}
-    </Say>
-    <Pause length="1"/>
-    <Hangup/>
-</Response>"""
+        vr.say(ai_reply, voice=voice_name, language=lang_code)
+        vr.pause(length=1)
+        vr.hangup()
 
-    return Response(content=twiml, media_type="application/xml")
+    return Response(content=str(vr), media_type="application/xml; charset=utf-8")

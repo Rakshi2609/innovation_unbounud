@@ -3,6 +3,7 @@ import urllib.request
 import json
 import os
 from typing import Optional, Dict, Any, Tuple
+from twilio.twiml.voice_response import VoiceResponse, Gather, Say, Pause, Hangup
 from twilio.rest import Client
 from app.core.config import settings
 
@@ -44,7 +45,8 @@ class VoiceNotificationService:
         if lang in ("hi", "hindi"):
             return "Polly.Aditi", "hi-IN"
         elif lang in ("kn", "kannada"):
-            return "Polly.Aditi", "kn-IN"
+            # Google Cloud TTS voice supported by Twilio for Kannada
+            return "Google.kn-IN-Standard-A", "kn-IN"
         else:
             return "Polly.Aditi", "en-IN"
 
@@ -170,22 +172,34 @@ class VoiceNotificationService:
             language=language
         )
 
-        # 2-Way Interactive TwiML with <Gather> listening for user speech
-        twiml = f"""<Response>
-    <Pause length="1"/>
-    <Gather input="speech" action="{webhook_action}" method="POST" speechTimeout="auto" timeout="6" language="{lang_code}">
-        <Say voice="{voice_name}" language="{lang_code}">
-            {script_text}
-        </Say>
-    </Gather>
-    <Say voice="{voice_name}" language="{lang_code}">
-        I did not hear a response. If you have any further questions, you can always reach us in your banking app. Thank you and goodbye!
-    </Say>
-</Response>"""
+        # 2-Way Interactive TwiML built with official VoiceResponse
+        vr = VoiceResponse()
+        vr.pause(length=1)
+        gather = Gather(
+            input="speech",
+            action=webhook_action,
+            method="POST",
+            speech_timeout="auto",
+            timeout=6,
+            language=lang_code
+        )
+        gather.say(script_text, voice=voice_name, language=lang_code)
+        vr.append(gather)
+        
+        fallback_msg = (
+            "क्षमा करें, मुझे आपकी आवाज सुनाई नहीं दी। यदि आपका कोई प्रश्न है तो आप हमारे बैंकिंग ऐप पर कभी भी संपर्क कर सकते हैं। धन्यवाद और अलविदा!"
+            if language in ("hi", "hindi")
+            else (
+                "ಕ್ಷಮಿಸಿ, ಧ್ವನಿ ಕೇಳಿಸಲಿಲ್ಲ. ನಿಮ್ಮ ಬ್ಯಾಂಕಿಂಗ್ ಆ್ಯಪ್ ಮೂಲಕ ಸಂಪರ್ಕಿಸಿ. ಧನ್ಯವಾದಗಳು!"
+                if language in ("kn", "kannada")
+                else "I did not hear a response. If you have any further questions, you can always reach us in your banking app. Thank you and goodbye!"
+            )
+        )
+        vr.say(fallback_msg, voice=voice_name, language=lang_code)
 
         try:
             call = self.client.calls.create(
-                twiml=twiml,
+                twiml=str(vr),
                 to=to_phone,
                 from_=self.from_number
             )
@@ -222,8 +236,7 @@ class VoiceNotificationService:
         lang = language.lower().strip()
 
         # Check for goodbye / termination intent
-        exit_phrases = ["no", "nothing", "bye", "goodbye", "thank you", "thanks", "that's all", "nahi", "shukriya", "dhanyawad", "illa", "saaku", "dhanyavada", "stop"]
-        if any(w in speech_lower for w in ["bye", "goodbye", "no thanks", "nothing else", "धन्यवाद", "अलविदा", "बस", "ಇಲ್ಲ", "ಸಾಕು", "ಧನ್ಯವಾದ"]):
+        if any(w in speech_lower for w in ["bye", "goodbye", "no thanks", "nothing else", "धन्यवाद", "अलविदा", "बस", "ಇಲ್ಲ", "ಸಾಕು", "ಧನ್ಯವಾದ", "stop", "done", "no", "nahi"]):
             if lang in ("hi", "hindi"):
                 return ("बहुत बहुत धन्यवाद! आपकी सहायता करके खुशी हुई। सुरक्षित रहें और आपका दिन शुभ हो। अलविदा!", False)
             elif lang in ("kn", "kannada"):
