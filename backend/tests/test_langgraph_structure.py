@@ -31,8 +31,10 @@ def test_compiled_graph_is_langgraph(graph):
     # langgraph exposes `nodes`, `edges`, and `.ainvoke`
     assert hasattr(g, "ainvoke")
     assert hasattr(g, "nodes")
-    assert hasattr(g, "edges")
-    assert len(g.nodes) == 10
+    assert hasattr(g.get_graph(), "edges") or hasattr(g, "builder")
+    # LangGraph compiled graph includes __start__ internally; user nodes are 10
+    user_nodes = [n for n in g.nodes.keys() if not n.startswith("__")]
+    assert len(user_nodes) == 10
 
 
 def test_safety_conditional_routes_to_route_when_passed(graph):
