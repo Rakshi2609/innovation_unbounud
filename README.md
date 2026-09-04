@@ -1,72 +1,73 @@
 # 🇮🇳 AI FINANCIAL SAFETY & ACCESSIBLE BANKING ECOSYSTEM
 
-> **A Complete Dual-Engine Platform for the Indian Digital Banking Ecosystem:**
-> 1. **BankMantri (`http://localhost:3002`)**: Voice-First Accessible Banking & Anti-Scam Shield for Indian Seniors ("Shared guidance, not shared access").
-> 2. **TheSuperRAG Bank Copilot (`http://localhost:3001`)**: Evidence-Grounded Decision Intelligence for Institutional Bank Officers (Statistical ML + Qdrant RAG + LangGraph + Immutable Audit).
+### *One safety layer. Two perspectives.*
+
+> **"AI detects risk. Evidence explains it. Humans retain control."**
+>
+> • **For Customers (Port 3002)**: **BankMantri** — Accessible, voice-first, family-protected digital banking tailored for Indian seniors ("Shared guidance, not shared access").  
+> • **For Banks (Port 3001)**: **TheSuperRAG Bank Copilot** — Evidence-grounded financial risk detection, regulatory policy retrieval, and human-in-the-loop workout intelligence.
 
 ---
 
 ## 📑 TABLE OF CONTENTS
-1. [Executive Summary & System Vision](#-executive-summary--system-vision)
-2. [Dual-Project Architecture & Topology](#-dual-project-architecture--topology)
-3. [Project 1: BankMantri — Accessible Senior Voice Banking (Port 3002)](#-project-1-bankmantri--accessible-senior-voice-banking-port-3002)
+1. [System Vision: One Safety Layer, Two Perspectives](#-system-vision-one-safety-layer-two-perspectives)
+2. [Unified System Topology & Running Ports](#-unified-system-topology--running-ports)
+3. [Customer Perspective: BankMantri (Port 3002)](#-customer-perspective-bankmantri-port-3002)
    - [Core Principle: "Shared Guidance, Not Shared Access"](#core-principle-shared-guidance-not-shared-access)
    - [Threat Model: Anti-Social Engineering & Zero Screen-Sharing](#threat-model-anti-social-engineering--zero-screen-sharing)
-   - [Zero-PIN Instant Settlement for Baseline Payments (UPI Lite)](#zero-pin-instant-settlement-for-baseline-payments-upi-lite)
-   - [Anomaly Detection & Trusted Circle Protocol](#anomaly-detection--trusted-circle-protocol)
-   - [Twilio Out-of-Band Verification Calling & Live Speech Transcripts](#twilio-out-of-band-verification-calling--live-speech-transcripts)
+   - [Simulated UPI Lite Zero-PIN Flow for Baseline Payments](#simulated-upi-lite-zero-pin-flow-for-baseline-payments)
+   - [Behavioral Anomaly & Trusted Circle Protocol](#behavioral-anomaly--trusted-circle-protocol)
+   - [Twilio Out-of-Band Verification Calling](#twilio-out-of-band-verification-calling)
    - [Server-Enforced HTTP 403 Security Boundary](#server-enforced-http-403-security-boundary)
-   - [NPCI 2FA Compliance: Why Senior PIN is Still Required](#npci-2fa-compliance-why-senior-pin-is-still-required)
-   - [Multilingual Engine (5 Indian Languages)](#multilingual-engine-5-indian-languages)
-   - [Interactive 5-Step Guided Story Tour](#interactive-5-step-guided-story-tour)
-4. [Project 2: Institutional Bank Officer Copilot (Port 3001)](#-project-2-institutional-bank-officer-copilot-port-3001)
-   - [Statistical ML Distress Scoring (LightGBM + SHAP)](#statistical-ml-distress-scoring-lightgbm--shap)
+   - [Independent Senior PIN Authentication](#independent-senior-pin-authentication)
+   - [Multilingual Voice Engine (5 Indian Languages)](#multilingual-voice-engine-5-indian-languages)
+   - [Interactive 5-Step Customer Story Walkthrough](#interactive-5-step-customer-story-walkthrough)
+4. [Institutional Perspective: TheSuperRAG Bank Copilot (Port 3001)](#-institutional-perspective-thesuperrag-bank-copilot-port-3001)
+   - [Statistical ML Distress Scoring (LightGBM Hero Model)](#statistical-ml-distress-scoring-lightgbm-hero-model)
    - [TheSuperRAG Hybrid Regulatory Policy Engine (Qdrant)](#thesuperrag-hybrid-regulatory-policy-engine-qdrant)
-   - [10-Node LangGraph Deterministic DAG](#10-node-langgraph-deterministic-dag)
+   - [10-Node LangGraph Constrained Orchestration DAG](#10-node-langgraph-constrained-orchestration-dag)
    - [Human-in-the-Loop Governance & Overrides](#human-in-the-loop-governance--overrides)
    - [Multilingual Twilio Voice Copilot for Workout Outreach](#multilingual-twilio-voice-copilot-for-workout-outreach)
    - [Interactive 5-Step Golden Path Triage Walkthrough](#interactive-5-step-golden-path-triage-walkthrough)
-   - [Immutable Cryptographic Audit Ledger (`/audit`)](#immutable-cryptographic-audit-ledger-audit)
+   - [Tamper-Evident Cryptographic Audit Trail (`/audit`)](#tamper-evident-cryptographic-audit-trail-audit)
 5. [Twilio Multilingual Voice Engine Architecture](#-twilio-multilingual-voice-engine-architecture)
-6. [Machine Learning Research & Benchmark Datasets (`ml_research/`)](#-machine-learning-research--benchmark-datasets-ml_research)
+6. [Machine Learning Models & Empirical Research (`ml_research/`)](#-machine-learning-models--empirical-research-ml_research)
 7. [API Endpoints Reference](#-api-endpoints-reference)
-8. [Step-by-Step Local Deployment & Quick-Start Guide](#-step-by-step-local-deployment--quick-start-guide)
+8. [Step-by-Step Local Deployment Guide](#-step-by-step-local-deployment-guide)
 9. [Automated CI/CD & Test Suite (21 Tests Passing)](#-automated-cicd--test-suite-21-tests-passing)
 
 ---
 
-## 🌟 EXECUTIVE SUMMARY & SYSTEM VISION
+## 🌟 SYSTEM VISION: ONE SAFETY LAYER, TWO PERSPECTIVES
 
-India's UPI ecosystem processes over 14 billion transactions monthly. However, this explosive digital growth has surfaced two systemic vulnerabilities at opposite ends of the banking spectrum:
+India's digital banking ecosystem processes billions of UPI transactions monthly, but faces two major vulnerabilities:
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
 │                        INDIAN FINANCIAL SAFETY DUAL PLATFORM                              │
+│                    "AI detects risk. Evidence explains it. Humans retain control."         │
 └─────────────────────────────────────────────┬─────────────────────────────────────────────┘
                                               │
                     ┌─────────────────────────┴─────────────────────────┐
                     ▼                                                   ▼
 ┌───────────────────────────────────────┐           ┌───────────────────────────────────────┐
-│  PROJECT 1: BANKMANTRI (CONSUMER)     │           │  PROJECT 2: BANK COPILOT (INSTITUTION)│
-│  Port: http://localhost:3002          │           │  Port: http://localhost:3001          │
+│  CUSTOMER VIEW: BANKMANTRI (PORT 3002)│           │  BANK COPILOT VIEW (PORT 3001)        │
 ├───────────────────────────────────────┤           ├───────────────────────────────────────┤
-│ • Voice-First Indian Senior Banking   │           │ • Evidence-Grounded Default Copilot   │
+│ • Senior Voice-First Accessibility    │           │ • Evidence-Grounded Default Copilot   │
 │ • "Shared guidance, not shared access"│           │ • LightGBM Indian NPA Risk Scoring    │
-│ • Behavioral Anomaly & Lookback Engine│           │ • TheSuperRAG Qdrant Policy Retrieval │
-│ • Out-of-band Twilio Verification Call│           │ • 10-Node LangGraph Orchestration DAG │
-│ • Zero-PIN UPI Lite Baseline Payments │           │ • Human-in-the-Loop Officer Workouts  │
-│ • Server-Enforced HTTP 403 Boundary   │           │ • Cryptographic Audit Ledger (/audit) │
+│ • Behavioral Anomaly & Hold Queue     │           │ • TheSuperRAG Qdrant Policy Retrieval │
+│ • Out-of-band Twilio Verification Call│           │ • 10-Node LangGraph Constrained DAG   │
+│ • Simulated UPI Lite Zero-PIN Baseline│           │ • Human-in-the-Loop Officer Workouts  │
+│ • Server-Enforced HTTP 403 Boundary   │           │ • Tamper-Evident Audit Trail (/audit) │
 └───────────────────────────────────────┘           └───────────────────────────────────────┘
 ```
 
-1. **The Senior Vulnerability Gap**: Indian seniors are increasingly targeted by sophisticated **"Digital Arrest"**, **electricity disconnect**, and **deceptive QR/AnyDesk scams**. Confused by dense UPI interfaces, families resort to screen-sharing tools that lead to total account compromise.
-2. **The Default & Distress Governance Gap**: Retail lenders face rising credit delinquencies due to rigid bureau underwriting. When a borrower faces temporary cashflow distress, banks lack evidence-grounded AI tools to retrieve regulatory hardship relief frameworks before loans become Non-Performing Assets (NPAs).
-
-This repository solves both crises through an integrated, production-grade architecture.
+1. **For Indian Seniors & Families**: Replaces dangerous remote screen-sharing tools (**AnyDesk / TeamViewer**) and protects against **"Digital Arrest"** scams with an out-of-band family advisory shield.
+2. **For Lending Officers & Institutions**: Replaces rigid, black-box credit scores with an evidence-grounded copilot that combines **Statistical ML risk scoring** with **retrieved RBI policy clauses** to design proactive restructuring workouts before default.
 
 ---
 
-## 🌐 DUAL-PROJECT ARCHITECTURE & TOPOLOGY
+## 🌐 UNIFIED SYSTEM TOPOLOGY & RUNNING PORTS
 
 ```
 [Senior User (Sunita)]                     [Guardian (Ananya)]               [Bank Officer (Priya Nair)]
@@ -74,8 +75,8 @@ This repository solves both crises through an integrated, production-grade archi
         ▼ (Port 3002)                              ▼ (Port 3002)                          ▼ (Port 3001)
 ┌─────────────────────────────────────────────────────────────────┐   ┌───────────────────────────────────┐
 │           BANKMANTRI ACCESSIBLE SENIOR APP                      │   │  BANK OFFICER COPILOT & TRIAGE    │
-│  • Web Speech Audio Synthesis (5 Languages)                     │   │  • Golden Path Walkthrough HUD    │
-│  • Zero-PIN UPI Lite for Baseline Payments                      │   │  • SHAP Risk Factor Visualizer    │
+│  • Web Speech Audio Synthesis (5 Indian Languages)              │   │  • Golden Path Walkthrough HUD    │
+│  • Simulated UPI Lite Zero-PIN for Routine Baseline Payments    │   │  • SHAP Risk Factor Visualizer    │
 │  • Trusted Circle Advisory Second Opinion                       │   │  • Qdrant RAG Citation Viewer     │
 │  • Live Twilio Call Transcript Feed                             │   │  • Restructuring Plan Signer      │
 └───────────────────────────────┬─────────────────────────────────┘   └─────────────────┬─────────────────┘
@@ -84,30 +85,30 @@ This repository solves both crises through an integrated, production-grade archi
                                                             ▼
                                 ┌───────────────────────────────────────────────────────┐
                                 │           CORE FASTAPI AI BACKEND (PORT 8000)         │
-                                │  • 10-Node LangGraph Orchestration DAG                │
+                                │  • 10-Node LangGraph Constrained DAG                  │
                                 │  • TheSuperRAG Policy Retrieval Engine                │
                                 │  • Twilio 2-Way Voice Webhook & Speech Dispatcher     │
-                                │  • SHA-256 Cryptographic Audit Ledger                 │
+                                │  • Tamper-Evident SHA-256 Audit Trail                 │
                                 └──────────────┬─────────────────────────┬──────────────┘
                                                │                         │
                                                ▼                         ▼
                                 ┌───────────────────────────┐ ┌─────────────────────────┐
                                 │ ML PREDICT API (PORT 8001)│ │ TWILIO TELEPHONY CLOUD  │
-                                │ • LightGBM Distress Model │ │ • Outbound Voice Calls  │
-                                │ • XGBoost Fraud Engine    │ │ • <Gather> Speech Recog │
+                                │ • LightGBM Hero Distress  │ │ • Outbound Voice Calls  │
+                                │ • SHAP Factor Attribution │ │ • <Gather> Speech Recog │
                                 └───────────────────────────┘ └─────────────────────────┘
 ```
 
 | Service Name | Port | Directory | Technology Stack | Key Responsibilities |
 | :--- | :--- | :--- | :--- | :--- |
-| **BankMantri User App** | **`3002`** | [`user_app/`](file:///home/appu/Downloads/Grid-main/user_app) | Next.js 16 (Turbopack), Tailwind CSS, Web Speech API | Voice-driven banking, zero-PIN baseline payments, Trusted Circle advisory review, live call transcription. |
-| **Bank Officer Copilot** | **`3001`** | [`frontend/`](file:///home/appu/Downloads/Grid-main/frontend) | Next.js 16, Lucide, Tailwind CSS | Triage queue, policy knowledge base, loan restructuring decision modal, cryptographic audit ledger. |
+| **BankMantri User App** | **`3002`** | [`user_app/`](file:///home/appu/Downloads/Grid-main/user_app) | Next.js 16 (Turbopack), Tailwind CSS, Web Speech API | Voice-driven banking, simulated UPI Lite zero-PIN payments, Trusted Circle advisory review, live call transcription. |
+| **Bank Officer Copilot** | **`3001`** | [`frontend/`](file:///home/appu/Downloads/Grid-main/frontend) | Next.js 16, Lucide, Tailwind CSS | Triage queue, policy knowledge base, loan restructuring decision modal, tamper-evident audit dashboard. |
 | **Core AI & RAG Backend** | **`8000`** | [`backend/`](file:///home/appu/Downloads/Grid-main/backend) | FastAPI, LangGraph, Qdrant, Twilio SDK, SQLAlchemy | 10-node agentic workflow, hybrid vector search, speech recognition webhooks, cryptographic signing. |
 | **ML Inference Service** | **`8001`** | [`ml_research/`](file:///home/appu/Downloads/Grid-main/ml_research) | LightGBM, XGBoost, Scikit-learn, FastAPI | Indian NPA distress probability, SHAP feature weights, DTI/FOIR risk analytics. |
 
 ---
 
-## 👵 PROJECT 1: BANKMANTRI — ACCESSIBLE SENIOR VOICE BANKING (PORT 3002)
+## 👵 CUSTOMER PERSPECTIVE: BANKMANTRI (PORT 3002)
 
 ### Core Principle: "Shared Guidance, Not Shared Access"
 BankMantri is founded on the doctrine that **family members should provide real-time guidance without ever touching the senior's PIN or bank account**. 
@@ -126,8 +127,8 @@ BankMantri is founded on the doctrine that **family members should provide real-
   (e.g., ₹850 to Grocery) (e.g., ₹5,000 vs ₹1,500 baseline)
          │                       │
          ▼                       ▼
-  [Zero-PIN Instant Pay]  [Paused in Trusted Circle Safety Queue]
-  (UPI Lite 1-Click Pay)         │
+  [Simulated Zero-PIN]    [Paused in Trusted Circle Safety Queue]
+  (UPI Lite Style Flow)          │
                                  ▼
                           [Daughter Ananya Receives Advisory Alert]
                                  │
@@ -147,26 +148,25 @@ BankMantri is founded on the doctrine that **family members should provide real-
                           [Senior Enters Independent UPI PIN (1234)]
                                  │
                                  ▼
-                          [Instant NPCI Settlement & SHA-256 Receipt]
+                          [Simulated Settlement & Tamper-Evident Receipt]
 ```
 
 ---
 
 ### Threat Model: Anti-Social Engineering & Zero Screen-Sharing
-1. **Elimination of Remote Access Tools (No AnyDesk / TeamViewer)**:
+1. **Elimination of Remote Screen-Sharing Tools (No AnyDesk / TeamViewer)**:
    - Fraudsters frequently exploit seniors by telling them to install AnyDesk so a "technician" or "family member" can assist.
-   - BankMantri gives the family an **Advisory-Only Web View** that displays transfer context without needing remote screen mirroring.
+   - BankMantri gives the family an **Advisory-Only Web View** that displays transfer context without needing remote screen mirroring or credentials.
 2. **Neutralizing "Digital Arrest" & WhatsApp Coercion**:
    - In Digital Arrest scams, fraudsters keep victims on continuous WhatsApp video calls and command them: *"Do not speak to anyone or you will be arrested."*
-   - BankMantri's behavioral engine detects the anomalous payment and triggers an **out-of-band Twilio cellular phone call**, immediately breaking the scammer's isolation.
+   - BankMantri's behavioral engine detects the anomalous payment and triggers an **out-of-band Twilio cellular phone call**, breaking the scammer's isolation.
 
 ---
 
-### ⚡ Zero-PIN Instant Settlement for Baseline Payments (UPI Lite)
+### ⚡ Simulated UPI Lite Zero-PIN Flow for Baseline Payments
 * For routine, verified payments within the senior's established baseline (e.g. ₹850 to *City Grocery & Kirana*):
-  - **No PIN modal is required**.
-  - Settle instantly via **UPI Lite Zero-PIN rails**.
-  - Voice engine announces: *"Transfer of ₹850 to City Grocery & Kirana is within your normal baseline. Paid instantly with UPI Lite without requiring PIN!"*
+  - **Simulated UPI Lite Mode**: Eligible low-risk transactions execute without prompting for a PIN.
+  - Voice engine announces: *"Transfer of ₹850 to City Grocery & Kirana is within your normal baseline. Paid instantly with UPI Lite style flow without requiring PIN!"*
 
 ---
 
@@ -182,14 +182,14 @@ If a guardian tries to authorize, confirm, or execute a transfer on the senior's
 
 ---
 
-### 🔒 NPCI 2FA Compliance: Why Senior PIN is Still Required
-* **Regulatory Compliance**: Under RBI/NPCI regulations, voice consent serves as **Anti-Scam Second Opinion**, but actual funds movement legally mandates the account holder's **2-Factor Authentication (UPI PIN / Biometrics)**.
-* **Defense Against AI Voice Deepfakes**: Even if a criminal creates an AI cloned voice of the senior, they cannot execute the transfer because the physical UPI PIN must be entered on the senior's trusted hardware device.
+### 🔒 Independent Senior PIN Authentication
+* **2FA Design**: Voice consent serves as an **Anti-Scam Second Opinion**, while actual funds movement requires the account holder's **2-Factor Authentication (UPI PIN / Biometrics)**.
+* **Defense Against AI Voice Deepfakes**: Even if a criminal creates an AI cloned voice of the senior, they cannot execute the transfer because the physical UPI PIN must be entered on the senior's trusted device.
 
 ---
 
-### 🌐 Multilingual Engine (5 Indian Languages)
-The entire user interface, voice prompts, button states, and speech synthesis dynamically adapt across:
+### 🌐 Multilingual Voice Engine (5 Indian Languages)
+All UI labels, button states, alert badges, and text-to-speech narrations dynamically adapt across:
 1. **English (`en`)**
 2. **हिन्दी / Hindi (`hi`)** — *"बैंकमंत्री: साझा मार्गदर्शन, साझा पहुंच नहीं"*
 3. **ಕನ್ನಡ / Kannada (`kn`)** — *"ಬ್ಯಾಂಕ್ಮಂತ್ರಿ: ಹಂಚಿಕೆಯ ಮಾರ್ಗದರ್ಶನ, ಹಂಚಿಕೆಯ ಪ್ರವೇಶವಲ್ಲ"*
@@ -198,20 +198,20 @@ The entire user interface, voice prompts, button states, and speech synthesis dy
 
 ---
 
-### 🗺️ Interactive 5-Step Guided Story Tour (Port 3002)
+### 🗺️ Interactive 5-Step Customer Story Walkthrough (Port 3002)
 BankMantri features an interactive story walkthrough HUD at the top of `http://localhost:3002`:
 * **Step 1: Senior Voice Transfer**: Sunita initiates ₹5,000 to Dilshan; behavioral engine detects $3.3	imes$ baseline deviation.
 * **Step 2: Guardian Advisory & Twilio Call**: Daughter Ananya reviews alert, triggers an automated Twilio call; Sunita confirms *"Yes"*; transcript streams live to screen.
 * **Step 3: Security Defense Block**: User tests helper execution $ightarrow$ backend enforces **HTTP 403 Forbidden**.
 * **Step 4: Senior Independent PIN**: Sunita sees green clearance badge and enters demo PIN `1234`.
-* **Step 5: Instant Settlement & Receipt**: Payment settles with a cryptographic receipt.
+* **Step 5: Settlement & Receipt**: Payment settles with a tamper-evident cryptographic receipt.
 
 ---
 
-## 🏛️ PROJECT 2: INSTITUTIONAL BANK OFFICER COPILOT (PORT 3001)
+## 🏛️ INSTITUTIONAL PERSPECTIVE: THESUPERRAG BANK COPILOT (PORT 3001)
 
-### 🧠 1. Statistical ML Distress Scoring (LightGBM + SHAP)
-* Evaluates borrower telemetry against models trained on Indian retail NPA data (`ml_research/models/path_a_model.pkl`).
+### 🧠 1. Statistical ML Distress Scoring (LightGBM Hero Model)
+* Evaluates borrower telemetry against our hero model trained on Indian retail NPA data (`ml_research/models/path_a_model.pkl`).
 * Calculates debt-to-income (DTI), credit utilization, and cashflow deficits.
 * Outputs calibrated distress probabilities and exact SHAP feature weights (e.g. *DTI > 45%: +0.38*, *Rolling Cashflow Deficit: +0.29*).
 
@@ -223,7 +223,7 @@ BankMantri features an interactive story walkthrough HUD at the top of `http://l
 
 ---
 
-### 🕸️ 3. 10-Node LangGraph Deterministic DAG
+### 🕸️ 3. 10-Node LangGraph Constrained Orchestration DAG
 ```
 [1. Telemetry Ingest] ──► [2. ML Feature Prep] ──► [3. Distress Inference]
                                                             │
@@ -233,7 +233,7 @@ BankMantri features an interactive story walkthrough HUD at the top of `http://l
         ▼
 [7. Safety Guardrail] ──► [8. Workout Generation] ──► [9. Officer Triage] ──► [10. Audit Commit]
 ```
-The cycle-free graph ensures zero hallucinations by strictly conditioning all LLM recommendations on retrieved regulatory clauses.
+The graph strictly constrains LLM recommendations to retrieved policy evidence, significantly reducing unsupported or ungrounded recommendations.
 
 ---
 
@@ -245,22 +245,22 @@ The cycle-free graph ensures zero hallucinations by strictly conditioning all LL
 
 ### 📞 5. Multilingual Twilio Voice Copilot for Workout Outreach
 * After approving a workout plan, the officer can dispatch an outbound Twilio call in the customer's native language (Hindi, Kannada, Marathi, Tamil, or English).
-* Speaks empathetic, regulatory-approved terms directly to the borrower.
+* Speaks empathetic, regulatory-aligned workout terms directly to the borrower.
 
 ---
 
 ### 🗺️ 6. Interactive 5-Step Golden Path Triage Walkthrough (Port 3001)
 1. **Step 1: Telemetry & ML Risk Scoring**: Loads `CASE-2026-001` (Ramesh Kumar - Distressed Borrower) with 85% distress risk.
 2. **Step 2: TheSuperRAG Policy Retrieval**: Highlights retrieved *RBI Clause 4.2* authorizing proactive restructuring.
-3. **Step 4: Human Officer Decision**: Opens Action Authorization Modal with pre-filled workout terms.
+3. **Step 3: Human Officer Decision**: Opens Action Authorization Modal with pre-filled workout terms.
 4. **Step 4: AI Voice Copilot Dispatch**: Places live Twilio outreach call.
-5. **Step 5: Cryptographic Audit Trail**: Displays immutable SHA-256 ledger entry.
+5. **Step 5: Tamper-Evident Audit Trail**: Displays SHA-256 ledger entry.
 
 ---
 
-### 🛡️ 7. Immutable Cryptographic Audit Ledger (`/audit`)
+### 🛡️ 7. Tamper-Evident Cryptographic Audit Trail (`/audit`)
 * Located at **`http://localhost:3001/audit`**.
-* Zero-PII design: hashes all risk inputs, RAG citations, officer actions, and phone interactions using SHA-256.
+* Zero-PII design: hashes all risk inputs, RAG citations, officer actions, and phone interactions using SHA-256 integrity verification.
 
 ---
 
@@ -278,13 +278,13 @@ The cycle-free graph ensures zero hallucinations by strictly conditioning all LL
 
 ---
 
-## 🔬 MACHINE LEARNING RESEARCH & BENCHMARK DATASETS (`ml_research/`)
+## 🔬 MACHINE LEARNING MODELS & EMPIRICAL RESEARCH (`ml_research/`)
 
-| Research Path | Model Architecture | Training Dataset | Benchmark Metrics |
-| :--- | :--- | :--- | :--- |
-| **Path A: Indian Retail NPA Distress** | LightGBM (`path_a_model.pkl`) | Indian Banking NPA & Retail Loan Telemetry | **ROC-AUC: 0.891**, **PR-AUC: 0.842** |
-| **Path B: UPI Anomaly & Fraud Isolation** | XGBoost (`path_b_model.pkl`) | High-Velocity Indian UPI Datasets | **Precision@99: 0.94**, **Recall: 0.91** |
-| **Path C: Informal Cashflow Underwriting** | Random Forest (`path_c_model.pkl`) | Gig-Worker & Rural Cashflow Logs | **F1-Score: 0.884** |
+| Research Path | Model Architecture | Training Dataset | Benchmark Metrics | Status in Demo |
+| :--- | :--- | :--- | :--- | :--- |
+| **Path A: Indian Retail NPA Distress** | LightGBM (`path_a_model.pkl`) | Indian Banking NPA & Retail Loan Telemetry | **ROC-AUC: 0.891**, **PR-AUC: 0.842** | **Hero Production Model (Connected on Port 8001)** |
+| **Path B: UPI Anomaly & Fraud Isolation** | XGBoost (`path_b_model.pkl`) | High-Velocity Indian UPI Datasets | **Precision@99: 0.94**, **Recall: 0.91** | Empirical Research Model |
+| **Path C: Informal Cashflow Underwriting** | Random Forest (`path_c_model.pkl`) | Gig-Worker & Rural Cashflow Logs | **F1-Score: 0.884** | Empirical Research Model |
 
 ---
 
@@ -308,11 +308,11 @@ The cycle-free graph ensures zero hallucinations by strictly conditioning all LL
 - `POST /api/v1/cases/policies/voice-explain`: Places voice call explaining a policy in native language.
 
 ### Audit & Governance
-- `GET /api/v1/cases/audit/logs`: Fetches immutable cryptographic ledger entries.
+- `GET /api/v1/cases/audit/logs`: Fetches tamper-evident cryptographic ledger entries.
 
 ---
 
-## 🛠️ STEP-BY-STEP LOCAL DEPLOYMENT & QUICK-START GUIDE
+## 🛠️ STEP-BY-STEP LOCAL DEPLOYMENT GUIDE
 
 ### Prerequisites
 * Python 3.10+
@@ -378,7 +378,7 @@ backend/tests/test_reasoning_graph.py::test_financial_reasoning_graph_end_to_end
 
 ---
 
-## 👥 CONTRIBUTORS & REGULATORY GROUNDING
+## 👥 REGULATORY ALIGNMENT & DESIGN PRINCIPLES
 
 * **Architecture**: Built using FastAPI, LangGraph, Qdrant Vector Store, LightGBM, Next.js 16, and Twilio Voice.
-* **Regulatory Compliance**: Aligned with Reserve Bank of India (RBI) Regulatory Guidelines, National Payments Corporation of India (NPCI) UPI 2FA Framework, and Indian NPA Restructuring Directives.
+* **Regulatory Alignment**: Designed in alignment with Reserve Bank of India (RBI) Regulatory Frameworks, National Payments Corporation of India (NPCI) 2FA Security Principles, and Fair Lending Restructuring Guidelines.
