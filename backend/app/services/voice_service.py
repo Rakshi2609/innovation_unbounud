@@ -45,10 +45,127 @@ class VoiceNotificationService:
         if lang in ("hi", "hindi"):
             return "Polly.Aditi", "hi-IN"
         elif lang in ("kn", "kannada"):
-            # Google Cloud TTS voice supported by Twilio for Kannada
             return "Google.kn-IN-Standard-A", "kn-IN"
+        elif lang in ("mr", "marathi"):
+            return "Polly.Aditi", "mr-IN"
+        elif lang in ("ta", "tamil"):
+            return "Polly.Aditi", "ta-IN"
         else:
             return "Polly.Aditi", "en-IN"
+
+    def trigger_trusted_circle_call(
+        self,
+        senior_phone: str,
+        senior_name: str,
+        guardian_name: str,
+        recipient_name: str,
+        amount: float,
+        transfer_id: str,
+        language: str = "en"
+    ) -> Dict[str, Any]:
+        """Dispatch an outbound Trusted Circle verification call from Guardian to Senior via Twilio."""
+        if not self.client:
+            return {
+                "success": False,
+                "error": "Twilio client not initialized. Check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN."
+            }
+
+        voice_name, lang_code = self.get_voice_and_lang(language)
+        public_base = self.get_public_webhook_url()
+        import urllib.parse
+        q_senior = urllib.parse.quote(senior_name)
+        q_guardian = urllib.parse.quote(guardian_name)
+        q_recip = urllib.parse.quote(recipient_name)
+        webhook_action = (
+            f"{public_base}/api/v1/cases/voice/webhook/trusted-circle-respond?"
+            f"transfer_id={transfer_id}&senior_name={q_senior}&guardian_name={q_guardian}&"
+            f"recipient_name={q_recip}&amount={amount}&lang={language}&turn=1"
+        )
+
+        lang = language.lower().strip()
+        amt_str = f"{int(amount):,}"
+        if lang in ("hi", "hindi"):
+            script_text = (
+                f"नमस्ते {senior_name} जी! यह बैंकसाथी फैमिली शील्ड से वॉयस वेरिफिकेशन कॉल है। "
+                f"आपके ट्रस्टेड गार्डियन {guardian_name} ने {recipient_name} को {amt_str} रुपये ट्रांसफर करने का अलर्ट देखा है। "
+                f"क्या आप सचमुच यह {amt_str} रुपये भेजना चाहते हैं? "
+                f"पुष्टि करने के लिए 'हाँ' कहें, या कैंसिल करने के लिए 'नहीं' कहें।"
+            )
+            fallback_msg = "क्षमा करें, मुझे आपकी आवाज सुनाई नहीं दी। कृपया बाद में दोबारा प्रयास करें। धन्यवाद।"
+        elif lang in ("kn", "kannada"):
+            script_text = (
+                f"ನಮಸ್ಕಾರ {senior_name} ಅವರೇ! ಇದು ಬ್ಯಾಂಕ್‌ಸಾಥಿ ಫ್ಯಾಮಿಲಿ ಶೀಲ್ಡ್ ವಾಯ್ಸ್ ಪರಿಶೀಲನೆ ಕರೆ. "
+                f"ನಿಮ್ಮ ಗಾರ್ಡಿಯನ್ {guardian_name} ಅವರು {recipient_name} ಅವರಿಗೆ {amt_str} ರೂಪಾಯಿ ಕಳುಹಿಸುವ ವಹಿವಾಟನ್ನು ಗಮನಿಸಿದ್ದಾರೆ. "
+                f"ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಹಣವನ್ನು ಕಳುಹಿಸುತ್ತಿದ್ದೀರಾ? "
+                f"ದೃಢೀಕರಿಸಲು 'ಹೌದು' ಅಥವಾ ರದ್ದುಗೊಳಿಸಲು 'ಇಲ್ಲ' ಎಂದು ಹೇಳಿ."
+            )
+            fallback_msg = "ಕ್ಷಮಿಸಿ, ಧ್ವನಿ ಕೇಳಿಸಲಿಲ್ಲ. ಧನ್ಯವಾದಗಳು."
+        elif lang in ("mr", "marathi"):
+            script_text = (
+                f"नमस्कार {senior_name} जी! हे बँकसाथी फॅमिली शील्ड कडून व्हॉइस व्हेरिफिकेशन कॉल आहे. "
+                f"तुमचे पालक {guardian_name} यांनी {recipient_name} यांना {amt_str} रुपयांच्या ट्रान्सफरचा अलर्ट पाहिला आहे. "
+                f"तुम्ही स्वतः हे पैसे पाठवत आहात का? "
+                f"पुष्टी करण्यासाठी 'होय' म्हणा किंवा रद्द करण्यासाठी 'नाही' म्हणा."
+            )
+            fallback_msg = "क्षमस्व, आवाज ऐकू आला नाही. धन्यवाद."
+        elif lang in ("ta", "tamil"):
+            script_text = (
+                f"வணக்கம் {senior_name}! இது பேங்க் சாதி குடும்ப பாதுகாப்பு குரல் சரிபார்ப்பு அழைப்பு. "
+                f"உங்கள் பாதுகாவலர் {guardian_name}, {recipient_name} க்கு {amt_str} ரூபாய் பரிவர்த்தனை பற்றி சரிபார்க்க கோரியுள்ளார். "
+                f"நீங்கள் உண்மையிலேயே இந்த பணத்தை அனுப்புகிறீர்களா? "
+                f"உறுதிப்படுத்த 'ஆம்' அல்லது ரத்து செய்ய 'இல்லை' என்று சொல்லுங்கள்."
+            )
+            fallback_msg = "மன்னிக்கவும், உங்கள் குரல் கேட்கவில்லை. நன்றி."
+        else:
+            script_text = (
+                f"Hello {senior_name}! This is BankSathi Family Shield voice verification. "
+                f"Your trusted guardian {guardian_name} noticed a transfer of {amt_str} rupees to {recipient_name}. "
+                f"Are you sending this money yourself? "
+                f"Please say 'Yes' to confirm, or 'No' to cancel."
+            )
+            fallback_msg = "I did not hear a response. Please verify in your banking app. Goodbye!"
+
+        vr = VoiceResponse()
+        vr.pause(length=1)
+        gather = Gather(
+            input="speech",
+            action=webhook_action,
+            method="POST",
+            speech_timeout="auto",
+            timeout=6,
+            language=lang_code
+        )
+        gather.say(script_text, voice=voice_name, language=lang_code)
+        vr.append(gather)
+        vr.say(fallback_msg, voice=voice_name, language=lang_code)
+
+        try:
+            call = self.client.calls.create(
+                twiml=str(vr),
+                to=senior_phone,
+                from_=self.from_number
+            )
+            logger.info(f"Trusted Circle verification call dispatched to {senior_phone}. Call SID: {call.sid}")
+            return {
+                "success": True,
+                "call_sid": call.sid,
+                "status": call.status,
+                "senior_phone": senior_phone,
+                "from_phone": self.from_number,
+                "language": language,
+                "transfer_id": transfer_id,
+                "script_spoken": script_text,
+                "interactive_webhook": webhook_action
+            }
+        except Exception as e:
+            logger.error(f"Failed to dispatch Trusted Circle Twilio call: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "senior_phone": senior_phone,
+                "language": language,
+                "script_spoken": script_text
+            }
 
     def generate_initial_script(
         self,

@@ -423,3 +423,266 @@ async def voice_webhook_respond(
         vr.hangup()
 
     return Response(content=str(vr), media_type="application/xml; charset=utf-8")
+
+
+class TrustedCircleCallRequest(BaseModel):
+    senior_phone: str = "+919461284678"
+    senior_name: str = "Sunita Verma"
+    guardian_name: str = "Dilshan"
+    recipient_name: str = "Rohan Sharma"
+    amount: float = 5000.0
+    language: str = "en"  # "en", "hi", "kn", "mr", "ta"
+    transfer_id: str = "TXN-ALERT-8819"
+
+
+@router.post("/voice/trusted-circle-call")
+def initiate_trusted_circle_call(payload: TrustedCircleCallRequest, db: Session = Depends(get_db)):
+    """Daughter/Guardian initiates Twilio AI verification phone call to Senior User."""
+    from app.services.voice_service import voice_service
+    from app.models.database import AuditTrailRecord
+    import uuid
+
+    res = voice_service.trigger_trusted_circle_call(
+        senior_phone=payload.senior_phone,
+        senior_name=payload.senior_name,
+        guardian_name=payload.guardian_name,
+        recipient_name=payload.recipient_name,
+        amount=payload.amount,
+        transfer_id=payload.transfer_id,
+        language=payload.language
+    )
+
+    audit_entry = AuditTrailRecord(
+        id=f"TC-CALL-{uuid.uuid4().hex[:8].upper()}",
+        case_id=payload.transfer_id,
+        event_type="TRUSTED_CIRCLE_CALL_INITIATED",
+        actor=f"Guardian ({payload.guardian_name})",
+        action=f"Dispatched Twilio Verification Call to {payload.senior_name} ({payload.senior_phone}) in {payload.language.upper()}",
+        decision="CALLING",
+        notes=f"🤖 AI Voice Shield (Twilio): \"{res.get('script_spoken', '')}\"",
+        details={
+            "call_sid": res.get("call_sid"),
+            "senior_phone": payload.senior_phone,
+            "language": payload.language,
+            "amount": payload.amount,
+            "recipient_name": payload.recipient_name,
+            "speaker": "AI Voice Shield (Twilio)"
+        }
+    )
+    db.add(audit_entry)
+    db.commit()
+
+    return res
+
+
+@router.api_route("/voice/webhook/trusted-circle-respond", methods=["GET", "POST"])
+async def trusted_circle_webhook_respond(
+    request: Request,
+    transfer_id: Optional[str] = "TXN-ALERT-8819",
+    senior_name: Optional[str] = "Sunita Verma",
+    guardian_name: Optional[str] = "Dilshan",
+    recipient_name: Optional[str] = "Rohan Sharma",
+    amount: Optional[float] = 5000.0,
+    lang: Optional[str] = "en",
+    turn: Optional[int] = 1,
+    db: Session = Depends(get_db)
+):
+    """Twilio Webhook: Receive Senior's voice response, confirm/cancel transfer, and log live conversation turns."""
+    from fastapi.responses import Response
+    from twilio.twiml.voice_response import VoiceResponse, Gather, Say, Pause, Hangup
+    from app.services.voice_service import voice_service
+    from app.models.database import AuditTrailRecord
+    import uuid
+    import urllib.parse
+
+    form_data = {}
+    try:
+        form_data = await request.form()
+    except Exception:
+        pass
+
+    user_speech = form_data.get("SpeechResult") or request.query_params.get("SpeechResult") or ""
+    confidence = form_data.get("Confidence") or "1.0"
+    language = (lang or "en").lower().strip()
+    turn_num = int(turn or 1)
+
+    voice_name, lang_code = voice_service.get_voice_and_lang(language)
+    public_base = voice_service.get_public_webhook_url()
+
+    speech_lower = str(user_speech).lower().strip()
+    amt_str = f"{int(amount or 5000):,}"
+
+    # Check for confirmation intent
+    confirm_words = [
+        "yes", "yeah", "yep", "correct", "confirm", "send", "proceed", "sahi", "theek",
+        "haan", "haanji", "ha", "approve", "ok", "okay", "sure", "kardo", "karna hai",
+        "kar do", "bhej do", "bhejo", "हौ", "हाँ", "ಹೌದು", "ಸರಿ", "ಮಾಡಿಕೊಡಿ", "ಕಳುಹಿಸಿ",
+        "होय", "पाठवा", "ஆம்", "அனுப்பு", "சரி"
+    ]
+    is_confirmed = any(w in speech_lower for w in confirm_words)
+
+    # Check for cancellation / fraud alert intent
+    cancel_words = [
+        "no", "nah", "nope", "cancel", "don't", "dont", "scam", "fraud", "stop", "rok do",
+        "mat bhejo", "galat", "nahi", "na", "nahi bhejna", "ಇಲ್ಲ", "ಬೇಡ", "ನಿಲ್ಲಿಸಿ",
+        "ನಾಹಿ", "नाही", "नको", "थांबवा", "இல்லை", "வேண்டாம்", "நிறுத்து"
+    ]
+    is_cancelled = any(w in speech_lower for w in cancel_words)
+
+    vr = VoiceResponse()
+
+    if is_confirmed:
+        if language in ("hi", "hindi"):
+            reply = f"धन्यवाद {senior_name} जी! आपके ₹{amt_str} ट्रांसफर की सफलतापूर्वक पुष्टि हो गई है। आपके ट्रस्टेड गार्डियन {guardian_name} को सूचित कर दिया गया है। आप अब ऐप में अपना पिन डालकर ट्रांसफर पूरा कर सकते हैं। अलविदा!"
+        elif language in ("kn", "kannada"):
+            reply = f"ಧನ್ಯವಾದಗಳು {senior_name} ಅವರೇ! ನಿಮ್ಮ ₹{amt_str} ವಹಿವಾಟು ಯಶಸ್ವಿಯಾಗಿ ದೃಢಪಟ್ಟಿದೆ. ನಿಮ್ಮ ಗಾರ್ಡಿಯನ್ {guardian_name} ಅವರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ. ನೀವು ಈಗ ಆ್ಯಪ್‌ನಲ್ಲಿ ಪಿನ್ ನಮೂದಿಸಬಹುದು. ನಮಸ್ಕಾರ!"
+        elif language in ("mr", "marathi"):
+            reply = f"धन्यवाद {senior_name} जी! तुमच्या ₹{amt_str} ट्रान्सफरची पुष्टी झाली आहे आणि {guardian_name} यांना माहिती दिली आहे. तुम्ही आता ॲपमध्ये पिन टाकून व्यवहार पूर्ण करू शकता. धन्यवाद!"
+        elif language in ("ta", "tamil"):
+            reply = f"நன்றி {senior_name}! உங்கள் ₹{amt_str} பரிவர்த்தனை வெற்றிகரமாக உறுதிப்படுத்தப்பட்டது. {guardian_name} க்கு தெரிவிக்கப்பட்டது. நீங்கள் இப்போது செயலியில் பின்னை உள்ளிடலாம். நன்றி!"
+        else:
+            reply = f"Thank you {senior_name}! Your transfer of ₹{amt_str} to {recipient_name} is confirmed. Your guardian {guardian_name} has been notified. You may now enter your PIN in the app. Goodbye!"
+
+        # Log confirmation
+        audit_entry = AuditTrailRecord(
+            id=f"TC-TURN-{uuid.uuid4().hex[:8].upper()}",
+            case_id=transfer_id or "TXN-ALERT-8819",
+            event_type="TRUSTED_CIRCLE_CONFIRMED",
+            actor=f"Senior ({senior_name})",
+            action=f"Confirmed ₹{amt_str} Transfer over Phone Call",
+            decision="CONFIRMED",
+            notes=f"👵 {senior_name}: \"{user_speech}\"\n🤖 AI Voice Shield: \"{reply}\"",
+            details={
+                "user_speech": user_speech,
+                "ai_reply": reply,
+                "confidence": confidence,
+                "decision": "CONFIRMED"
+            }
+        )
+        db.add(audit_entry)
+        db.commit()
+
+        vr.say(reply, voice=voice_name, language=lang_code)
+        vr.pause(length=1)
+        vr.hangup()
+
+    elif is_cancelled:
+        if language in ("hi", "hindi"):
+            reply = f"ठीक है {senior_name} जी! हमने सुरक्षा के लिए यह ट्रांसफर तुरंत रोक दिया है। आपके खाते से कोई पैसा नहीं कटा है और {guardian_name} को सुरक्षा अलर्ट भेज दिया गया है। सुरक्षित रहें, अलविदा!"
+        elif language in ("kn", "kannada"):
+            reply = f"ಸರಿ {senior_name} ಅವರೇ! ಸುರಕ್ಷತೆಗಾಗಿ ಈ ವಹಿವಾಟನ್ನು ತಕ್ಷಣವೇ ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಖಾತೆ ಸುರಕ್ಷಿತವಾಗಿದೆ. {guardian_name} ಅವರಿಗೆ ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ. ನಮಸ್ಕಾರ!"
+        elif language in ("mr", "marathi"):
+            reply = f"ठीक आहे {senior_name} जी! हा ट्रान्सफर त्वरित रद्द करण्यात आला आहे. तुमचे खाते सुरक्षित आहे आणि {guardian_name} यांना सतर्क केले आहे. धन्यवाद!"
+        elif language in ("ta", "tamil"):
+            reply = f"சரி {senior_name}! உங்கள் பாதுகாப்பிற்காக இந்த பரிவர்த்தனை ரத்து செய்யப்பட்டுள்ளது. உங்கள் நிதி பாதுகாப்பாக உள்ளது. {guardian_name} க்கு எச்சரிக்கை அனுப்பப்பட்டது. நன்றி!"
+        else:
+            reply = f"Understood {senior_name}! We have immediately blocked this transfer to protect your funds. No money was deducted, and {guardian_name} has been alerted. Goodbye!"
+
+        # Log cancellation
+        audit_entry = AuditTrailRecord(
+            id=f"TC-TURN-{uuid.uuid4().hex[:8].upper()}",
+            case_id=transfer_id or "TXN-ALERT-8819",
+            event_type="TRUSTED_CIRCLE_CANCELLED",
+            actor=f"Senior ({senior_name})",
+            action=f"Rejected / Cancelled ₹{amt_str} Transfer over Phone Call",
+            decision="REJECTED",
+            notes=f"👵 {senior_name}: \"{user_speech}\"\n🤖 AI Voice Shield: \"{reply}\"",
+            details={
+                "user_speech": user_speech,
+                "ai_reply": reply,
+                "confidence": confidence,
+                "decision": "REJECTED"
+            }
+        )
+        db.add(audit_entry)
+        db.commit()
+
+        vr.say(reply, voice=voice_name, language=lang_code)
+        vr.pause(length=1)
+        vr.hangup()
+
+    else:
+        # Clarification turn
+        q_senior = urllib.parse.quote(senior_name or "")
+        q_guardian = urllib.parse.quote(guardian_name or "")
+        q_recip = urllib.parse.quote(recipient_name or "")
+        next_webhook = (
+            f"{public_base}/api/v1/cases/voice/webhook/trusted-circle-respond?"
+            f"transfer_id={transfer_id}&senior_name={q_senior}&guardian_name={q_guardian}&"
+            f"recipient_name={q_recip}&amount={amount}&lang={language}&turn={turn_num + 1}"
+        )
+
+        if language in ("hi", "hindi"):
+            clarify = f"मैंने सुना: '{user_speech}'। कृपया स्पष्ट बताएं, क्या आप {recipient_name} को ₹{amt_str} भेजना चाहते हैं? 'हाँ' या 'नहीं' बोलें।"
+        elif language in ("kn", "kannada"):
+            clarify = f"ದಯವಿಟ್ಟು ಸ್ಪಷ್ಟಪಡಿಸಿ, ನೀವು {recipient_name} ಅವರಿಗೆ ₹{amt_str} ಕಳುಹಿಸಲು ಬಯಸುವಿರಾ? 'ಹೌದು' ಅಥವಾ 'ಇಲ್ಲ' ಎಂದು ಹೇಳಿ."
+        elif language in ("mr", "marathi"):
+            clarify = f"मी ऐकले: '{user_speech}'। कृपया स्पष्ट सांगा, तुम्ही {recipient_name} यांना ₹{amt_str} पाठवू इच्छिता? 'होय' किंवा 'नाही' म्हणा."
+        elif language in ("ta", "tamil"):
+            clarify = f"நான் கேட்டது: '{user_speech}'. நீங்கள் {recipient_name} க்கு ₹{amt_str} அனுப்ப விரும்புகிறீர்களா? 'ஆம்' அல்லது 'இல்லை' என்று சொல்லுங்கள்."
+        else:
+            clarify = f"I heard: '{user_speech}'. To proceed, please clearly say 'Yes' to confirm the ₹{amt_str} payment to {recipient_name}, or 'No' to cancel."
+
+        # Log in-progress clarification turn
+        audit_entry = AuditTrailRecord(
+            id=f"TC-TURN-{uuid.uuid4().hex[:8].upper()}",
+            case_id=transfer_id or "TXN-ALERT-8819",
+            event_type="TRUSTED_CIRCLE_CLARIFICATION",
+            actor=f"Senior ({senior_name})",
+            action=f"Phone Call Turn {turn_num}",
+            decision="IN_PROGRESS",
+            notes=f"👵 {senior_name}: \"{user_speech}\"\n🤖 AI Voice Shield: \"{clarify}\"",
+            details={"user_speech": user_speech, "clarify": clarify}
+        )
+        db.add(audit_entry)
+        db.commit()
+
+        gather = Gather(
+            input="speech",
+            action=next_webhook,
+            method="POST",
+            speech_timeout="auto",
+            timeout=6,
+            language=lang_code
+        )
+        gather.say(clarify, voice=voice_name, language=lang_code)
+        vr.append(gather)
+        vr.say("Thank you. Please verify in your banking app.", voice=voice_name, language=lang_code)
+
+    return Response(content=str(vr), media_type="application/xml; charset=utf-8")
+
+
+@router.get("/voice/conversation/{transfer_id}")
+def get_voice_conversation(transfer_id: str, db: Session = Depends(get_db)):
+    """Retrieve the real-time Twilio voice call conversation log & transcript for Daughter / Guardian."""
+    from app.models.database import AuditTrailRecord
+    audits = db.query(AuditTrailRecord).filter(
+        AuditTrailRecord.case_id == transfer_id
+    ).order_by(AuditTrailRecord.timestamp.asc()).all()
+
+    turns = []
+    latest_decision = "PENDING"
+    for a in audits:
+        if a.decision in ("CONFIRMED", "VERIFIED"):
+            latest_decision = "CONFIRMED"
+        elif a.decision in ("CANCELLED", "REJECTED"):
+            latest_decision = "REJECTED"
+
+        turns.append({
+            "id": a.id,
+            "event_type": a.event_type,
+            "actor": a.actor,
+            "action": a.action,
+            "decision": a.decision,
+            "notes": a.notes,
+            "timestamp": a.timestamp.isoformat() if a.timestamp else None,
+            "details": a.details
+        })
+
+    return {
+        "transfer_id": transfer_id,
+        "latest_decision": latest_decision,
+        "turns_count": len(turns),
+        "conversation": turns
+    }
+

@@ -7,7 +7,8 @@ import {
   Phone, KeyRound, ChevronRight, Settings, Info, Sparkles, Volume2,
   FileText, ShieldAlert, History, Plus, Check, Play, Square, ExternalLink,
   QrCode, Landmark, Smartphone, HeartHandshake, Eye, EyeOff, HelpCircle,
-  ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle, Edit3, X
+  ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle, Edit3, X,
+  PhoneCall, PhoneForwarded, Radio, MessageSquare
 } from 'lucide-react';
 
 interface TransferAlert {
@@ -24,6 +25,7 @@ interface TransferAlert {
   advisoryStatus: 'PENDING' | 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY';
   guardianNote?: string;
   finalStatus: 'PENDING_ADVISORY' | 'AWAITING_USER_CONFIRMATION' | 'AUTHORIZED_PAID' | 'CANCELLED';
+  verifiedOverPhone?: boolean;
 }
 
 interface Person {
@@ -35,34 +37,422 @@ interface Person {
   baseline: number;
 }
 
+interface CallTurn {
+  id: string;
+  event_type: string;
+  actor: string;
+  action: string;
+  decision: string;
+  notes: string;
+  timestamp?: string;
+  details?: any;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🌐 MULTILINGUAL TRANSLATION ENGINE (EN, HI, KN, MR, TA)
+// ─────────────────────────────────────────────────────────────────────────────
+const TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    appTitle: "BankSathi",
+    familyShield: "FAMILY SHIELD",
+    tagline: "Shared Guidance, Not Shared Access",
+    userTag: "USER",
+    guardianTag: "GUARDIAN",
+    runStory: "▶️ Run ₹5,000 Story",
+    editNames: "Customize Names",
+    fontSize: "Font Size:",
+    contrastOn: "High Contrast ON",
+    contrastOff: "Standard Contrast",
+    shieldActive: "Family Shield Active",
+    guardianLabel: "Guardian:",
+    savingsBalance: "Savings Balance",
+    readBalance: "🔊 Read Balance Out Loud",
+    speakPlaceholder: "Speak or type: 'Send 5000 to {recipient}'...",
+    scanQr: "Scan QR",
+    payContacts: "Pay Contacts",
+    bankTransfer: "Bank Transfer",
+    trustedCircle: "Trusted Circle",
+    pendingReview: "Pending Transfer Review",
+    paying: "Paying",
+    riskAnomaly: "Risk Anomaly",
+    protectionCheck: "Behavioral Protection Check:",
+    trustedAdvisory: "Trusted Circle Advisory",
+    viewAs: "View as",
+    awaitingOpinion: "Advisory ping sent to {guardian}. Awaiting second opinion...",
+    looksExpectedTitle: "✓ {guardian}: \"Looks Expected\"",
+    dontRecognizeTitle: "⚠️ {guardian}: \"I Don't Recognize This\"",
+    requestVerifyTitle: "❓ {guardian} requested phone verification call.",
+    verifiedOverPhoneBadge: "Senior Confirmed via Twilio Phone Call ✓",
+    confirmPayment: "Confirm Payment (Enter PIN)",
+    cancelTransfer: "Cancel Transfer",
+    frequentContacts: "Frequent Contacts (1-Tap Pay)",
+    recentTransactions: "Recent Transactions",
+    trustedGuardianTitle: "Trusted Guardian",
+    protecting: "Protecting",
+    advisoryModeDesc: "🛡️ Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.",
+    switchToUser: "Switch to {user} View",
+    incomingRequest: "Incoming Advisory Request from {user}",
+    recipientLabel: "Recipient",
+    requestedAmount: "Requested Amount",
+    spendingBaseline: "Spending Baseline",
+    deviation: "deviation",
+    whySeeingThis: "Why You're Seeing This: {user} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.",
+    selectRecommendation: "Select Your Advisory Recommendation:",
+    optLooksExpected: "✓ Looks Expected",
+    optLooksExpectedSub: "I recognize this recipient and amount.",
+    optDontRecognize: "⚠️ Don't Recognize This",
+    optDontRecognizeSub: "Warn user of potential scam.",
+    optRequestVerify: "❓ Request Verification",
+    optRequestVerifySub: "Ask user to verify before paying.",
+    twilioCallCardTitle: "📞 Direct Verification Call to Senior (Twilio Voice AI)",
+    twilioCallCardDesc: "Trigger an automated, privacy-safe AI phone call to verify this transaction with the senior user. The live conversation will appear below in real-time.",
+    seniorPhoneLabel: "Senior's Phone Number",
+    callLangLabel: "Call Language",
+    startTwilioCallBtn: "🚀 Initiate Twilio Verification Call",
+    callingStatus: "Calling Senior on {phone} via Twilio...",
+    liveConversationTitle: "🔴 Real-Time Twilio Call Conversation & Transcript",
+    noTurnsYet: "Call initiated. Waiting for senior to answer and speak...",
+    simulateSeniorYes: "Simulate Senior Spoke: 'Yes, Confirm Transfer'",
+    simulateSeniorNo: "Simulate Senior Spoke: 'No, Cancel This'",
+    testSecurityBlock: "Test Security: Attempt to confirm payment as {guardian} (Simulate HTTP 403)",
+    allClear: "All Clear — No Pending Alerts",
+    allClearSub: "{user} has no active anomalous transfers. Click '▶️ Run ₹5,000 Story' above to simulate a new transfer alert.",
+    authorizePayment: "Authorize Payment ({user})",
+    pinNotice: "Enter your 4-digit UPI PIN. Never share this PIN with anyone, including family members.",
+    demoPinLabel: "Demo PIN: 1234",
+    confirmAndPay: "Confirm & Pay",
+    paymentSuccessful: "Payment Successful",
+    referenceLabel: "Reference:",
+    doneBtn: "Done",
+    saveNames: "Save & Apply Names"
+  },
+  hi: {
+    appTitle: "बैंकसाथी",
+    familyShield: "फैमिली शील्ड",
+    tagline: "साझा मार्गदर्शन, साझा पहुंच नहीं",
+    userTag: "उपयोगकर्ता",
+    guardianTag: "अभिभावक",
+    runStory: "▶️ ₹5,000 स्टोरी चलाएं",
+    editNames: "नाम बदलें",
+    fontSize: "अक्षर आकार:",
+    contrastOn: "हाई कंट्रास्ट चालू",
+    contrastOff: "सामान्य कंट्रास्ट",
+    shieldActive: "फैमिली शील्ड सक्रिय",
+    guardianLabel: "अभिभावक:",
+    savingsBalance: "बचत खाता शेष",
+    readBalance: "🔊 बैलेंस बोलकर सुनें",
+    speakPlaceholder: "बोलें या लिखें: '{recipient} को 5000 भेजो'...",
+    scanQr: "QR स्कैन करें",
+    payContacts: "संपर्क को भेजें",
+    bankTransfer: "बैंक ट्रांसफर",
+    trustedCircle: "ट्रस्टेड सर्कल",
+    pendingReview: "ट्रांसफर समीक्षा लंबित",
+    paying: "भुगतान कर रहे हैं",
+    riskAnomaly: "जोखिम विसंगति",
+    protectionCheck: "व्यवहार सुरक्षा जांच:",
+    trustedAdvisory: "ट्रस्टेड सर्कल सलाह",
+    viewAs: "देखें",
+    awaitingOpinion: "{guardian} को सलाह अलर्ट भेजा गया। दूसरी राय की प्रतीक्षा...",
+    looksExpectedTitle: "✓ {guardian}: \"उचित लग रहा है\"",
+    dontRecognizeTitle: "⚠️ {guardian}: \"मैं इसे नहीं पहचानता\"",
+    requestVerifyTitle: "❓ {guardian} ने फोन वेरिफिकेशन कॉल का अनुरोध किया।",
+    verifiedOverPhoneBadge: "वरिष्ठ नागरिक ने फोन पर पुष्टि की ✓",
+    confirmPayment: "भुगतान की पुष्टि करें (पिन डालें)",
+    cancelTransfer: "ट्रांसफर रद्द करें",
+    frequentContacts: "अक्सर भुगतान किए गए संपर्क (1-टैप पे)",
+    recentTransactions: "हाल के लेनदेन",
+    trustedGuardianTitle: "विश्वसनीय अभिभावक",
+    protecting: "सुरक्षा कर रहे हैं:",
+    advisoryModeDesc: "🛡️ सलाहकार मार्गदर्शन मोड: आप बिना स्क्रीन शेयरिंग या पिन के रीयल-टाइम सलाह देते हैं।",
+    switchToUser: "{user} के व्यू पर जाएं",
+    incomingRequest: "{user} से आने वाला सलाह अनुरोध",
+    recipientLabel: "प्राप्तकर्ता",
+    requestedAmount: "अनुरोधित राशि",
+    spendingBaseline: "सामान्य खर्च बेसलाइन",
+    deviation: "विचलन",
+    whySeeingThis: "आप इसे क्यों देख रहे हैं: {user} आमतौर पर ₹1,500 से अधिक ट्रांसफर नहीं करते। इस ₹5,000 के ट्रांसफर ने बैंकसाथी ट्रस्टेड सर्कल को आपकी दूसरी राय लेने के लिए सक्रिय किया।",
+    selectRecommendation: "अपनी सलाहकार अनुशंसा चुनें:",
+    optLooksExpected: "✓ उचित लग रहा है",
+    optLooksExpectedSub: "मैं इस प्राप्तकर्ता और राशि को पहचानता हूँ।",
+    optDontRecognize: "⚠️ मैं इसे नहीं पहचानता",
+    optDontRecognizeSub: "उपयोगकर्ता को संभावित धोखाधड़ी की चेतावनी दें।",
+    optRequestVerify: "❓ वेरिफिकेशन का अनुरोध करें",
+    optRequestVerifySub: "भुगतान से पहले उपयोगकर्ता को फोन करने के लिए कहें।",
+    twilioCallCardTitle: "📞 सीधे वरिष्ठ नागरिक को AI कॉल करें (Twilio Voice AI)",
+    twilioCallCardDesc: "वरिष्ठ उपयोगकर्ता के साथ इस लेनदेन की पुष्टि के लिए स्वचालित, सुरक्षित Twilio AI कॉल शुरू करें। पूरी बातचीत नीचे रीयल-टाइम में दिखेगी।",
+    seniorPhoneLabel: "वरिष्ठ नागरिक का फोन नंबर",
+    callLangLabel: "कॉल की भाषा",
+    startTwilioCallBtn: "🚀 Twilio वेरिफिकेशन कॉल शुरू करें",
+    callingStatus: "वरिष्ठ नागरिक को {phone} पर कॉल किया जा रहा है...",
+    liveConversationTitle: "🔴 रीयल-टाइम Twilio कॉल बातचीत और ट्रांसक्रिप्ट",
+    noTurnsYet: "कॉल शुरू हो गई है। उत्तर देने और बोलने की प्रतीक्षा है...",
+    simulateSeniorYes: "वरिष्ठ नागरिक ने बोला: 'हाँ, पुष्टि करें'",
+    simulateSeniorNo: "वरिष्ठ नागरिक ने बोला: 'नहीं, रद्द करें'",
+    testSecurityBlock: "सुरक्षा टेस्ट करें: {guardian} के रूप में भुगतान का प्रयास (HTTP 403)",
+    allClear: "सब सुरक्षित है — कोई लंबित अलर्ट नहीं",
+    allClearSub: "{user} का कोई असामान्य ट्रांसफर नहीं है। नया अलर्ट देखने के लिए ऊपर '▶️ ₹5,000 स्टोरी चलाएं' पर क्लिक करें।",
+    authorizePayment: "भुगतान अधिकृत करें ({user})",
+    pinNotice: "अपना 4-अंकों का UPI पिन दर्ज करें। यह पिन कभी भी किसी के साथ साझा न करें।",
+    demoPinLabel: "डेमो पिन: 1234",
+    confirmAndPay: "पुष्टि करें और भुगतान करें",
+    paymentSuccessful: "भुगतान सफल रहा",
+    referenceLabel: "संदर्भ क्रमांक:",
+    doneBtn: "पूर्ण",
+    saveNames: "नाम सहेजें और लागू करें"
+  },
+  kn: {
+    appTitle: "ಬ್ಯಾಂಕ್‌ಸಾಥಿ",
+    familyShield: "ಫ್ಯಾಮಿಲಿ ಶೀಲ್ಡ್",
+    tagline: "ಹಂಚಿಕೆಯ ಮಾರ್ಗದರ್ಶನ, ಹಂಚಿಕೆಯ ಪ್ರವೇಶವಲ್ಲ",
+    userTag: "ಬಳಕೆದಾರ",
+    guardianTag: "ರಕ್ಷಕ",
+    runStory: "▶️ ₹5,000 ಕಥೆ ಚಾಲನೆ ಮಾಡಿ",
+    editNames: "ಹೆಸರುಗಳನ್ನು ಬದಲಾಯಿಸಿ",
+    fontSize: "ಅಕ್ಷರ ಗಾತ್ರ:",
+    contrastOn: "ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ ಆನ್",
+    contrastOff: "ಸಾಮಾನ್ಯ ಕಾಂಟ್ರಾಸ್ಟ್",
+    shieldActive: "ಫ್ಯಾಮಿಲಿ ಶೀಲ್ಡ್ ಸಕ್ರಿಯವಾಗಿದೆ",
+    guardianLabel: "ರಕ್ಷಕ:",
+    savingsBalance: "ಉಳಿತಾಯ ಖಾತೆಯ ಬ್ಯಾಲೆನ್ಸ್",
+    readBalance: "🔊 ಬ್ಯಾಲೆನ್ಸ್ ಆಡಿಯೋ ಆಲಿಸಿ",
+    speakPlaceholder: "ಮಾತನಾಡಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ: '{recipient} ಅವರಿಗೆ 5000 ಕಳುಹಿಸಿ'...",
+    scanQr: "QR ಸ್ಕ್ಯಾನ್",
+    payContacts: "ಸಂಪರ್ಕಗಳಿಗೆ ಪಾವತಿಸಿ",
+    bankTransfer: "ಬ್ಯಾಂಕ್ ವರ್ಗಾವಣೆ",
+    trustedCircle: "ಟ್ರಸ್ಟೆಡ್ ಸರ್ಕಲ್",
+    pendingReview: "ವರ್ಗಾವಣೆ ಪರಿಶೀಲನೆ ಬಾಕಿಯಿದೆ",
+    paying: "ಪಾವತಿಸಲಾಗುತ್ತಿದೆ",
+    riskAnomaly: "ಅಪಾಯದ ಅಸಹಜತೆ",
+    protectionCheck: "ವರ್ತನೆಯ ಸುರಕ್ಷತಾ ತಪಾಸಣೆ:",
+    trustedAdvisory: "ಟ್ರಸ್ಟೆಡ್ ಸರ್ಕಲ್ ಸಲಹೆ",
+    viewAs: "ವೀಕ್ಷಿಸಿ",
+    awaitingOpinion: "{guardian} ಅವರಿಗೆ ಸಲಹಾ ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ. ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ...",
+    looksExpectedTitle: "✓ {guardian}: \"ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ\"",
+    dontRecognizeTitle: "⚠️ {guardian}: \"ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ\"",
+    requestVerifyTitle: "❓ {guardian} ಅವರು ಕರೆ ಪರಿಶೀಲನೆ ಕೇಳಿದ್ದಾರೆ.",
+    verifiedOverPhoneBadge: "ಹಿರಿಯ ನಾಗರಿಕರು ಫೋನ್‌ನಲ್ಲಿ ದೃಢಪಡಿಸಿದ್ದಾರೆ ✓",
+    confirmPayment: "ಪಾವತಿ ದೃಢೀಕರಿಸಿ (ಪಿನ್ ನಮೂದಿಸಿ)",
+    cancelTransfer: "ವರ್ಗಾವಣೆ ರದ್ದುಮಾಡಿ",
+    frequentContacts: "ಆಗಾಗ್ಗೆ ಪಾವತಿಸಿದ ಸಂಪರ್ಕಗಳು",
+    recentTransactions: "ಇತ್ತೀಚಿನ ವಹಿವಾಟುಗಳು",
+    trustedGuardianTitle: "ವಿಶ್ವಾಸಾರ್ಹ ರಕ್ಷಕ",
+    protecting: "ರಕ್ಷಿಸುತ್ತಿದ್ದಾರೆ:",
+    advisoryModeDesc: "🛡️ ಸಲಹಾ ಮಾರ್ಗದರ್ಶನ ಮೋಡ್: ಸ್ಕ್ರೀನ್ ಶೇರಿಂಗ್ ಅಥವಾ ಪಿನ್ ಇಲ್ಲದೆ ನೈಜ-ಸಮಯದ ಸಲಹೆ ನೀಡುತ್ತೀರಿ.",
+    switchToUser: "{user} ಅವರ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ",
+    incomingRequest: "{user} ಅವರಿಂದ ಬಂದ ಸಲಹಾ ವಿನಂತಿ",
+    recipientLabel: "ಸ್ವೀಕೃತದಾರ",
+    requestedAmount: "ಕೋರಿದ ಮೊತ್ತ",
+    spendingBaseline: "ಸಾಮಾನ್ಯ ವೆಚ್ಚದ ಮಿತಿ",
+    deviation: "ವ್ಯತ್ಯಾಸ",
+    whySeeingThis: "ನೀವು ಇದನ್ನು ಏಕೆ ನೋಡುತ್ತಿದ್ದೀರಿ: {user} ಅವರು ಸಾಮಾನ್ಯವಾಗಿ ₹1,500 ಕ್ಕಿಂತ ಹೆಚ್ಚು ಕಳುಹಿಸುವುದಿಲ್ಲ. ಈ ₹5,000 ವಹಿವಾಟು ನಿಮ್ಮ ಅಭಿಪ್ರಾಯ ಪಡೆಯಲು ಬ್ಯಾಂಕ್‌ಸಾಥಿ ರಕ್ಷಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದೆ.",
+    selectRecommendation: "ನಿಮ್ಮ ಸಲಹೆಯನ್ನು ಆರಿಸಿ:",
+    optLooksExpected: "✓ ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ",
+    optLooksExpectedSub: "ನಾನು ಈ ವ್ಯಕ್ತಿ ಮತ್ತು ಮೊತ್ತವನ್ನು ಗುರುತಿಸುತ್ತೇನೆ.",
+    optDontRecognize: "⚠️ ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ",
+    optDontRecognizeSub: "ವಂಚನೆಯ ಸಾಧ್ಯತೆಯ ಬಗ್ಗೆ ಬಳಕೆದಾರರನ್ನು ಎಚ್ಚರಿಸಿ.",
+    optRequestVerify: "❓ ಪರಿಶೀಲನೆಗೆ ವಿನಂತಿಸಿ",
+    optRequestVerifySub: "ಪಾವತಿಸುವ ಮುನ್ನ ಕರೆ ಮಾಡಲು ತಿಳಿಸಿ.",
+    twilioCallCardTitle: "📞 ಹಿರಿಯ ನಾಗರಿಕರಿಗೆ ನೇರ AI ಕರೆ ಮಾಡಿ (Twilio Voice AI)",
+    twilioCallCardDesc: "ವಹಿವಾಟನ್ನು ದೃಢೀಕರಿಸಲು ಹಿರಿಯ ಬಳಕೆದಾರರಿಗೆ ಸ್ವಯಂಚಾಲಿತ Twilio AI ಕರೆ ಪ್ರಾರಂಭಿಸಿ. ಸಂಪೂರ್ಣ ಮಾತುಕತೆ ಕೆಳಗೆ ನೈಜ ಸಮಯದಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
+    seniorPhoneLabel: "ಹಿರಿಯ ನಾಗರಿಕರ ಫೋನ್ ಸಂಖ್ಯೆ",
+    callLangLabel: "ಕರೆಯ ಭಾಷೆ",
+    startTwilioCallBtn: "🚀 Twilio ಪರಿಶೀಲನಾ ಕರೆ ಪ್ರಾರಂಭಿಸಿ",
+    callingStatus: "ಹಿರಿಯ ನಾಗರಿಕರಿಗೆ {phone} ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+    liveConversationTitle: "🔴 ರಿಯಲ್-ಟೈಮ್ Twilio ಕರೆ ಮಾತುಕತೆ ಮತ್ತು ಟ್ರಾನ್ಸ್‌ಸ್ಕ್ರಿಪ್ಟ್",
+    noTurnsYet: "ಕರೆ ಪ್ರಾರಂಭವಾಗಿದೆ. ಉತ್ತರಿಸಲು ಮತ್ತು ಮಾತನಾಡಲು ಕಾಯಲಾಗುತ್ತಿದೆ...",
+    simulateSeniorYes: "ಹಿರಿಯ ನಾಗರಿಕರು ಹೇಳಿದರು: 'ಹೌದು, ದೃಢೀಕರಿಸಿ'",
+    simulateSeniorNo: "ಹಿರಿಯ ನಾಗರಿಕರು ಹೇಳಿದರು: 'ಇಲ್ಲ, ರದ್ದುಮಾಡಿ'",
+    testSecurityBlock: "ಭದ್ರತಾ ಪರೀಕ್ಷೆ: {guardian} ಆಗಿ ಪಾವತಿಸಲು ಯತ್ನಿಸಿ (HTTP 403)",
+    allClear: "ಎಲ್ಲವೂ ಸುರಕ್ಷಿತವಾಗಿದೆ — ಯಾವುದೇ ಬಾಕಿ ಎಚ್ಚರಿಕೆಗಳಿಲ್ಲ",
+    allClearSub: "{user} ಅವರಿಗೆ ಯಾವುದೇ ಅಸಹಜ ವಹಿವಾಟುಗಳಿಲ್ಲ. ಹೊಸ ಎಚ್ಚರಿಕೆ ನೋಡಲು ಮೇಲಿನ '▶️ ₹5,000 ಕಥೆ ಚಾಲನೆ ಮಾಡಿ' ಕ್ಲಿಕ್ ಮಾಡಿ.",
+    authorizePayment: "ಪಾವತಿಯನ್ನು ಅಧಿಕೃತಗೊಳಿಸಿ ({user})",
+    pinNotice: "ನಿಮ್ಮ 4-ಅಂಕಿಯ UPI ಪಿನ್ ನಮೂದಿಸಿ. ಈ ಪಿನ್ ಅನ್ನು ಕುಟುಂಬ ಸದಸ್ಯರೂ ಸೇರಿದಂತೆ ಯಾರಿಗೂ ಹಂಚಿಕೊಳ್ಳಬೇಡಿ.",
+    demoPinLabel: "ಡೆಮೊ ಪಿನ್: 1234",
+    confirmAndPay: "ದೃಢೀಕರಿಸಿ ಮತ್ತು ಪಾವತಿಸಿ",
+    paymentSuccessful: "ಪಾವತಿ ಯಶಸ್ವಿಯಾಗಿದೆ",
+    referenceLabel: "ಉಲ್ಲೇಖ ಸಂಖ್ಯೆ:",
+    doneBtn: "ಮುಕ್ತಾಯ",
+    saveNames: "ಹೆಸರುಗಳನ್ನು ಉಳಿಸಿ ಮತ್ತು ಅನ್ವಯಿಸಿ"
+  },
+  mr: {
+    appTitle: "बँकसाथी",
+    familyShield: "फॅमिली शील्ड",
+    tagline: "सामायिक मार्गदर्शन, सामायिक प्रवेश नाही",
+    userTag: "वापरकर्ता",
+    guardianTag: "पालक",
+    runStory: "▶️ ₹5,000 कथा चालवा",
+    editNames: "नावे बदला",
+    fontSize: "फॉन्ट आकार:",
+    contrastOn: "हाय कॉन्ट्रास्ट चालू",
+    contrastOff: "सामान्य कॉन्ट्रास्ट",
+    shieldActive: "फॅमिली शील्ड सक्रिय",
+    guardianLabel: "पालक:",
+    savingsBalance: "बचत खाते शिल्लक",
+    readBalance: "🔊 शिल्लक ऐका",
+    speakPlaceholder: "बोला किंवा लिहा: '{recipient} यांना 5000 पाठवा'...",
+    scanQr: "QR स्कॅन करा",
+    payContacts: "संपर्कांना पाठवा",
+    bankTransfer: "बँक ट्रान्सफर",
+    trustedCircle: "ट्रस्टेड सर्कल",
+    pendingReview: "ट्रान्सफर पुनरावलोकन प्रलंबित",
+    paying: "पैसे पाठवत आहात",
+    riskAnomaly: "धोका विसंगती",
+    protectionCheck: "वर्तन संरक्षण तपासणी:",
+    trustedAdvisory: "ट्रस्टेड सर्कल सल्ला",
+    viewAs: "पहा",
+    awaitingOpinion: "{guardian} यांना सल्ला पाठवला. दुसऱ्या मताची वाट पाहत आहे...",
+    looksExpectedTitle: "✓ {guardian}: \"योग्य वाटत आहे\"",
+    dontRecognizeTitle: "⚠️ {guardian}: \"मी ओळखत नाही\"",
+    requestVerifyTitle: "❓ {guardian} यांनी फोन पडताळणीची विनंती केली.",
+    verifiedOverPhoneBadge: "वरिष्ठ नागरिकांनी फोनवर पुष्टी केली ✓",
+    confirmPayment: "पेमेंट निश्चित करा (पिन टाका)",
+    cancelTransfer: "ट्रान्सफर रद्द करा",
+    frequentContacts: "वारंवार पैसे पाठवलेले संपर्क",
+    recentTransactions: "अलीकडील व्यवहार",
+    trustedGuardianTitle: "विश्वासू पालक",
+    protecting: "संरक्षण करत आहेत:",
+    advisoryModeDesc: "🛡️ सल्लागार मार्गदर्शन मोड: स्क्रीन शेअरिंग किंवा पिनशिवाय रिअल-टाइम सल्ला द्या.",
+    switchToUser: "{user} च्या व्ह्यूवर जा",
+    incomingRequest: "{user} कडून सल्ला विनंती",
+    recipientLabel: "प्राप्तकर्ता",
+    requestedAmount: "मागितलेली रक्कम",
+    spendingBaseline: "नेहमीचा खर्च मर्यादा",
+    deviation: "फरक",
+    whySeeingThis: "तुम्हाला हे का दिसत आहे: {user} सहसा ₹1,500 पेक्षा जास्त पाठवत नाहीत. या ₹5,000 च्या व्यवहाराने तुमचे मत घेण्यासाठी अलर्ट पाठवला आहे.",
+    selectRecommendation: "तुमचा सल्ला निवडा:",
+    optLooksExpected: "✓ योग्य वाटत आहे",
+    optLooksExpectedSub: "मी या प्राप्तकर्त्याला आणि रकमेला ओळखतो.",
+    optDontRecognize: "⚠️ मी ओळखत नाही",
+    optDontRecognizeSub: "वापरकर्त्याला संभाव्य फसवणुकीबद्दल सावध करा.",
+    optRequestVerify: "❓ पडताळणीची विनंती करा",
+    optRequestVerifySub: "पैसे पाठवण्यापूर्वी कॉल करण्यास सांगा.",
+    twilioCallCardTitle: "📞 थेट वरिष्ठ नागरिकांना AI कॉल करा (Twilio Voice AI)",
+    twilioCallCardDesc: "या व्यवहाराची पुष्टी करण्यासाठी वरिष्ठ वापरकर्त्याला सुरक्षित Twilio AI कॉल सुरू करा. संपूर्ण संभाषण खाली रिअल-टाइममध्ये दिसेल.",
+    seniorPhoneLabel: "वरिष्ठ नागरिकांचा फोन नंबर",
+    callLangLabel: "कॉल भाषा",
+    startTwilioCallBtn: "🚀 Twilio पडताळणी कॉल सुरू करा",
+    callingStatus: "{phone} वर वरिष्ठ नागरिकांना कॉल करत आहे...",
+    liveConversationTitle: "🔴 रिअल-टाइम Twilio कॉल संभाषण आणि ट्रान्सक्रिप्ट",
+    noTurnsYet: "कॉल सुरू झाला. उत्तराची वाट पाहत आहे...",
+    simulateSeniorYes: "वरिष्ठ नागरिक बोलले: 'होय, पुष्टी करा'",
+    simulateSeniorNo: "वरिष्ठ नागरिक बोलले: 'नाही, रद्द करा'",
+    testSecurityBlock: "सुरक्षा चाचणी: {guardian} म्हणून पेमेंटचा प्रयत्न करा (HTTP 403)",
+    allClear: "सर्व सुरक्षित — कोणतेही प्रलंबित अलर्ट नाहीत",
+    allClearSub: "{user} चे कोणतेही असामान्य व्यवहार नाहीत. नवीन अलर्ट पाहण्यासाठी '▶️ ₹5,000 कथा चालवा' वर क्लिक करा.",
+    authorizePayment: "पेमेंट अधिकृत करा ({user})",
+    pinNotice: "तुमचा 4-अंकी UPI पिन टाका. हा पिन कोणाशीही शेअर करू नका.",
+    demoPinLabel: "डेमो पिन: 1234",
+    confirmAndPay: "पुष्टी करा आणि पैसे पाठवा",
+    paymentSuccessful: "पेमेंट यशस्वी झाले",
+    referenceLabel: "संदर्भ क्रमांक:",
+    doneBtn: "पूर्ण",
+    saveNames: "नावे जतन करा आणि लागू करा"
+  },
+  ta: {
+    appTitle: "பேங்க் சாதி",
+    familyShield: "குடும்ப பாதுகாப்பு",
+    tagline: "பகிர்ந்த வழிகாட்டுதல், பகிர்ந்த அணுகல் அல்ல",
+    userTag: "பயனர்",
+    guardianTag: "பாதுகாவலர்",
+    runStory: "▶️ ₹5,000 கதையை இயக்கு",
+    editNames: "பெயர்களை மாற்று",
+    fontSize: "எழுத்து அளவு:",
+    contrastOn: "உயர் மாறுபாடு ஆன்",
+    contrastOff: "இயல்பான மாறுபாடு",
+    shieldActive: "குடும்ப பாதுகாப்பு செயலில் உள்ளது",
+    guardianLabel: "பாதுகாவலர்:",
+    savingsBalance: "சேமிப்பு கணக்கு இருப்பு",
+    readBalance: "🔊 இருப்பை குரலில் கேளுங்கள்",
+    speakPlaceholder: "பேசுங்கள் அல்லது தட்டச்சு செய்யுங்கள்: '{recipient} க்கு 5000 அனுப்பு'...",
+    scanQr: "QR ஸ்கேன்",
+    payContacts: "தொடர்புகளுக்கு செலுத்துங்கள்",
+    bankTransfer: "வங்கி பரிமாற்றம்",
+    trustedCircle: "நம்பகமான வட்டம்",
+    pendingReview: "பரிவர்த்தனை மதிப்பாய்வு நிலுவையில் உள்ளது",
+    paying: "செலுத்துகிறீர்கள்",
+    riskAnomaly: "ஆபத்து முரண்பாடு",
+    protectionCheck: "நடத்தை பாதுகாப்பு சரிபார்ப்பு:",
+    trustedAdvisory: "நம்பகமான வட்ட ஆலோசனை",
+    viewAs: "பார்க்கவும்",
+    awaitingOpinion: "{guardian} க்கு ஆலோசனை எச்சரிக்கை அனுப்பப்பட்டது. பதிலுக்காக காத்திருக்கிறது...",
+    looksExpectedTitle: "✓ {guardian}: \"சரியாக உள்ளது\"",
+    dontRecognizeTitle: "⚠️ {guardian}: \"எனக்கு தெரியவில்லை\"",
+    requestVerifyTitle: "❓ {guardian} அழைப்பு சரிபார்ப்பை கோரியுள்ளார்.",
+    verifiedOverPhoneBadge: "மூத்த குடிமகன் தொலைபேசியில் உறுதிப்படுத்தினார் ✓",
+    confirmPayment: "பரிவர்த்தனையை உறுதிப்படுத்தவும் (பின் உள்ளிடவும்)",
+    cancelTransfer: "பரிவர்த்தனையை ரத்துசெய்",
+    frequentContacts: "அடிக்கடி பணம் அனுப்பிய தொடர்புகள்",
+    recentTransactions: "சமீபத்திய பரிவர்த்தனைகள்",
+    trustedGuardianTitle: "நம்பகமான பாதுகாவலர்",
+    protecting: "பாதுகாக்கிறார்:",
+    advisoryModeDesc: "🛡️ ஆலோசனை வழிகாட்டுதல் பயன்முறை: திரை பகிர்வு அல்லது பின் இல்லாமல் நிகழ்நேர பரிந்துரைகளை வழங்குகிறீர்கள்.",
+    switchToUser: "{user} பார்வைக்கு மாறவும்",
+    incomingRequest: "{user} இடமிருந்து வந்த ஆலோசனை கோரிக்கை",
+    recipientLabel: "பெறுநர்",
+    requestedAmount: "கோரப்பட்ட தொகை",
+    spendingBaseline: "வழக்கமான செலவு வரம்பு",
+    deviation: "மாறுபாடு",
+    whySeeingThis: "இதை நீங்கள் ஏன் பார்க்கிறீர்கள்: {user} வழக்கமாக ₹1,500 க்கு மேல் அனுப்புவதில்லை. இந்த ₹5,000 பரிவர்த்தனை உங்கள் ஆலோசனையைக் கோருகிறது.",
+    selectRecommendation: "உங்கள் ஆலோசனை பரிந்துரையைத் தேர்ந்தெடுக்கவும்:",
+    optLooksExpected: "✓ சரியாக உள்ளது",
+    optLooksExpectedSub: "நான் இந்த நபரையும் தொகையையும் அங்கீகரிக்கிறேன்.",
+    optDontRecognize: "⚠️ எனக்கு தெரியவில்லை",
+    optDontRecognizeSub: "சாத்தியமான மோசடி குறித்து பயனரை எச்சரிக்கவும்.",
+    optRequestVerify: "❓ சரிபார்ப்பைக் கோருங்கள்",
+    optRequestVerifySub: "செலுத்துவதற்கு முன் அழைக்குமாறு கூறவும்.",
+    twilioCallCardTitle: "📞 மூத்த குடிமகனுக்கு நேரடி AI அழைப்பு (Twilio Voice AI)",
+    twilioCallCardDesc: "பரிவர்த்தனையை உறுதிப்படுத்த மூத்த பயனருக்கு பாதுகாப்பான Twilio AI குரல் அழைப்பைத் தொடங்கவும். நேரடி உரையாடல் கீழே தோன்றும்.",
+    seniorPhoneLabel: "மூத்த குடிமகனின் தொலைபேசி எண்",
+    callLangLabel: "அழைப்பு மொழி",
+    startTwilioCallBtn: "🚀 Twilio சரிபார்ப்பு அழைப்பைத் தொடங்கு",
+    callingStatus: "மூத்த பயனருக்கு {phone} இல் அழைக்கப்படுகிறது...",
+    liveConversationTitle: "🔴 நிகழ்நேர Twilio அழைப்பு உரையாடல் மற்றும் டிரான்ஸ்கிரிப்ட்",
+    noTurnsYet: "அழைப்பு தொடங்கப்பட்டது. மூத்த குடிமகன் பேச காத்திருக்கிறது...",
+    simulateSeniorYes: "மூத்த பயனர் கூறினார்: 'ஆம், உறுதிப்படுத்துங்கள்'",
+    simulateSeniorNo: "மூத்த பயனர் கூறினார்: 'இல்லை, ரத்து செய்யுங்கள்'",
+    testSecurityBlock: "பாதுகாப்பு சோதனை: {guardian} ஆக பணம் செலுத்த முயற்சிக்கவும் (HTTP 403)",
+    allClear: "அனைத்தும் பாதுகாப்பானது — நிலுவையில் உள்ள எச்சரிக்கைகள் இல்லை",
+    allClearSub: "{user} க்கு எந்த அசாதாரண பரிவர்த்தனைகளும் இல்லை. புதிய விழிப்பூட்டலைக் காண '▶️ ₹5,000 கதையை இயக்கு' என்பதைக் கிளிக் செய்க.",
+    authorizePayment: "பரிவர்த்தனையை அங்கீகரிக்கவும் ({user})",
+    pinNotice: "உங்கள் 4 இலக்க UPI பின்னை உள்ளிடவும். இந்த பின்னை யாரிடமும் பகிர வேண்டாம்.",
+    demoPinLabel: "டெமோ பின்: 1234",
+    confirmAndPay: "உறுதிப்படுத்தி செலுத்தவும்",
+    paymentSuccessful: "பரிவர்த்தனை வெற்றிகரமாக முடிந்தது",
+    referenceLabel: "குறிப்பு எண்:",
+    doneBtn: "முடிந்தது",
+    saveNames: "பெயர்களைச் சேமித்து பயன்படுத்துக"
+  }
+};
+
 export default function BankSathiApp() {
-  // Configurable Persona Names
   const [userName, setUserName] = useState('Sunita Verma');
   const [guardianName, setGuardianName] = useState('Dilshan');
   const [guardianRelation, setGuardianRelation] = useState('Son & Trusted Guardian');
   const [demoRecipientName, setDemoRecipientName] = useState('Rohan Sharma');
   const [showEditNamesModal, setShowEditNamesModal] = useState(false);
 
-  // Active Persona: "user" (Sunita) or "guardian" (Dilshan)
   const [activePersona, setActivePersona] = useState<'user' | 'guardian'>('user');
 
-  // Accessibility States (WCAG AAA)
   const [fontScale, setFontScale] = useState(1.0);
   const [highContrast, setHighContrast] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'hi' | 'kn' | 'mr' | 'ta'>('en');
   const [showBalance, setShowBalance] = useState(true);
 
-  // Financial Balances
   const [userBalance, setUserBalance] = useState(50000);
   const [guardianBalance, setGuardianBalance] = useState(142000);
 
-  // Speech & Voice State
   const [isListening, setIsListening] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [syncCaption, setSyncCaption] = useState('');
   const [speechEnabled, setSpeechEnabled] = useState(true);
 
-  // Frequent People Directory
+  const [seniorPhoneNumber, setSeniorPhoneNumber] = useState('+919461284678');
+  const [callLanguage, setCallLanguage] = useState<'en' | 'hi' | 'kn' | 'mr' | 'ta'>('en');
+  const [isCallingSenior, setIsCallingSenior] = useState(false);
+  const [callStatusMessage, setCallStatusMessage] = useState('');
+  const [callConversationTurns, setCallConversationTurns] = useState<CallTurn[]>([]);
+  const [callPollingInterval, setCallPollingInterval] = useState<any>(null);
+
   const [frequentPeople, setFrequentPeople] = useState<Person[]>([
     { name: 'Rohan Sharma', upiId: 'rohan.sharma@okaxis', avatar: '👨🏽', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
     { name: 'Dilshan Kumar', upiId: 'dilshan.k@okhdfcbank', avatar: '👨🏻‍💼', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
@@ -71,7 +461,6 @@ export default function BankSathiApp() {
     { name: 'Unknown Lottery Agent', upiId: 'unknown.win99@ybl', avatar: '🕵️', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
   ]);
 
-  // Current Transfer in Progress
   const [activeTransfer, setActiveTransfer] = useState<TransferAlert | null>({
     id: 'TXN-ALERT-8819',
     senderName: 'Sunita Verma',
@@ -87,7 +476,6 @@ export default function BankSathiApp() {
     finalStatus: 'PENDING_ADVISORY'
   });
 
-  // Completed Transactions Ledger
   const [transactions, setTransactions] = useState<any[]>([
     {
       id: 'TXN-UPI-9941',
@@ -109,7 +497,6 @@ export default function BankSathiApp() {
     }
   ]);
 
-  // Modals
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
@@ -118,7 +505,15 @@ export default function BankSathiApp() {
 
   const recognitionRef = useRef<any>(null);
 
-  // Text-To-Speech with Indian Accent / Multi-language support
+  const t = (key: string, variables: Record<string, string> = {}) => {
+    const langDict = TRANSLATIONS[selectedLanguage] || TRANSLATIONS.en;
+    let str = langDict[key] || TRANSLATIONS.en[key] || key;
+    for (const [vKey, vVal] of Object.entries(variables)) {
+      str = str.replace(new RegExp(`\\{${vKey}\\}`, 'g'), vVal);
+    }
+    return str;
+  };
+
   const speakVoice = (text: string) => {
     setSyncCaption(text);
     if (!speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -127,16 +522,31 @@ export default function BankSathiApp() {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
+      
+      const langCodeMap: Record<string, string> = {
+        en: 'en-IN',
+        hi: 'hi-IN',
+        kn: 'kn-IN',
+        mr: 'mr-IN',
+        ta: 'ta-IN'
+      };
+      utterance.lang = langCodeMap[selectedLanguage] || 'en-IN';
+
       const voices = window.speechSynthesis.getVoices();
-      const inVoice = voices.find(v => v.lang.includes('IN') || v.name.includes('India') || v.name.includes('Aditi'));
-      if (inVoice) utterance.voice = inVoice;
+      const matchVoice = voices.find(v => 
+        v.lang.toLowerCase().includes(selectedLanguage) || 
+        v.lang.includes('IN') || 
+        v.name.includes('India') || 
+        v.name.includes('Aditi')
+      );
+      if (matchVoice) utterance.voice = matchVoice;
+
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.error('Speech error:', e);
     }
   };
 
-  // Setup Web Speech Recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -144,7 +554,14 @@ export default function BankSathiApp() {
         const reco = new SpeechRecognition();
         reco.continuous = false;
         reco.interimResults = true;
-        reco.lang = selectedLanguage === 'hi' ? 'hi-IN' : selectedLanguage === 'kn' ? 'kn-IN' : 'en-IN';
+        const langMap: Record<string, string> = {
+          en: 'en-IN',
+          hi: 'hi-IN',
+          kn: 'kn-IN',
+          mr: 'mr-IN',
+          ta: 'ta-IN'
+        };
+        reco.lang = langMap[selectedLanguage] || 'en-IN';
 
         reco.onresult = (event: any) => {
           const text = event.results[0][0].transcript;
@@ -162,6 +579,39 @@ export default function BankSathiApp() {
     }
   }, [selectedLanguage, userBalance, userName, guardianName]);
 
+  useEffect(() => {
+    setCallLanguage(selectedLanguage);
+  }, [selectedLanguage]);
+
+  const fetchLiveCallConversation = async (transferId: string) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/cases/voice/conversation/${transferId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.conversation) {
+        setCallConversationTurns(data.conversation);
+        if (data.latest_decision === 'CONFIRMED') {
+          setActiveTransfer(prev => prev ? {
+            ...prev,
+            advisoryStatus: 'LOOKS_EXPECTED',
+            verifiedOverPhone: true,
+            guardianNote: `Phone verification complete: ${userName} confirmed authorization over Twilio call.`
+          } : null);
+          setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+        } else if (data.latest_decision === 'REJECTED') {
+          setActiveTransfer(prev => prev ? {
+            ...prev,
+            advisoryStatus: 'DONT_RECOGNIZE',
+            guardianNote: `Phone verification alert: ${userName} cancelled or rejected transfer over phone call.`
+          } : null);
+          setCallStatusMessage(`⚠️ ${userName} cancelled this transfer during the phone call!`);
+        }
+      }
+    } catch (e) {
+      console.warn('Live poll error:', e);
+    }
+  };
+
   const toggleMic = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -171,14 +621,20 @@ export default function BankSathiApp() {
         setIsListening(true);
         setVoiceTranscript('');
         recognitionRef.current.start();
-        speakVoice(selectedLanguage === 'hi' ? `नमस्ते ${userName}, किसको कितने पैसे भेजने हैं?` : `Hello ${userName}, who would you like to send money to?`);
+        
+        let promptText = `Hello ${userName}, who would you like to send money to?`;
+        if (selectedLanguage === 'hi') promptText = `नमस्ते ${userName}, किसको कितने पैसे भेजने हैं?`;
+        if (selectedLanguage === 'kn') promptText = `ನಮಸ್ಕಾರ ${userName}, ಯಾರಿಗೆ ಹಣ ಕಳುಹಿಸಬೇಕು?`;
+        if (selectedLanguage === 'mr') promptText = `नमस्कार ${userName}, कोणाला पैसे पाठवायचे आहेत?`;
+        if (selectedLanguage === 'ta') promptText = `வணக்கம் ${userName}, யாருக்கு பணம் அனுப்ப வேண்டும்?`;
+        
+        speakVoice(promptText);
       } else {
         alert('Speech recognition is not supported in this browser. Please use the quick action buttons.');
       }
     }
   };
 
-  // Voice Command Intent Extraction & Risk Baseline Check
   const handleVoiceCommand = (text: string) => {
     const clean = text.toLowerCase();
     let amount = 5000;
@@ -195,7 +651,6 @@ export default function BankSathiApp() {
 
     const p = frequentPeople.find(person => person.name.toLowerCase().includes(recipient.toLowerCase())) || frequentPeople[0];
     
-    // Compute Risk Tier
     const isBaselineExceeded = amount > (p.baseline * 2);
     const isUnknown = p.baseline === 0;
 
@@ -209,7 +664,7 @@ export default function BankSathiApp() {
     const newAlert: TransferAlert = {
       id: `TXN-${Date.now().toString().slice(-6)}`,
       senderName: userName,
-      senderPhone: '9999999001',
+      senderPhone: seniorPhoneNumber,
       recipientName: p.name,
       upiId: p.upiId,
       amount: amount,
@@ -230,13 +685,12 @@ export default function BankSathiApp() {
     }
   };
 
-  // Run 1-Click Interactive ₹5,000 Demo Story
   const runDemoStory = () => {
     setActivePersona('user');
     const demoAlert: TransferAlert = {
       id: 'TXN-DEMO-5000',
       senderName: userName,
-      senderPhone: '9999999001',
+      senderPhone: seniorPhoneNumber,
       recipientName: demoRecipientName,
       upiId: `${demoRecipientName.toLowerCase().replace(/\s+/g, '.')}@okaxis`,
       amount: 5000,
@@ -248,10 +702,18 @@ export default function BankSathiApp() {
       finalStatus: 'PENDING_ADVISORY'
     };
     setActiveTransfer(demoAlert);
-    speakVoice(`Step 1: ${userName} is sending ₹5,000 to ${demoRecipientName}. The risk engine detected the baseline deviation and sent an advisory alert to ${guardianName}.`);
+    setCallConversationTurns([]);
+    setCallStatusMessage('');
+
+    let announceText = `Step 1: ${userName} is sending ₹5,000 to ${demoRecipientName}. The risk engine detected the baseline deviation and sent an advisory alert to ${guardianName}.`;
+    if (selectedLanguage === 'hi') {
+      announceText = `चरण 1: ${userName} ₹5,000 ${demoRecipientName} को भेज रहे हैं। असामान्य राशि होने के कारण ${guardianName} को सुरक्षा अलर्ट भेजा गया है।`;
+    } else if (selectedLanguage === 'kn') {
+      announceText = `ಹಂತ 1: ${userName} ಅವರು ${demoRecipientName} ಅವರಿಗೆ ₹5,000 ಕಳುಹಿಸುತ್ತಿದ್ದಾರೆ. ಅಸಾಮಾನ್ಯ ಮೊತ್ತವಾದ್ದರಿಂದ ${guardianName} ಅವರಿಗೆ ಭದ್ರತಾ ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ.`;
+    }
+    speakVoice(announceText);
   };
 
-  // Guardian Submits Advisory Opinion
   const handleGuardianAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
     if (!activeTransfer) return;
     const updated: TransferAlert = {
@@ -270,19 +732,115 @@ export default function BankSathiApp() {
       speakVoice(`${guardianName} requested a quick phone verification call.`);
     }
 
-    // Switch back to primary user view
     setTimeout(() => {
       setActivePersona('user');
     }, 1800);
   };
 
-  // Attempt Helper Authorization (Server-Side Block Enforcement Demonstration)
+  const handleTriggerTwilioCall = async () => {
+    if (!activeTransfer) return;
+    setIsCallingSenior(true);
+    setCallStatusMessage(`📞 Calling ${userName} on ${seniorPhoneNumber} via Twilio AI Shield in ${callLanguage.toUpperCase()}...`);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/cases/voice/trusted-circle-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senior_phone: seniorPhoneNumber,
+          senior_name: userName,
+          guardian_name: guardianName,
+          recipient_name: activeTransfer.recipientName,
+          amount: activeTransfer.amount,
+          language: callLanguage,
+          transfer_id: activeTransfer.id
+        })
+      });
+
+      const data = await res.json();
+      if (data && data.success) {
+        setCallStatusMessage(`🟢 Twilio Call Connected! Call SID: ${data.call_sid}. Speaking initial verification prompt to ${userName}...`);
+        fetchLiveCallConversation(activeTransfer.id);
+        
+        if (callPollingInterval) clearInterval(callPollingInterval);
+        const interval = setInterval(() => {
+          fetchLiveCallConversation(activeTransfer.id);
+        }, 2500);
+        setCallPollingInterval(interval);
+      } else {
+        setCallStatusMessage(`⚠️ Call Notice: ${data.error || 'Check Twilio credentials or ngrok tunnel.'}`);
+        setCallConversationTurns([
+          {
+            id: 'TC-LOCAL-1',
+            event_type: 'TRUSTED_CIRCLE_CALL_INITIATED',
+            actor: `Guardian (${guardianName})`,
+            action: `Initiated Twilio Call to ${userName} (${seniorPhoneNumber})`,
+            decision: 'CALLING',
+            notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+          }
+        ]);
+      }
+    } catch (e: any) {
+      setCallStatusMessage(`⚠️ Twilio Call Dispatched (Simulated Stream Active).`);
+      setCallConversationTurns([
+        {
+          id: 'TC-LOCAL-1',
+          event_type: 'TRUSTED_CIRCLE_CALL_INITIATED',
+          actor: `Guardian (${guardianName})`,
+          action: `Initiated Twilio Call to ${userName} (${seniorPhoneNumber})`,
+          decision: 'CALLING',
+          notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+        }
+      ]);
+    }
+  };
+
+  const handleSimulateSeniorResponse = async (responseType: 'CONFIRM' | 'REJECT') => {
+    if (!activeTransfer) return;
+    const isConfirm = responseType === 'CONFIRM';
+    const speechResult = isConfirm ? 'Yes, I am sending this money' : 'No, cancel this transaction immediately';
+
+    try {
+      const url = `http://localhost:8000/api/v1/cases/voice/webhook/trusted-circle-respond?transfer_id=${activeTransfer.id}&senior_name=${encodeURIComponent(userName)}&guardian_name=${encodeURIComponent(guardianName)}&recipient_name=${encodeURIComponent(activeTransfer.recipientName)}&amount=${activeTransfer.amount}&lang=${callLanguage}&SpeechResult=${encodeURIComponent(speechResult)}`;
+      await fetch(url, { method: 'POST' });
+      await fetchLiveCallConversation(activeTransfer.id);
+    } catch (e) {
+      const newTurns: CallTurn[] = [
+        ...callConversationTurns,
+        {
+          id: `TC-TURN-${Date.now()}`,
+          event_type: isConfirm ? 'TRUSTED_CIRCLE_CONFIRMED' : 'TRUSTED_CIRCLE_CANCELLED',
+          actor: `Senior (${userName})`,
+          action: isConfirm ? `Confirmed ₹${activeTransfer.amount} Over Phone` : `Rejected ₹${activeTransfer.amount} Over Phone`,
+          decision: isConfirm ? 'CONFIRMED' : 'REJECTED',
+          notes: `👵 ${userName}: "${speechResult}"\n🤖 AI Voice Shield: "${isConfirm ? `Thank you ${userName}! Transfer verified. ${guardianName} notified.` : `Understood ${userName}! Transfer cancelled immediately.`}"`
+        }
+      ];
+      setCallConversationTurns(newTurns);
+      if (isConfirm) {
+        setActiveTransfer(prev => prev ? {
+          ...prev,
+          advisoryStatus: 'LOOKS_EXPECTED',
+          verifiedOverPhone: true,
+          guardianNote: `Phone verification complete: ${userName} confirmed authorization over Twilio call.`
+        } : null);
+        setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+      } else {
+        setActiveTransfer(prev => prev ? {
+          ...prev,
+          advisoryStatus: 'DONT_RECOGNIZE',
+          guardianNote: `Phone verification alert: ${userName} rejected transfer over phone call.`
+        } : null);
+        setCallStatusMessage(`⚠️ ${userName} cancelled this transfer during the phone call!`);
+      }
+    }
+  };
+
   const handleHelperAttemptAuthorization = () => {
     setServerErrorAlert(`HTTP 403 Forbidden: "Shared guidance, not shared access." Trusted Circle guardians (${guardianName}) cannot execute or confirm payments. Only ${userName} holds authorization authority.`);
     speakVoice(`Security Protection: Only ${userName} can authorize this payment. Guardians cannot access funds or enter PIN.`);
   };
 
-  // Primary User Confirms Final Payment with PIN
   const handleUserConfirmPayment = () => {
     if (pinInput !== '1234') {
       setPinError('Invalid UPI PIN. Enter demo PIN 1234.');
@@ -301,7 +859,7 @@ export default function BankSathiApp() {
       amount: activeTransfer.amount,
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       status: 'SUCCESS',
-      advisory: activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? `${guardianName} Verified ✓` : 'User Authorized'
+      advisory: activeTransfer.verifiedOverPhone ? `${guardianName} & Phone Verified ✓` : (activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? `${guardianName} Verified ✓` : 'User Authorized')
     };
 
     setTransactions(prev => [completedTxn, ...prev]);
@@ -314,7 +872,6 @@ export default function BankSathiApp() {
     speakVoice(`Payment Successful! ₹${completedTxn.amount} sent to ${completedTxn.recipient}. Updated balance is ₹${newBal.toLocaleString('en-IN')}.`);
   };
 
-  // Cancel Payment
   const handleCancelPayment = () => {
     if (!activeTransfer) return;
     speakVoice('Transfer cancelled. No money left your account.');
@@ -338,9 +895,9 @@ export default function BankSathiApp() {
             </div>
             <div>
               <span className="font-black text-xs uppercase tracking-wider block leading-none">
-                BankSathi <span className="bg-amber-400 text-blue-950 text-[9px] px-1.5 py-0.5 rounded-xs font-black">FAMILY SHIELD</span>
+                {t('appTitle')} <span className="bg-amber-400 text-blue-950 text-[9px] px-1.5 py-0.5 rounded-xs font-black">{t('familyShield')}</span>
               </span>
-              <span className="text-[10px] text-blue-100 font-medium">Shared Guidance, Not Shared Access</span>
+              <span className="text-[10px] text-blue-100 font-medium">{t('tagline')}</span>
             </div>
           </div>
 
@@ -355,7 +912,7 @@ export default function BankSathiApp() {
               }`}
             >
               <span>👵 1. {userName.split(' ')[0]}</span>
-              <span className="text-[9px] bg-amber-400 text-blue-950 px-1 rounded-xs font-black">USER</span>
+              <span className="text-[9px] bg-amber-400 text-blue-950 px-1 rounded-xs font-black">{t('userTag')}</span>
             </button>
 
             <button
@@ -380,13 +937,13 @@ export default function BankSathiApp() {
               className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-sm flex items-center gap-1 shadow-sm cursor-pointer transition-transform active:scale-95"
             >
               <Play size={13} className="fill-blue-950" />
-              <span>▶️ Run ₹5,000 Story</span>
+              <span>{t('runStory')}</span>
             </button>
 
             <button
               onClick={() => setShowEditNamesModal(true)}
               className="p-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded-sm text-xs border border-blue-600 cursor-pointer"
-              title="Customize Names"
+              title={t('editNames')}
             >
               <Edit3 size={14} />
             </button>
@@ -400,11 +957,11 @@ export default function BankSathiApp() {
           {/* Senior Font Scaler */}
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-[11px] uppercase tracking-wider text-gray-500 flex items-center gap-1">
-              <ZoomIn size={14} /> Font Size:
+              <ZoomIn size={14} /> {t('fontSize')}
             </span>
             <button
               onClick={() => setFontScale(prev => Math.max(0.85, prev - 0.15))}
-              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs"
+              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs cursor-pointer"
               title="Decrease Font Size"
             >
               A-
@@ -412,7 +969,7 @@ export default function BankSathiApp() {
             <span className="font-bold font-mono px-1">{Math.round(fontScale * 100)}%</span>
             <button
               onClick={() => setFontScale(prev => Math.min(1.8, prev + 0.15))}
-              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs"
+              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 font-black rounded-xs border border-gray-300 text-xs cursor-pointer"
               title="Increase Font Size (Senior Mode)"
             >
               A+
@@ -428,7 +985,7 @@ export default function BankSathiApp() {
               }`}
             >
               <Contrast size={13} />
-              <span>{highContrast ? 'High Contrast ON' : 'Standard Contrast'}</span>
+              <span>{highContrast ? t('contrastOn') : t('contrastOff')}</span>
             </button>
 
             {/* Language Selector */}
@@ -436,8 +993,12 @@ export default function BankSathiApp() {
               <Globe size={13} className="text-gray-400" />
               <select
                 value={selectedLanguage}
-                onChange={(e: any) => setSelectedLanguage(e.target.value)}
-                className="p-1 border border-gray-300 rounded-sm text-[11px] font-bold bg-white"
+                onChange={(e: any) => {
+                  const newLang = e.target.value;
+                  setSelectedLanguage(newLang);
+                  setCallLanguage(newLang);
+                }}
+                className="p-1 border border-gray-300 rounded-sm text-[11px] font-bold bg-white cursor-pointer"
               >
                 <option value="en">English (India)</option>
                 <option value="hi">हिंदी (Hindi)</option>
@@ -457,7 +1018,7 @@ export default function BankSathiApp() {
             <Volume2 size={16} className="text-blue-950 shrink-0" />
             <span className="font-sans italic">{syncCaption}</span>
           </div>
-          <button onClick={() => setSyncCaption('')} className="text-blue-950 font-black text-xs hover:opacity-75">✕</button>
+          <button onClick={() => setSyncCaption('')} className="text-blue-950 font-black text-xs hover:opacity-75 cursor-pointer">✕</button>
         </div>
       )}
 
@@ -468,7 +1029,7 @@ export default function BankSathiApp() {
             <AlertTriangle size={18} className="text-yellow-300 shrink-0" />
             <span>{serverErrorAlert}</span>
           </div>
-          <button onClick={() => setServerErrorAlert('')} className="text-white font-black text-sm">✕</button>
+          <button onClick={() => setServerErrorAlert('')} className="text-white font-black text-sm cursor-pointer">✕</button>
         </div>
       )}
 
@@ -490,12 +1051,12 @@ export default function BankSathiApp() {
                   <div className="flex items-center gap-2">
                     <h2 className="font-black text-lg text-gray-900 leading-tight">{userName}</h2>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-full border border-emerald-300">
-                      Family Shield Active
+                      {t('shieldActive')}
                     </span>
                   </div>
                   <span className="text-xs text-gray-500 font-mono font-medium">UPI: {userName.toLowerCase().replace(/\s+/g, '.')}@sbi</span>
                   <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                    Guardian: <span className="text-purple-700 font-black">{guardianName} ({guardianRelation})</span>
+                    {t('guardianLabel')} <span className="text-purple-700 font-black">{guardianName} ({guardianRelation})</span>
                   </p>
                 </div>
               </div>
@@ -505,7 +1066,7 @@ export default function BankSathiApp() {
                 highContrast ? 'bg-gray-800 border-gray-600' : 'bg-blue-50/70 border-blue-200'
               }`}>
                 <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold">
-                  <span>Savings Balance</span>
+                  <span>{t('savingsBalance')}</span>
                   <button 
                     onClick={() => setShowBalance(!showBalance)}
                     className="text-gray-500 hover:text-gray-800 cursor-pointer"
@@ -516,7 +1077,7 @@ export default function BankSathiApp() {
                   <button
                     onClick={() => speakVoice(`Your account balance is ₹${userBalance.toLocaleString('en-IN')}`)}
                     className="p-1 bg-blue-100 text-blue-900 rounded-full hover:bg-blue-200 cursor-pointer"
-                    title="🔊 Read Balance Out Loud"
+                    title={t('readBalance')}
                   >
                     <Volume2 size={13} />
                   </button>
@@ -541,7 +1102,7 @@ export default function BankSathiApp() {
               value={voiceTranscript}
               onChange={(e) => setVoiceTranscript(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleVoiceCommand(voiceTranscript)}
-              placeholder={`Speak or type: 'Send 5000 to ${demoRecipientName}'...`}
+              placeholder={t('speakPlaceholder', { recipient: demoRecipientName })}
               className="flex-1 text-sm font-bold bg-transparent focus:outline-hidden text-gray-900"
             />
 
@@ -562,17 +1123,17 @@ export default function BankSathiApp() {
           {/* GOOGLE PAY INDIA 4-COLUMN QUICK ACTION CIRCLES */}
           <div className="grid grid-cols-4 gap-3 text-center">
             {[
-              { icon: QrCode, label: 'Scan QR', color: 'bg-blue-100 text-blue-900' },
-              { icon: Smartphone, label: 'Pay Contacts', color: 'bg-emerald-100 text-emerald-900' },
-              { icon: Landmark, label: 'Bank Transfer', color: 'bg-purple-100 text-purple-900' },
-              { icon: HeartHandshake, label: 'Trusted Circle', color: 'bg-amber-100 text-amber-900' },
+              { icon: QrCode, label: t('scanQr'), color: 'bg-blue-100 text-blue-900' },
+              { icon: Smartphone, label: t('payContacts'), color: 'bg-emerald-100 text-emerald-900' },
+              { icon: Landmark, label: t('bankTransfer'), color: 'bg-purple-100 text-purple-900' },
+              { icon: HeartHandshake, label: t('trustedCircle'), color: 'bg-amber-100 text-amber-900' },
             ].map((action, idx) => {
               const IconComp = action.icon;
               return (
                 <button
                   key={idx}
                   onClick={() => {
-                    if (action.label === 'Trusted Circle') {
+                    if (idx === 3) {
                       setActivePersona('guardian');
                     } else {
                       handleVoiceCommand(`Send 5000 to ${demoRecipientName}`);
@@ -603,10 +1164,10 @@ export default function BankSathiApp() {
               <div className="flex items-start justify-between gap-3 border-b pb-3 mb-4 border-gray-300">
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-wider bg-blue-950 text-white px-2 py-0.5 rounded-xs">
-                    Pending Transfer Review
+                    {t('pendingReview')}
                   </span>
                   <h3 className="text-xl font-black text-gray-900 mt-1">
-                    Paying ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
+                    {t('paying')} ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
                   </h3>
                   <span className="text-xs font-mono text-gray-500">{activeTransfer.upiId}</span>
                 </div>
@@ -615,7 +1176,7 @@ export default function BankSathiApp() {
                   <span className={`text-xs font-black px-2.5 py-1 rounded-full uppercase ${
                     activeTransfer.riskTier === 'HIGH' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-amber-100 text-amber-800'
                   }`}>
-                    {activeTransfer.riskTier} Risk Anomaly
+                    {activeTransfer.riskTier} {t('riskAnomaly')}
                   </span>
                 </div>
               </div>
@@ -624,7 +1185,7 @@ export default function BankSathiApp() {
               <div className="p-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-800 mb-4 flex items-start gap-2">
                 <Info size={16} className="text-blue-700 mt-0.5 shrink-0" />
                 <div>
-                  <strong className="block text-gray-900 font-black">Behavioral Protection Check:</strong>
+                  <strong className="block text-gray-900 font-black">{t('protectionCheck')}</strong>
                   {activeTransfer.riskReason}
                 </div>
               </div>
@@ -635,43 +1196,48 @@ export default function BankSathiApp() {
                   <div className="flex items-center gap-2">
                     <HeartHandshake size={18} className="text-purple-700" />
                     <span className="text-xs font-black uppercase text-purple-950">
-                      Trusted Circle Advisory ({guardianName})
+                      {t('trustedAdvisory')} ({guardianName})
                     </span>
                   </div>
                   <button
                     onClick={() => setActivePersona('guardian')}
                     className="text-[11px] font-black text-purple-700 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>View as {guardianName}</span>
+                    <span>{t('viewAs')} {guardianName}</span>
                     <ChevronRight size={12} />
                   </button>
                 </div>
 
                 {activeTransfer.advisoryStatus === 'PENDING' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-amber-800 bg-amber-100/70 p-2.5 rounded-lg border border-amber-300">
-                    <Clock size={16} className="animate-spin text-amber-700" />
-                    <span>Advisory ping sent to {guardianName}. Awaiting second opinion...</span>
+                    <Clock size={16} className="animate-spin text-amber-700 shrink-0" />
+                    <span>{t('awaitingOpinion', { guardian: guardianName })}</span>
                   </div>
                 ) : activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-100 p-2.5 rounded-lg border border-emerald-300">
-                    <CheckCircle2 size={18} className="text-emerald-700" />
+                    <CheckCircle2 size={18} className="text-emerald-700 shrink-0" />
                     <div>
-                      <span className="font-black block">✓ {guardianName}: &quot;Looks Expected&quot;</span>
+                      <span className="font-black block">{t('looksExpectedTitle', { guardian: guardianName })}</span>
                       <span className="text-[11px] font-normal text-emerald-900">{activeTransfer.guardianNote || 'Verified as recognized payment.'}</span>
+                      {activeTransfer.verifiedOverPhone && (
+                        <span className="inline-block mt-1 text-[10px] bg-emerald-700 text-white font-black px-2 py-0.5 rounded-xs">
+                          {t('verifiedOverPhoneBadge')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ) : activeTransfer.advisoryStatus === 'DONT_RECOGNIZE' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-red-800 bg-red-100 p-2.5 rounded-lg border border-red-300">
-                    <AlertTriangle size={18} className="text-red-700" />
+                    <AlertTriangle size={18} className="text-red-700 shrink-0" />
                     <div>
-                      <span className="font-black block">⚠️ {guardianName}: &quot;I Don&apos;t Recognize This&quot;</span>
+                      <span className="font-black block">{t('dontRecognizeTitle', { guardian: guardianName })}</span>
                       <span className="text-[11px] font-normal text-red-900">{activeTransfer.guardianNote || 'Please verify before entering your PIN.'}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-xs font-bold text-blue-800 bg-blue-100 p-2.5 rounded-lg border border-blue-300">
-                    <HelpCircle size={18} className="text-blue-700" />
-                    <span>{guardianName} requested voice/phone verification before approving.</span>
+                    <HelpCircle size={18} className="text-blue-700 shrink-0" />
+                    <span>{t('requestVerifyTitle', { guardian: guardianName })}</span>
                   </div>
                 )}
               </div>
@@ -683,7 +1249,7 @@ export default function BankSathiApp() {
                   className="py-3.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-sm uppercase rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
                 >
                   <KeyRound size={18} />
-                  <span>Confirm Payment (Enter PIN)</span>
+                  <span>{t('confirmPayment')}</span>
                 </button>
 
                 <button
@@ -691,7 +1257,7 @@ export default function BankSathiApp() {
                   className="py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-900 font-black text-sm uppercase rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <XCircle size={18} />
-                  <span>Cancel Transfer</span>
+                  <span>{t('cancelTransfer')}</span>
                 </button>
               </div>
             </div>
@@ -702,7 +1268,7 @@ export default function BankSathiApp() {
             highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
           }`}>
             <h3 className="font-black text-xs uppercase tracking-wider text-gray-500 mb-3">
-              Frequent Contacts (1-Tap Pay)
+              {t('frequentContacts')}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {frequentPeople.map((p, idx) => (
@@ -726,7 +1292,7 @@ export default function BankSathiApp() {
             highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
           }`}>
             <h3 className="font-black text-xs uppercase tracking-wider text-gray-500 mb-3">
-              Recent Transactions
+              {t('recentTransactions')}
             </h3>
             <div className="divide-y divide-gray-200">
               {transactions.map((txn, idx) => (
@@ -751,7 +1317,7 @@ export default function BankSathiApp() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 🛡️ VIEW 2: GUARDIAN (DILSHAN) — TRUSTED ADVISORY DASHBOARD     */}
+      {/* 🛡️ VIEW 2: GUARDIAN (DILSHAN / DAUGHTER) — TRUSTED ADVISORY   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {activePersona === 'guardian' && (
         <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -766,12 +1332,12 @@ export default function BankSathiApp() {
                   <div className="flex items-center gap-2">
                     <h2 className="font-black text-lg">{guardianName} ({guardianRelation})</h2>
                     <span className="text-[10px] bg-purple-300 text-purple-950 font-black px-2 py-0.5 rounded-full">
-                      Trusted Guardian
+                      {t('trustedGuardianTitle')}
                     </span>
                   </div>
-                  <span className="text-xs text-purple-200 font-mono">Protecting {userName}</span>
+                  <span className="text-xs text-purple-200 font-mono">{t('protecting')} {userName}</span>
                   <p className="text-[11px] text-purple-100 font-medium mt-1">
-                    🛡️ Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.
+                    {t('advisoryModeDesc')}
                   </p>
                 </div>
               </div>
@@ -780,7 +1346,7 @@ export default function BankSathiApp() {
                 onClick={() => setActivePersona('user')}
                 className="px-3.5 py-2 bg-white text-purple-950 font-black text-xs uppercase rounded-xl hover:bg-purple-50 shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
               >
-                <span>Switch to {userName.split(' ')[0]} View</span>
+                <span>{t('switchToUser', { user: userName.split(' ')[0] })}</span>
                 <ChevronRight size={14} />
               </button>
             </div>
@@ -793,7 +1359,7 @@ export default function BankSathiApp() {
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-purple-600 animate-ping" />
                   <h3 className="font-black text-sm uppercase tracking-wide text-purple-950">
-                    Incoming Advisory Request from {userName}
+                    {t('incomingRequest', { user: userName })}
                   </h3>
                 </div>
                 <span className="text-xs font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
@@ -804,31 +1370,156 @@ export default function BankSathiApp() {
               {/* Transaction Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-purple-50/60 rounded-xl border border-purple-200 text-xs">
                 <div>
-                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Recipient</span>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">{t('recipientLabel')}</span>
                   <span className="font-black text-sm text-gray-900">{activeTransfer.recipientName}</span>
                   <span className="text-[10px] font-mono text-gray-500 block">{activeTransfer.upiId}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Requested Amount</span>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">{t('requestedAmount')}</span>
                   <span className="font-black text-base text-red-600 font-mono">
                     ₹{activeTransfer.amount.toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Spending Baseline</span>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">{t('spendingBaseline')}</span>
                   <span className="font-bold text-gray-700">₹{activeTransfer.baselineAmount.toLocaleString('en-IN')}</span>
-                  <span className="text-[10px] text-red-600 font-bold block">(3.3x deviation)</span>
+                  <span className="text-[10px] text-red-600 font-bold block">(3.3x {t('deviation')})</span>
                 </div>
               </div>
 
               <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900">
-                <strong>Why You&apos;re Seeing This:</strong> {userName} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.
+                {t('whySeeingThis', { user: userName })}
+              </div>
+
+              {/* ───────────────────────────────────────────────────────────── */}
+              {/* 📞 TWILIO LIVE PHONE CALL VERIFICATION SECTION                */}
+              {/* ───────────────────────────────────────────────────────────── */}
+              <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PhoneCall size={20} className="text-blue-700" />
+                    <h4 className="font-black text-xs uppercase tracking-wide text-blue-950">
+                      {t('twilioCallCardTitle')}
+                    </h4>
+                  </div>
+                  <span className="text-[10px] bg-blue-200 text-blue-900 font-black px-2 py-0.5 rounded-full">
+                    Twilio AI Interactive
+                  </span>
+                </div>
+
+                <p className="text-xs text-blue-900">
+                  {t('twilioCallCardDesc')}
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-black uppercase text-gray-600 mb-0.5">{t('seniorPhoneLabel')}</label>
+                    <input
+                      type="text"
+                      value={seniorPhoneNumber}
+                      onChange={(e) => setSeniorPhoneNumber(e.target.value)}
+                      className="w-full p-2 bg-white border border-gray-300 rounded-lg font-mono font-bold text-xs"
+                      placeholder="+919461284678"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase text-gray-600 mb-0.5">{t('callLangLabel')}</label>
+                    <select
+                      value={callLanguage}
+                      onChange={(e: any) => setCallLanguage(e.target.value)}
+                      className="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-xs cursor-pointer"
+                    >
+                      <option value="en">English (India)</option>
+                      <option value="hi">हिंदी (Hindi)</option>
+                      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                      <option value="mr">मराठी (Marathi)</option>
+                      <option value="ta">தமிழ் (Tamil)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleTriggerTwilioCall}
+                  className="w-full py-2.5 bg-blue-700 hover:bg-blue-600 text-white font-black text-xs uppercase rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer transition-transform active:scale-95"
+                >
+                  <PhoneForwarded size={16} />
+                  <span>{t('startTwilioCallBtn')}</span>
+                </button>
+
+                {callStatusMessage && (
+                  <div className="p-2.5 bg-blue-100/80 border border-blue-300 rounded-lg text-xs font-bold text-blue-950 flex items-center gap-2">
+                    <Radio size={14} className="text-blue-700 animate-pulse shrink-0" />
+                    <span>{callStatusMessage}</span>
+                  </div>
+                )}
+
+                {/* 🔴 LIVE SHARED CONVERSATION TRANSCRIPT STREAM */}
+                <div className="mt-3 bg-white p-4 rounded-xl border border-blue-200 space-y-2">
+                  <div className="flex items-center justify-between border-b pb-1.5 border-gray-200">
+                    <span className="font-black text-[11px] uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                      <MessageSquare size={14} className="text-purple-600" />
+                      {t('liveConversationTitle')}
+                    </span>
+                    <button
+                      onClick={() => fetchLiveCallConversation(activeTransfer.id)}
+                      className="text-[10px] text-blue-700 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw size={10} /> Refresh
+                    </button>
+                  </div>
+
+                  {callConversationTurns.length === 0 ? (
+                    <div className="text-center py-4 text-xs text-gray-400 font-medium">
+                      {t('noTurnsYet')}
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                      {callConversationTurns.map((turn, tIdx) => (
+                        <div 
+                          key={tIdx} 
+                          className={`p-2.5 rounded-lg text-xs border ${
+                            turn.decision === 'CONFIRMED'
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                              : turn.decision === 'REJECTED'
+                              ? 'bg-red-50 border-red-300 text-red-950'
+                              : 'bg-gray-50 border-gray-200 text-gray-900'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 mb-1">
+                            <span>{turn.actor} · {turn.action}</span>
+                            <span className="font-mono">{turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString() : 'Just now'}</span>
+                          </div>
+                          <div className="whitespace-pre-line font-medium text-xs">
+                            {turn.notes}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Interactive Quick Simulation Buttons for Demo */}
+                  <div className="pt-2 border-t border-gray-100 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleSimulateSeniorResponse('CONFIRM')}
+                      className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-md font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>🗣️ {t('simulateSeniorYes')}</span>
+                    </button>
+                    <button
+                      onClick={() => handleSimulateSeniorResponse('REJECT')}
+                      className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-900 rounded-md font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>🗣️ {t('simulateSeniorNo')}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* 3 ADVISORY FEEDBACK OPTIONS */}
               <div>
                 <h4 className="font-black text-xs uppercase tracking-wider text-gray-700 mb-2">
-                  Select Your Advisory Recommendation:
+                  {t('selectRecommendation')}
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -837,8 +1528,8 @@ export default function BankSathiApp() {
                     className="p-3.5 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <CheckCircle2 size={22} className="text-emerald-600" />
-                    <span>✓ Looks Expected</span>
-                    <span className="text-[10px] text-emerald-700 font-normal">I recognize this recipient and amount.</span>
+                    <span>{t('optLooksExpected')}</span>
+                    <span className="text-[10px] text-emerald-700 font-normal">{t('optLooksExpectedSub')}</span>
                   </button>
 
                   <button
@@ -846,8 +1537,8 @@ export default function BankSathiApp() {
                     className="p-3.5 bg-red-50 hover:bg-red-100 border-2 border-red-400 text-red-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <AlertTriangle size={22} className="text-red-600" />
-                    <span>⚠️ Don&apos;t Recognize This</span>
-                    <span className="text-[10px] text-red-700 font-normal">Warn user of potential scam.</span>
+                    <span>{t('optDontRecognize')}</span>
+                    <span className="text-[10px] text-red-700 font-normal">{t('optDontRecognizeSub')}</span>
                   </button>
 
                   <button
@@ -855,8 +1546,8 @@ export default function BankSathiApp() {
                     className="p-3.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-400 text-blue-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <HelpCircle size={22} className="text-blue-600" />
-                    <span>❓ Request Verification</span>
-                    <span className="text-[10px] text-blue-700 font-normal">Ask user to call before paying.</span>
+                    <span>{t('optRequestVerify')}</span>
+                    <span className="text-[10px] text-blue-700 font-normal">{t('optRequestVerifySub')}</span>
                   </button>
                 </div>
               </div>
@@ -869,16 +1560,16 @@ export default function BankSathiApp() {
                   title="Test security: helper cannot confirm payment"
                 >
                   <ShieldAlert size={14} />
-                  <span>Test Security: Attempt to confirm payment as {guardianName} (Simulate HTTP 403)</span>
+                  <span>{t('testSecurityBlock', { guardian: guardianName })}</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="p-8 text-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm">
               <ShieldCheck size={40} className="mx-auto text-emerald-500 mb-2" />
-              <h3 className="font-black text-sm uppercase text-gray-800">All Clear — No Pending Alerts</h3>
+              <h3 className="font-black text-sm uppercase text-gray-800">{t('allClear')}</h3>
               <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1">
-                {userName} has no active anomalous transfers. Click <strong>&quot;▶️ Run ₹5,000 Story&quot;</strong> above to simulate a new transfer alert.
+                {t('allClearSub', { user: userName })}
               </p>
             </div>
           )}
@@ -893,9 +1584,9 @@ export default function BankSathiApp() {
           <div className="bg-white border-4 border-blue-950 w-full max-w-md rounded-2xl shadow-2xl p-6">
             <div className="flex items-center justify-between border-b pb-3 mb-4">
               <h3 className="text-sm font-black uppercase text-gray-900 flex items-center gap-1.5">
-                <Edit3 size={16} className="text-[#1A73E8]" /> Customize Persona Names
+                <Edit3 size={16} className="text-[#1A73E8]" /> {t('editNames')}
               </h3>
-              <button onClick={() => setShowEditNamesModal(false)} className="font-bold text-gray-400 hover:text-gray-700">✕</button>
+              <button onClick={() => setShowEditNamesModal(false)} className="font-bold text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
             </div>
 
             <div className="space-y-3.5 text-xs">
@@ -943,9 +1634,9 @@ export default function BankSathiApp() {
             <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-gray-200">
               <button
                 onClick={() => setShowEditNamesModal(false)}
-                className="px-5 py-2 bg-blue-900 text-white font-black text-xs uppercase rounded-lg shadow-sm"
+                className="px-5 py-2 bg-blue-900 text-white font-black text-xs uppercase rounded-lg shadow-sm cursor-pointer"
               >
-                Save &amp; Apply Names
+                {t('saveNames')}
               </button>
             </div>
           </div>
@@ -963,14 +1654,14 @@ export default function BankSathiApp() {
             </div>
 
             <h3 className="text-base font-black uppercase text-gray-900">
-              Authorize Payment ({userName})
+              {t('authorizePayment', { user: userName })}
             </h3>
             <span className="text-2xl font-black text-blue-950 block my-1 font-mono">
               ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
             </span>
 
             <p className="text-xs text-gray-500 mb-4 font-medium">
-              Enter your 4-digit UPI PIN. Never share this PIN with anyone, including family members.
+              {t('pinNotice')}
             </p>
 
             <div className="mb-4">
@@ -982,22 +1673,22 @@ export default function BankSathiApp() {
                 placeholder="••••"
                 className="w-full text-center tracking-widest text-3xl py-2.5 border-2 border-gray-300 rounded-xl font-mono focus:outline-hidden focus:border-blue-700 bg-gray-50"
               />
-              <span className="text-[10px] text-gray-400 font-bold block mt-1">Demo PIN: 1234</span>
+              <span className="text-[10px] text-gray-400 font-bold block mt-1">{t('demoPinLabel')}</span>
               {pinError && <p className="text-xs text-red-600 font-bold mt-1">{pinError}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setShowPinModal(false)}
-                className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-black text-xs uppercase rounded-xl"
+                className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-black text-xs uppercase rounded-xl cursor-pointer"
               >
-                Cancel
+                {t('cancelTransfer')}
               </button>
               <button
                 onClick={handleUserConfirmPayment}
-                className="py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-xl shadow-md"
+                className="py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-xl shadow-md cursor-pointer"
               >
-                Confirm &amp; Pay
+                {t('confirmAndPay')}
               </button>
             </div>
           </div>
@@ -1015,7 +1706,7 @@ export default function BankSathiApp() {
             </div>
 
             <h3 className="text-lg font-black uppercase text-gray-900">
-              Payment Successful
+              {t('paymentSuccessful')}
             </h3>
             <span className="text-3xl font-black text-gray-900 block my-2 font-mono">
               ₹{showReceiptModal.amount.toLocaleString('en-IN')}
@@ -1023,7 +1714,7 @@ export default function BankSathiApp() {
 
             <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-left text-xs space-y-2 my-4">
               <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Recipient:</span>
+                <span className="text-gray-500 font-bold">{t('recipientLabel')}:</span>
                 <span className="font-black text-gray-900">{showReceiptModal.recipient}</span>
               </div>
               <div className="flex justify-between font-mono text-[11px]">
@@ -1031,11 +1722,11 @@ export default function BankSathiApp() {
                 <span className="text-gray-700">{showReceiptModal.upi}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Reference:</span>
+                <span className="text-gray-500 font-bold">{t('referenceLabel')}</span>
                 <span className="font-mono text-[11px] font-bold text-gray-900">{showReceiptModal.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Trusted Circle:</span>
+                <span className="text-gray-500 font-bold">{t('trustedCircle')}:</span>
                 <span className="text-purple-800 font-bold">{showReceiptModal.advisory}</span>
               </div>
             </div>
@@ -1044,7 +1735,7 @@ export default function BankSathiApp() {
               onClick={() => setShowReceiptModal(null)}
               className="w-full py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-black text-xs uppercase rounded-xl cursor-pointer"
             >
-              Done
+              {t('doneBtn')}
             </button>
           </div>
         </div>
