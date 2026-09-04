@@ -49,7 +49,7 @@ interface CallTurn {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🌐 MULTILINGUAL TRANSLATION ENGINE (EN, HI, KN, MR, TA)
+// MULTILINGUAL TRANSLATION ENGINE (EN, HI, KN, MR, TA)
 // ─────────────────────────────────────────────────────────────────────────────
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
@@ -66,7 +66,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     shieldActive: "Family Shield Active",
     guardianLabel: "Guardian:",
     savingsBalance: "Savings Balance",
-    readBalance: "🔊 Read Balance Out Loud",
+    readBalance: "Read Balance Out Loud",
     speakPlaceholder: "Speak or type: 'Send 5000 to {recipient}'...",
     scanQr: "Scan QR",
     payContacts: "Pay Contacts",
@@ -79,17 +79,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     trustedAdvisory: "Trusted Circle Advisory",
     viewAs: "View as",
     awaitingOpinion: "Advisory ping sent to {guardian}. Awaiting second opinion...",
-    looksExpectedTitle: "✓ {guardian}: \"Looks Expected\"",
-    dontRecognizeTitle: "⚠️ {guardian}: \"I Don't Recognize This\"",
-    requestVerifyTitle: "❓ {guardian} requested phone verification call.",
-    verifiedOverPhoneBadge: "Senior Confirmed via Twilio Phone Call ✓",
+    looksExpectedTitle: "{guardian}: \"Looks Expected\"",
+    dontRecognizeTitle: "{guardian}: \"I Don't Recognize This\"",
+    requestVerifyTitle: "{guardian} requested phone verification call.",
+    verifiedOverPhoneBadge: "Senior Confirmed via Twilio Phone Call",
     confirmPayment: "Confirm Payment (Enter PIN)",
     cancelTransfer: "Cancel Transfer",
     frequentContacts: "Frequent Contacts (1-Tap Pay)",
     recentTransactions: "Recent Transactions",
     trustedGuardianTitle: "Trusted Guardian",
     protecting: "Protecting",
-    advisoryModeDesc: "🛡️ Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.",
+    advisoryModeDesc: " Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.",
     switchToUser: "Switch to {user} View",
     incomingRequest: "Incoming Advisory Request from {user}",
     recipientLabel: "Recipient",
@@ -98,19 +98,19 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     deviation: "deviation",
     whySeeingThis: "Why You're Seeing This: {user} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankMantri Trusted Circle protocol to ask for your advisory second opinion.",
     selectRecommendation: "Select Your Advisory Recommendation:",
-    optLooksExpected: "✓ Looks Expected",
+    optLooksExpected: "Looks Expected",
     optLooksExpectedSub: "I recognize this recipient and amount.",
-    optDontRecognize: "⚠️ Don't Recognize This",
+    optDontRecognize: "Don't Recognize This",
     optDontRecognizeSub: "Warn user of potential scam.",
-    optRequestVerify: "❓ Request Verification",
+    optRequestVerify: "Request Verification",
     optRequestVerifySub: "Ask user to verify before paying.",
-    twilioCallCardTitle: "📞 Direct Verification Call to Senior (Twilio Voice AI)",
+    twilioCallCardTitle: "Direct Verification Call to Senior (Twilio Voice AI)",
     twilioCallCardDesc: "Trigger an automated, privacy-safe AI phone call to verify this transaction with the senior user. The live conversation will appear below in real-time.",
     seniorPhoneLabel: "Senior's Phone Number",
     callLangLabel: "Call Language",
-    startTwilioCallBtn: "🚀 Initiate Twilio Verification Call",
+    startTwilioCallBtn: "Initiate Twilio Verification Call",
     callingStatus: "Calling Senior on {phone} via Twilio...",
-    liveConversationTitle: "🔴 Real-Time Twilio Call Conversation & Transcript",
+    liveConversationTitle: "Real-Time Twilio Call Conversation & Transcript",
     noTurnsYet: "Call initiated. Waiting for senior to answer and speak...",
     simulateSeniorYes: "Simulate Senior Spoke: 'Yes, Confirm Transfer'",
     simulateSeniorNo: "Simulate Senior Spoke: 'No, Cancel This'",
@@ -140,7 +140,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     shieldActive: "फैमिली शील्ड सक्रिय",
     guardianLabel: "अभिभावक:",
     savingsBalance: "बचत खाता शेष",
-    readBalance: "🔊 बैलेंस बोलकर सुनें",
+    readBalance: "बैलेंस बोलकर सुनें",
     speakPlaceholder: "बोलें या लिखें: '{recipient} को 5000 भेजो'...",
     scanQr: "QR स्कैन करें",
     payContacts: "संपर्क को भेजें",
@@ -153,17 +153,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     trustedAdvisory: "ट्रस्टेड सर्कल सलाह",
     viewAs: "देखें",
     awaitingOpinion: "{guardian} को सलाह अलर्ट भेजा गया। दूसरी राय की प्रतीक्षा...",
-    looksExpectedTitle: "✓ {guardian}: \"उचित लग रहा है\"",
-    dontRecognizeTitle: "⚠️ {guardian}: \"मैं इसे नहीं पहचानता\"",
-    requestVerifyTitle: "❓ {guardian} ने फोन वेरिफिकेशन कॉल का अनुरोध किया।",
-    verifiedOverPhoneBadge: "वरिष्ठ नागरिक ने फोन पर पुष्टि की ✓",
+    looksExpectedTitle: "{guardian}: \"उचित लग रहा है\"",
+    dontRecognizeTitle: "{guardian}: \"मैं इसे नहीं पहचानता\"",
+    requestVerifyTitle: "{guardian} ने फोन वेरिफिकेशन कॉल का अनुरोध किया।",
+    verifiedOverPhoneBadge: "वरिष्ठ नागरिक ने फोन पर पुष्टि की",
     confirmPayment: "भुगतान की पुष्टि करें (पिन डालें)",
     cancelTransfer: "ट्रांसफर रद्द करें",
     frequentContacts: "अक्सर भुगतान किए गए संपर्क (1-टैप पे)",
     recentTransactions: "हाल के लेनदेन",
     trustedGuardianTitle: "विश्वसनीय अभिभावक",
     protecting: "सुरक्षा कर रहे हैं:",
-    advisoryModeDesc: "🛡️ सलाहकार मार्गदर्शन मोड: आप बिना स्क्रीन शेयरिंग या पिन के रीयल-टाइम सलाह देते हैं।",
+    advisoryModeDesc: " सलाहकार मार्गदर्शन मोड: आप बिना स्क्रीन शेयरिंग या पिन के रीयल-टाइम सलाह देते हैं।",
     switchToUser: "{user} के व्यू पर जाएं",
     incomingRequest: "{user} से आने वाला सलाह अनुरोध",
     recipientLabel: "प्राप्तकर्ता",
@@ -172,19 +172,19 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     deviation: "विचलन",
     whySeeingThis: "आप इसे क्यों देख रहे हैं: {user} आमतौर पर ₹1,500 से अधिक ट्रांसफर नहीं करते। इस ₹5,000 के ट्रांसफर ने बैंकमंत्री ट्रस्टेड सर्कल को आपकी दूसरी राय लेने के लिए सक्रिय किया।",
     selectRecommendation: "अपनी सलाहकार अनुशंसा चुनें:",
-    optLooksExpected: "✓ उचित लग रहा है",
+    optLooksExpected: "उचित लग रहा है",
     optLooksExpectedSub: "मैं इस प्राप्तकर्ता और राशि को पहचानता हूँ।",
-    optDontRecognize: "⚠️ मैं इसे नहीं पहचानता",
+    optDontRecognize: "मैं इसे नहीं पहचानता",
     optDontRecognizeSub: "उपयोगकर्ता को संभावित धोखाधड़ी की चेतावनी दें।",
-    optRequestVerify: "❓ वेरिफिकेशन का अनुरोध करें",
+    optRequestVerify: "वेरिफिकेशन का अनुरोध करें",
     optRequestVerifySub: "भुगतान से पहले उपयोगकर्ता को फोन करने के लिए कहें।",
-    twilioCallCardTitle: "📞 सीधे वरिष्ठ नागरिक को AI कॉल करें (Twilio Voice AI)",
+    twilioCallCardTitle: "सीधे वरिष्ठ नागरिक को AI कॉल करें (Twilio Voice AI)",
     twilioCallCardDesc: "वरिष्ठ उपयोगकर्ता के साथ इस लेनदेन की पुष्टि के लिए स्वचालित, सुरक्षित Twilio AI कॉल शुरू करें। पूरी बातचीत नीचे रीयल-टाइम में दिखेगी।",
     seniorPhoneLabel: "वरिष्ठ नागरिक का फोन नंबर",
     callLangLabel: "कॉल की भाषा",
-    startTwilioCallBtn: "🚀 Twilio वेरिफिकेशन कॉल शुरू करें",
+    startTwilioCallBtn: "Twilio वेरिफिकेशन कॉल शुरू करें",
     callingStatus: "वरिष्ठ नागरिक को {phone} पर कॉल किया जा रहा है...",
-    liveConversationTitle: "🔴 रीयल-टाइम Twilio कॉल बातचीत और ट्रांसक्रिप्ट",
+    liveConversationTitle: "रीयल-टाइम Twilio कॉल बातचीत और ट्रांसक्रिप्ट",
     noTurnsYet: "कॉल शुरू हो गई है। उत्तर देने और बोलने की प्रतीक्षा है...",
     simulateSeniorYes: "वरिष्ठ नागरिक ने बोला: 'हाँ, पुष्टि करें'",
     simulateSeniorNo: "वरिष्ठ नागरिक ने बोला: 'नहीं, रद्द करें'",
@@ -214,7 +214,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     shieldActive: "ಫ್ಯಾಮಿಲಿ ಶೀಲ್ಡ್ ಸಕ್ರಿಯವಾಗಿದೆ",
     guardianLabel: "ರಕ್ಷಕ:",
     savingsBalance: "ಉಳಿತಾಯ ಖಾತೆಯ ಬ್ಯಾಲೆನ್ಸ್",
-    readBalance: "🔊 ಬ್ಯಾಲೆನ್ಸ್ ಆಡಿಯೋ ಆಲಿಸಿ",
+    readBalance: "ಬ್ಯಾಲೆನ್ಸ್ ಆಡಿಯೋ ಆಲಿಸಿ",
     speakPlaceholder: "ಮಾತನಾಡಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ: '{recipient} ಅವರಿಗೆ 5000 ಕಳುಹಿಸಿ'...",
     scanQr: "QR ಸ್ಕ್ಯಾನ್",
     payContacts: "ಸಂಪರ್ಕಗಳಿಗೆ ಪಾವತಿಸಿ",
@@ -227,17 +227,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     trustedAdvisory: "ಟ್ರಸ್ಟೆಡ್ ಸರ್ಕಲ್ ಸಲಹೆ",
     viewAs: "ವೀಕ್ಷಿಸಿ",
     awaitingOpinion: "{guardian} ಅವರಿಗೆ ಸಲಹಾ ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ. ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ...",
-    looksExpectedTitle: "✓ {guardian}: \"ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ\"",
-    dontRecognizeTitle: "⚠️ {guardian}: \"ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ\"",
-    requestVerifyTitle: "❓ {guardian} ಅವರು ಕರೆ ಪರಿಶೀಲನೆ ಕೇಳಿದ್ದಾರೆ.",
-    verifiedOverPhoneBadge: "ಹಿರಿಯ ನಾಗರಿಕರು ಫೋನ್‌ನಲ್ಲಿ ದೃಢಪಡಿಸಿದ್ದಾರೆ ✓",
+    looksExpectedTitle: "{guardian}: \"ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ\"",
+    dontRecognizeTitle: "{guardian}: \"ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ\"",
+    requestVerifyTitle: "{guardian} ಅವರು ಕರೆ ಪರಿಶೀಲನೆ ಕೇಳಿದ್ದಾರೆ.",
+    verifiedOverPhoneBadge: "ಹಿರಿಯ ನಾಗರಿಕರು ಫೋನ್‌ನಲ್ಲಿ ದೃಢಪಡಿಸಿದ್ದಾರೆ",
     confirmPayment: "ಪಾವತಿ ದೃಢೀಕರಿಸಿ (ಪಿನ್ ನಮೂದಿಸಿ)",
     cancelTransfer: "ವರ್ಗಾವಣೆ ರದ್ದುಮಾಡಿ",
     frequentContacts: "ಆಗಾಗ್ಗೆ ಪಾವತಿಸಿದ ಸಂಪರ್ಕಗಳು",
     recentTransactions: "ಇತ್ತೀಚಿನ ವಹಿವಾಟುಗಳು",
     trustedGuardianTitle: "ವಿಶ್ವಾಸಾರ್ಹ ರಕ್ಷಕ",
     protecting: "ರಕ್ಷಿಸುತ್ತಿದ್ದಾರೆ:",
-    advisoryModeDesc: "🛡️ ಸಲಹಾ ಮಾರ್ಗದರ್ಶನ ಮೋಡ್: ಸ್ಕ್ರೀನ್ ಶೇರಿಂಗ್ ಅಥವಾ ಪಿನ್ ಇಲ್ಲದೆ ನೈಜ-ಸಮಯದ ಸಲಹೆ ನೀಡುತ್ತೀರಿ.",
+    advisoryModeDesc: " ಸಲಹಾ ಮಾರ್ಗದರ್ಶನ ಮೋಡ್: ಸ್ಕ್ರೀನ್ ಶೇರಿಂಗ್ ಅಥವಾ ಪಿನ್ ಇಲ್ಲದೆ ನೈಜ-ಸಮಯದ ಸಲಹೆ ನೀಡುತ್ತೀರಿ.",
     switchToUser: "{user} ಅವರ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ",
     incomingRequest: "{user} ಅವರಿಂದ ಬಂದ ಸಲಹಾ ವಿನಂತಿ",
     recipientLabel: "ಸ್ವೀಕೃತದಾರ",
@@ -246,19 +246,19 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     deviation: "ವ್ಯತ್ಯಾಸ",
     whySeeingThis: "ನೀವು ಇದನ್ನು ಏಕೆ ನೋಡುತ್ತಿದ್ದೀರಿ: {user} ಅವರು ಸಾಮಾನ್ಯವಾಗಿ ₹1,500 ಕ್ಕಿಂತ ಹೆಚ್ಚು ಕಳುಹಿಸುವುದಿಲ್ಲ. ಈ ₹5,000 ವಹಿವಾಟು ನಿಮ್ಮ ಅಭಿಪ್ರಾಯ ಪಡೆಯಲು ಬ್ಯಾಂಕ್‌ಸಾಥಿ ರಕ್ಷಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದೆ.",
     selectRecommendation: "ನಿಮ್ಮ ಸಲಹೆಯನ್ನು ಆರಿಸಿ:",
-    optLooksExpected: "✓ ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ",
+    optLooksExpected: "ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿದೆ",
     optLooksExpectedSub: "ನಾನು ಈ ವ್ಯಕ್ತಿ ಮತ್ತು ಮೊತ್ತವನ್ನು ಗುರುತಿಸುತ್ತೇನೆ.",
-    optDontRecognize: "⚠️ ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ",
+    optDontRecognize: "ನನಗೆ ಇದು ಗೊತ್ತಿಲ್ಲ",
     optDontRecognizeSub: "ವಂಚನೆಯ ಸಾಧ್ಯತೆಯ ಬಗ್ಗೆ ಬಳಕೆದಾರರನ್ನು ಎಚ್ಚರಿಸಿ.",
-    optRequestVerify: "❓ ಪರಿಶೀಲನೆಗೆ ವಿನಂತಿಸಿ",
+    optRequestVerify: "ಪರಿಶೀಲನೆಗೆ ವಿನಂತಿಸಿ",
     optRequestVerifySub: "ಪಾವತಿಸುವ ಮುನ್ನ ಕರೆ ಮಾಡಲು ತಿಳಿಸಿ.",
-    twilioCallCardTitle: "📞 ಹಿರಿಯ ನಾಗರಿಕರಿಗೆ ನೇರ AI ಕರೆ ಮಾಡಿ (Twilio Voice AI)",
+    twilioCallCardTitle: "ಹಿರಿಯ ನಾಗರಿಕರಿಗೆ ನೇರ AI ಕರೆ ಮಾಡಿ (Twilio Voice AI)",
     twilioCallCardDesc: "ವಹಿವಾಟನ್ನು ದೃಢೀಕರಿಸಲು ಹಿರಿಯ ಬಳಕೆದಾರರಿಗೆ ಸ್ವಯಂಚಾಲಿತ Twilio AI ಕರೆ ಪ್ರಾರಂಭಿಸಿ. ಸಂಪೂರ್ಣ ಮಾತುಕತೆ ಕೆಳಗೆ ನೈಜ ಸಮಯದಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
     seniorPhoneLabel: "ಹಿರಿಯ ನಾಗರಿಕರ ಫೋನ್ ಸಂಖ್ಯೆ",
     callLangLabel: "ಕರೆಯ ಭಾಷೆ",
-    startTwilioCallBtn: "🚀 Twilio ಪರಿಶೀಲನಾ ಕರೆ ಪ್ರಾರಂಭಿಸಿ",
+    startTwilioCallBtn: "Twilio ಪರಿಶೀಲನಾ ಕರೆ ಪ್ರಾರಂಭಿಸಿ",
     callingStatus: "ಹಿರಿಯ ನಾಗರಿಕರಿಗೆ {phone} ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    liveConversationTitle: "🔴 ರಿಯಲ್-ಟೈಮ್ Twilio ಕರೆ ಮಾತುಕತೆ ಮತ್ತು ಟ್ರಾನ್ಸ್‌ಸ್ಕ್ರಿಪ್ಟ್",
+    liveConversationTitle: "ರಿಯಲ್-ಟೈಮ್ Twilio ಕರೆ ಮಾತುಕತೆ ಮತ್ತು ಟ್ರಾನ್ಸ್‌ಸ್ಕ್ರಿಪ್ಟ್",
     noTurnsYet: "ಕರೆ ಪ್ರಾರಂಭವಾಗಿದೆ. ಉತ್ತರಿಸಲು ಮತ್ತು ಮಾತನಾಡಲು ಕಾಯಲಾಗುತ್ತಿದೆ...",
     simulateSeniorYes: "ಹಿರಿಯ ನಾಗರಿಕರು ಹೇಳಿದರು: 'ಹೌದು, ದೃಢೀಕರಿಸಿ'",
     simulateSeniorNo: "ಹಿರಿಯ ನಾಗರಿಕರು ಹೇಳಿದರು: 'ಇಲ್ಲ, ರದ್ದುಮಾಡಿ'",
@@ -288,7 +288,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     shieldActive: "फॅमिली शील्ड सक्रिय",
     guardianLabel: "पालक:",
     savingsBalance: "बचत खाते शिल्लक",
-    readBalance: "🔊 शिल्लक ऐका",
+    readBalance: "शिल्लक ऐका",
     speakPlaceholder: "बोला किंवा लिहा: '{recipient} यांना 5000 पाठवा'...",
     scanQr: "QR स्कॅन करा",
     payContacts: "संपर्कांना पाठवा",
@@ -301,17 +301,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     trustedAdvisory: "ट्रस्टेड सर्कल सल्ला",
     viewAs: "पहा",
     awaitingOpinion: "{guardian} यांना सल्ला पाठवला. दुसऱ्या मताची वाट पाहत आहे...",
-    looksExpectedTitle: "✓ {guardian}: \"योग्य वाटत आहे\"",
-    dontRecognizeTitle: "⚠️ {guardian}: \"मी ओळखत नाही\"",
-    requestVerifyTitle: "❓ {guardian} यांनी फोन पडताळणीची विनंती केली.",
-    verifiedOverPhoneBadge: "वरिष्ठ नागरिकांनी फोनवर पुष्टी केली ✓",
+    looksExpectedTitle: "{guardian}: \"योग्य वाटत आहे\"",
+    dontRecognizeTitle: "{guardian}: \"मी ओळखत नाही\"",
+    requestVerifyTitle: "{guardian} यांनी फोन पडताळणीची विनंती केली.",
+    verifiedOverPhoneBadge: "वरिष्ठ नागरिकांनी फोनवर पुष्टी केली",
     confirmPayment: "पेमेंट निश्चित करा (पिन टाका)",
     cancelTransfer: "ट्रान्सफर रद्द करा",
     frequentContacts: "वारंवार पैसे पाठवलेले संपर्क",
     recentTransactions: "अलीकडील व्यवहार",
     trustedGuardianTitle: "विश्वासू पालक",
     protecting: "संरक्षण करत आहेत:",
-    advisoryModeDesc: "🛡️ सल्लागार मार्गदर्शन मोड: स्क्रीन शेअरिंग किंवा पिनशिवाय रिअल-टाइम सल्ला द्या.",
+    advisoryModeDesc: "सल्लागार मार्गदर्शन मोड: स्क्रीन शेअरिंग किंवा पिनशिवाय रिअल-टाइम सल्ला द्या.",
     switchToUser: "{user} च्या व्ह्यूवर जा",
     incomingRequest: "{user} कडून सल्ला विनंती",
     recipientLabel: "प्राप्तकर्ता",
@@ -320,19 +320,19 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     deviation: "फरक",
     whySeeingThis: "तुम्हाला हे का दिसत आहे: {user} सहसा ₹1,500 पेक्षा जास्त पाठवत नाहीत. या ₹5,000 च्या व्यवहाराने तुमचे मत घेण्यासाठी अलर्ट पाठवला आहे.",
     selectRecommendation: "तुमचा सल्ला निवडा:",
-    optLooksExpected: "✓ योग्य वाटत आहे",
+    optLooksExpected: "योग्य वाटत आहे",
     optLooksExpectedSub: "मी या प्राप्तकर्त्याला आणि रकमेला ओळखतो.",
-    optDontRecognize: "⚠️ मी ओळखत नाही",
+    optDontRecognize: "मी ओळखत नाही",
     optDontRecognizeSub: "वापरकर्त्याला संभाव्य फसवणुकीबद्दल सावध करा.",
-    optRequestVerify: "❓ पडताळणीची विनंती करा",
+    optRequestVerify: "पडताळणीची विनंती करा",
     optRequestVerifySub: "पैसे पाठवण्यापूर्वी कॉल करण्यास सांगा.",
-    twilioCallCardTitle: "📞 थेट वरिष्ठ नागरिकांना AI कॉल करा (Twilio Voice AI)",
+    twilioCallCardTitle: "थेट वरिष्ठ नागरिकांना AI कॉल करा (Twilio Voice AI)",
     twilioCallCardDesc: "या व्यवहाराची पुष्टी करण्यासाठी वरिष्ठ वापरकर्त्याला सुरक्षित Twilio AI कॉल सुरू करा. संपूर्ण संभाषण खाली रिअल-टाइममध्ये दिसेल.",
     seniorPhoneLabel: "वरिष्ठ नागरिकांचा फोन नंबर",
     callLangLabel: "कॉल भाषा",
-    startTwilioCallBtn: "🚀 Twilio पडताळणी कॉल सुरू करा",
+    startTwilioCallBtn: "Twilio पडताळणी कॉल सुरू करा",
     callingStatus: "{phone} वर वरिष्ठ नागरिकांना कॉल करत आहे...",
-    liveConversationTitle: "🔴 रिअल-टाइम Twilio कॉल संभाषण आणि ट्रान्सक्रिप्ट",
+    liveConversationTitle: "रिअल-टाइम Twilio कॉल संभाषण आणि ट्रान्सक्रिप्ट",
     noTurnsYet: "कॉल सुरू झाला. उत्तराची वाट पाहत आहे...",
     simulateSeniorYes: "वरिष्ठ नागरिक बोलले: 'होय, पुष्टी करा'",
     simulateSeniorNo: "वरिष्ठ नागरिक बोलले: 'नाही, रद्द करा'",
@@ -362,7 +362,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     shieldActive: "குடும்ப பாதுகாப்பு செயலில் உள்ளது",
     guardianLabel: "பாதுகாவலர்:",
     savingsBalance: "சேமிப்பு கணக்கு இருப்பு",
-    readBalance: "🔊 இருப்பை குரலில் கேளுங்கள்",
+    readBalance: "இருப்பை குரலில் கேளுங்கள்",
     speakPlaceholder: "பேசுங்கள் அல்லது தட்டச்சு செய்யுங்கள்: '{recipient} க்கு 5000 அனுப்பு'...",
     scanQr: "QR ஸ்கேன்",
     payContacts: "தொடர்புகளுக்கு செலுத்துங்கள்",
@@ -375,17 +375,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     trustedAdvisory: "நம்பகமான வட்ட ஆலோசனை",
     viewAs: "பார்க்கவும்",
     awaitingOpinion: "{guardian} க்கு ஆலோசனை எச்சரிக்கை அனுப்பப்பட்டது. பதிலுக்காக காத்திருக்கிறது...",
-    looksExpectedTitle: "✓ {guardian}: \"சரியாக உள்ளது\"",
-    dontRecognizeTitle: "⚠️ {guardian}: \"எனக்கு தெரியவில்லை\"",
-    requestVerifyTitle: "❓ {guardian} அழைப்பு சரிபார்ப்பை கோரியுள்ளார்.",
-    verifiedOverPhoneBadge: "மூத்த குடிமகன் தொலைபேசியில் உறுதிப்படுத்தினார் ✓",
+    looksExpectedTitle: "{guardian}: \"சரியாக உள்ளது\"",
+    dontRecognizeTitle: "{guardian}: \"எனக்கு தெரியவில்லை\"",
+    requestVerifyTitle: "{guardian} அழைப்பு சரிபார்ப்பை கோரியுள்ளார்.",
+    verifiedOverPhoneBadge: "மூத்த குடிமகன் தொலைபேசியில் உறுதிப்படுத்தினார்",
     confirmPayment: "பரிவர்த்தனையை உறுதிப்படுத்தவும் (பின் உள்ளிடவும்)",
     cancelTransfer: "பரிவர்த்தனையை ரத்துசெய்",
     frequentContacts: "அடிக்கடி பணம் அனுப்பிய தொடர்புகள்",
     recentTransactions: "சமீபத்திய பரிவர்த்தனைகள்",
     trustedGuardianTitle: "நம்பகமான பாதுகாவலர்",
     protecting: "பாதுகாக்கிறார்:",
-    advisoryModeDesc: "🛡️ ஆலோசனை வழிகாட்டுதல் பயன்முறை: திரை பகிர்வு அல்லது பின் இல்லாமல் நிகழ்நேர பரிந்துரைகளை வழங்குகிறீர்கள்.",
+    advisoryModeDesc: "ஆலோசனை வழிகாட்டுதல் பயன்முறை: திரை பகிர்வு அல்லது பின் இல்லாமல் நிகழ்நேர பரிந்துரைகளை வழங்குகிறீர்கள்.",
     switchToUser: "{user} பார்வைக்கு மாறவும்",
     incomingRequest: "{user} இடமிருந்து வந்த ஆலோசனை கோரிக்கை",
     recipientLabel: "பெறுநர்",
@@ -394,19 +394,19 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     deviation: "மாறுபாடு",
     whySeeingThis: "இதை நீங்கள் ஏன் பார்க்கிறீர்கள்: {user} வழக்கமாக ₹1,500 க்கு மேல் அனுப்புவதில்லை. இந்த ₹5,000 பரிவர்த்தனை உங்கள் ஆலோசனையைக் கோருகிறது.",
     selectRecommendation: "உங்கள் ஆலோசனை பரிந்துரையைத் தேர்ந்தெடுக்கவும்:",
-    optLooksExpected: "✓ சரியாக உள்ளது",
+    optLooksExpected: "சரியாக உள்ளது",
     optLooksExpectedSub: "நான் இந்த நபரையும் தொகையையும் அங்கீகரிக்கிறேன்.",
-    optDontRecognize: "⚠️ எனக்கு தெரியவில்லை",
+    optDontRecognize: "எனக்கு தெரியவில்லை",
     optDontRecognizeSub: "சாத்தியமான மோசடி குறித்து பயனரை எச்சரிக்கவும்.",
-    optRequestVerify: "❓ சரிபார்ப்பைக் கோருங்கள்",
+    optRequestVerify: "சரிபார்ப்பைக் கோருங்கள்",
     optRequestVerifySub: "செலுத்துவதற்கு முன் அழைக்குமாறு கூறவும்.",
-    twilioCallCardTitle: "📞 மூத்த குடிமகனுக்கு நேரடி AI அழைப்பு (Twilio Voice AI)",
+    twilioCallCardTitle: "மூத்த குடிமகனுக்கு நேரடி AI அழைப்பு (Twilio Voice AI)",
     twilioCallCardDesc: "பரிவர்த்தனையை உறுதிப்படுத்த மூத்த பயனருக்கு பாதுகாப்பான Twilio AI குரல் அழைப்பைத் தொடங்கவும். நேரடி உரையாடல் கீழே தோன்றும்.",
     seniorPhoneLabel: "மூத்த குடிமகனின் தொலைபேசி எண்",
     callLangLabel: "அழைப்பு மொழி",
-    startTwilioCallBtn: "🚀 Twilio சரிபார்ப்பு அழைப்பைத் தொடங்கு",
+    startTwilioCallBtn: "Twilio சரிபார்ப்பு அழைப்பைத் தொடங்கு",
     callingStatus: "மூத்த பயனருக்கு {phone} இல் அழைக்கப்படுகிறது...",
-    liveConversationTitle: "🔴 நிகழ்நேர Twilio அழைப்பு உரையாடல் மற்றும் டிரான்ஸ்கிரிப்ட்",
+    liveConversationTitle: "நிகழ்நேர Twilio அழைப்பு உரையாடல் மற்றும் டிரான்ஸ்கிரிப்ட்",
     noTurnsYet: "அழைப்பு தொடங்கப்பட்டது. மூத்த குடிமகன் பேச காத்திருக்கிறது...",
     simulateSeniorYes: "மூத்த பயனர் கூறினார்: 'ஆம், உறுதிப்படுத்துங்கள்'",
     simulateSeniorNo: "மூத்த பயனர் கூறினார்: 'இல்லை, ரத்து செய்யுங்கள்'",
@@ -430,14 +430,14 @@ const TOUR_STEPS = [
     title: "1. Senior Initiates Transfer",
     subtitle: "Sunita Verma speaks voice transfer of ₹5,000 to Rohan Sharma.",
     narrative: "Step 1: Senior user Sunita Verma attempts a ₹5,000 transfer. The behavioral risk engine detects a 3.3x baseline deviation and sends a Trusted Circle advisory alert to Dilshan.",
-    actionPrompt: "Action: Click 'Next Step ➡️' or view the active alert card below."
+    actionPrompt: "Action: Click 'Next Step' or view the active alert card below."
   },
   {
     step: 2,
     title: "2. Guardian Advisory & Phone Call",
     subtitle: "Dilshan receives alert & verifies with Sunita over Twilio AI Voice Call.",
     narrative: "Step 2: Dilshan opens his Trusted Guardian dashboard, triggers an automated Twilio verification call to Sunita. Sunita confirms 'Yes' over the phone.",
-    actionPrompt: "Action: Guardian reviews live transcript and submits '✓ Looks Expected' recommendation."
+    actionPrompt: "Action: Guardian reviews live transcript and submits 'Looks Expected' recommendation."
   },
   {
     step: 3,
@@ -449,7 +449,7 @@ const TOUR_STEPS = [
   {
     step: 4,
     title: "4. Senior Step-Up Authorization",
-    subtitle: "Sunita sees '✓ Dilshan Verified' badge and enters her UPI PIN.",
+    subtitle: "Sunita sees '[Verified by Dilshan]' badge and enters her UPI PIN.",
     narrative: "Step 4: Sunita Verma sees the verified badge from Dilshan. She enters her own 4-digit UPI PIN (1234) on her own device.",
     actionPrompt: "Action: Senior enters PIN 1234 to complete final authorization."
   },
@@ -497,11 +497,11 @@ export default function BankMantriApp() {
   const [callPollingInterval, setCallPollingInterval] = useState<any>(null);
 
   const [frequentPeople, setFrequentPeople] = useState<Person[]>([
-    { name: 'Rohan Sharma', upiId: 'rohan.sharma@okaxis', avatar: '👨🏽', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
-    { name: 'Dilshan Kumar', upiId: 'dilshan.k@okhdfcbank', avatar: '👨🏻‍💼', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
-    { name: 'Priya Verma', upiId: 'priya.verma@okicici', avatar: '👩🏻‍💻', color: 'bg-blue-600', lastPaid: '₹3,200 · 3 weeks ago', baseline: 3000 },
-    { name: 'City Grocery & Kirana', upiId: 'grocery@paytm', avatar: '🏪', color: 'bg-amber-600', lastPaid: '₹850 · 3 days ago', baseline: 1000 },
-    { name: 'Unknown Lottery Agent', upiId: 'unknown.win99@ybl', avatar: '🕵️', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
+    { name: 'Rohan Sharma', upiId: 'rohan.sharma@okaxis', avatar: 'RS', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
+    { name: 'Dilshan Kumar', upiId: 'dilshan.k@okhdfcbank', avatar: 'DK', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
+    { name: 'Priya Verma', upiId: 'priya.verma@okicici', avatar: 'PV', color: 'bg-blue-600', lastPaid: '₹3,200 · 3 weeks ago', baseline: 3000 },
+    { name: 'City Grocery & Kirana', upiId: 'grocery@paytm', avatar: 'CG', color: 'bg-amber-600', lastPaid: '₹850 · 3 days ago', baseline: 1000 },
+    { name: 'Unknown Lottery Agent', upiId: 'unknown.win99@ybl', avatar: 'UA', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
   ]);
 
   const [activeTransfer, setActiveTransfer] = useState<TransferAlert | null>({
@@ -591,7 +591,7 @@ export default function BankMantriApp() {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 🧭 GUIDED TOUR CONTROLLER & AUTOMATION
+  // GUIDED TOUR CONTROLLER & AUTOMATION
   // ───────────────────────────────────────────────────────────────────────────
   const executeTourStep = (stepNumber: number) => {
     setTourStep(stepNumber);
@@ -632,7 +632,7 @@ export default function BankMantriApp() {
           actor: `Guardian (${guardianName})`,
           action: `Initiated Twilio Verification Call to ${userName}`,
           decision: 'CALLING',
-          notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹5,000 to ${demoRecipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+          notes: `AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹5,000 to ${demoRecipientName}. Say 'Yes' to confirm or 'No' to cancel."`
         },
         {
           id: 'TC-TOUR-2',
@@ -640,10 +640,10 @@ export default function BankMantriApp() {
           actor: `Senior (${userName})`,
           action: `Confirmed ₹5,000 Over Phone Call`,
           decision: 'CONFIRMED',
-          notes: `👵 ${userName}: "Yes, I am sending this ₹5,000 for festival shopping."\n🤖 AI Voice Shield: "Thank you ${userName}! Transfer verified. ${guardianName} notified."`
+          notes: `${userName}: "Yes, I am sending this ₹5,000 for festival shopping."\nAI Voice Shield: "Thank you ${userName}! Transfer verified. ${guardianName} notified."`
         }
       ]);
-      setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+      setCallStatusMessage(`${userName} confirmed the transfer over Twilio phone call!`);
       if (activeTransfer) {
         setActiveTransfer({
           ...activeTransfer,
@@ -678,7 +678,7 @@ export default function BankMantriApp() {
         amount: 5000,
         date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         status: 'SUCCESS',
-        advisory: `${guardianName} & Phone Verified ✓`
+        advisory: `${guardianName} & Phone Verified`
       };
       setTransactions(prev => [receipt, ...prev]);
       setActiveTransfer(null);
@@ -765,14 +765,14 @@ export default function BankMantriApp() {
             verifiedOverPhone: true,
             guardianNote: `Phone verification complete: ${userName} confirmed authorization over Twilio call.`
           } : null);
-          setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+          setCallStatusMessage(`${userName} confirmed the transfer over Twilio phone call!`);
         } else if (data.latest_decision === 'REJECTED') {
           setActiveTransfer(prev => prev ? {
             ...prev,
             advisoryStatus: 'DONT_RECOGNIZE',
             guardianNote: `Phone verification alert: ${userName} cancelled or rejected transfer over phone call.`
           } : null);
-          setCallStatusMessage(`⚠️ ${userName} cancelled this transfer during the phone call!`);
+          setCallStatusMessage(`${userName} cancelled this transfer during the phone call!`);
         }
       }
     } catch (e) {
@@ -829,7 +829,7 @@ export default function BankMantriApp() {
       ? `Amount ₹${amount.toLocaleString('en-IN')} is significantly higher than your typical ₹${p.baseline.toLocaleString('en-IN')} payment to ${p.name}.`
       : `Within typical spending baseline.`;
 
-    // 🟢 BASELINE TRANSFERS: Zero-PIN Instant UPI Lite Payment!
+    // BASELINE TRANSFERS: Zero-PIN Instant UPI Lite Payment!
     if (riskTier === 'LOW') {
       const newBal = userBalance - amount;
       setUserBalance(newBal);
@@ -852,7 +852,7 @@ export default function BankMantriApp() {
       return;
     }
 
-    // 🔴 UNUSUAL / HIGH RISK: Trigger Trusted Circle Advisory & Phone Verification
+    // UNUSUAL / HIGH RISK: Trigger Trusted Circle Advisory & Phone Verification
     const newAlert: TransferAlert = {
       id: `TXN-${Date.now().toString().slice(-6)}`,
       senderName: userName,
@@ -898,7 +898,7 @@ export default function BankMantriApp() {
   const handleTriggerTwilioCall = async () => {
     if (!activeTransfer) return;
     setIsCallingSenior(true);
-    setCallStatusMessage(`📞 Calling ${userName} on ${seniorPhoneNumber} via Twilio AI Shield in ${callLanguage.toUpperCase()}...`);
+    setCallStatusMessage(`Calling ${userName} on ${seniorPhoneNumber} via Twilio AI Shield in ${callLanguage.toUpperCase()}...`);
 
     try {
       const res = await fetch('http://localhost:8000/api/v1/cases/voice/trusted-circle-call', {
@@ -917,7 +917,7 @@ export default function BankMantriApp() {
 
       const data = await res.json();
       if (data && data.success) {
-        setCallStatusMessage(`🟢 Twilio Call Connected! Call SID: ${data.call_sid}. Speaking initial verification prompt to ${userName}...`);
+        setCallStatusMessage(`Twilio Call Connected! Call SID: ${data.call_sid}. Speaking initial verification prompt to ${userName}...`);
         fetchLiveCallConversation(activeTransfer.id);
         
         if (callPollingInterval) clearInterval(callPollingInterval);
@@ -926,7 +926,7 @@ export default function BankMantriApp() {
         }, 2500);
         setCallPollingInterval(interval);
       } else {
-        setCallStatusMessage(`⚠️ Call Notice: ${data.error || 'Check Twilio credentials or ngrok tunnel.'}`);
+        setCallStatusMessage(`Call Notice: ${data.error || 'Check Twilio credentials or ngrok tunnel.'}`);
         setCallConversationTurns([
           {
             id: 'TC-LOCAL-1',
@@ -934,12 +934,12 @@ export default function BankMantriApp() {
             actor: `Guardian (${guardianName})`,
             action: `Initiated Twilio Call to ${userName} (${seniorPhoneNumber})`,
             decision: 'CALLING',
-            notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+            notes: `AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
           }
         ]);
       }
     } catch (e: any) {
-      setCallStatusMessage(`⚠️ Twilio Call Dispatched (Simulated Stream Active).`);
+      setCallStatusMessage(`Twilio Call Dispatched (Simulated Stream Active).`);
       setCallConversationTurns([
         {
           id: 'TC-LOCAL-1',
@@ -947,7 +947,7 @@ export default function BankMantriApp() {
           actor: `Guardian (${guardianName})`,
           action: `Initiated Twilio Call to ${userName} (${seniorPhoneNumber})`,
           decision: 'CALLING',
-          notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+          notes: `AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹${activeTransfer.amount} to ${activeTransfer.recipientName}. Say 'Yes' to confirm or 'No' to cancel."`
         }
       ]);
     }
@@ -971,7 +971,7 @@ export default function BankMantriApp() {
           actor: `Senior (${userName})`,
           action: isConfirm ? `Confirmed ₹${activeTransfer.amount} Over Phone` : `Rejected ₹${activeTransfer.amount} Over Phone`,
           decision: isConfirm ? 'CONFIRMED' : 'REJECTED',
-          notes: `👵 ${userName}: "${speechResult}"\n🤖 AI Voice Shield: "${isConfirm ? `Thank you ${userName}! Transfer verified. ${guardianName} notified.` : `Understood ${userName}! Transfer cancelled immediately.`}"`
+          notes: `${userName}: "${speechResult}"\nAI Voice Shield: "${isConfirm ? `Thank you ${userName}! Transfer verified. ${guardianName} notified.` : `Understood ${userName}! Transfer cancelled immediately.`}"`
         }
       ];
       setCallConversationTurns(newTurns);
@@ -982,14 +982,14 @@ export default function BankMantriApp() {
           verifiedOverPhone: true,
           guardianNote: `Phone verification complete: ${userName} confirmed authorization over Twilio call.`
         } : null);
-        setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+        setCallStatusMessage(`${userName} confirmed the transfer over Twilio phone call!`);
       } else {
         setActiveTransfer(prev => prev ? {
           ...prev,
           advisoryStatus: 'DONT_RECOGNIZE',
           guardianNote: `Phone verification alert: ${userName} rejected transfer over phone call.`
         } : null);
-        setCallStatusMessage(`⚠️ ${userName} cancelled this transfer during the phone call!`);
+        setCallStatusMessage(`${userName} cancelled this transfer during the phone call!`);
       }
     }
   };
@@ -1017,7 +1017,7 @@ export default function BankMantriApp() {
       amount: activeTransfer.amount,
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       status: 'SUCCESS',
-      advisory: activeTransfer.verifiedOverPhone ? `${guardianName} & Phone Verified ✓` : (activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? `${guardianName} Verified ✓` : 'User Authorized')
+      advisory: activeTransfer.verifiedOverPhone ? `${guardianName} & Phone Verified` : (activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? `${guardianName} Verified` : 'User Authorized')
     };
 
     setTransactions(prev => [completedTxn, ...prev]);
@@ -1045,13 +1045,13 @@ export default function BankMantriApp() {
       }`}
       style={{ fontSize: `${fontScale * 100}%` }}
     >
-      {/* 🌟 TOP DEMO STORY & PERSONA CONTROLLER BAR */}
+      {/* TOP DEMO STORY & PERSONA CONTROLLER BAR */}
       <div className="bg-[#1A73E8] text-white border-b-2 border-blue-900 sticky top-0 z-50 shadow-md">
         <div className="max-w-4xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
           {/* Brand */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white text-[#1A73E8] font-black flex items-center justify-center text-sm shadow-xs">
-              🏦
+            <div className="w-8 h-8 rounded-full bg-white text-[#1A73E8] font-black flex items-center justify-center text-xs shadow-xs">
+              BM
             </div>
             <div>
               <span className="font-black text-xs uppercase tracking-wider block leading-none">
@@ -1071,7 +1071,7 @@ export default function BankMantriApp() {
                   : 'text-blue-100 hover:bg-blue-800'
               }`}
             >
-              <span>👵 1. {userName.split(' ')[0]}</span>
+              <span>1. {userName.split(' ')[0]}</span>
               <span className="text-[9px] bg-amber-400 text-blue-950 px-1 rounded-xs font-black">{t('userTag')}</span>
             </button>
 
@@ -1083,7 +1083,7 @@ export default function BankMantriApp() {
                   : 'text-purple-200 hover:bg-blue-800'
               }`}
             >
-              <span>🛡️ 2. {guardianName}</span>
+              <span>2. {guardianName}</span>
               {activeTransfer && activeTransfer.advisoryStatus === 'PENDING' && (
                 <span className="w-2 h-2 rounded-full bg-red-400 animate-ping absolute -top-0.5 -right-0.5" />
               )}
@@ -1111,7 +1111,7 @@ export default function BankMantriApp() {
         </div>
       </div>
 
-      {/* 🧭 INTERACTIVE 5-STEP GUIDED TOUR HUD (WHAT'S NEXT GUIDE) */}
+      {/* INTERACTIVE 5-STEP GUIDED TOUR HUD (WHAT'S NEXT GUIDE) */}
       {isTourActive && (
         <div className="bg-gradient-to-r from-blue-950 via-indigo-900 to-purple-950 text-white border-b-4 border-amber-400 shadow-xl px-4 py-3">
           <div className="max-w-4xl mx-auto space-y-2.5">
@@ -1142,7 +1142,7 @@ export default function BankMantriApp() {
                   }`}
                 >
                   <PlayCircle size={13} />
-                  <span>{isAutoPlaying ? 'Auto-Playing...' : 'Auto-Play Tour ⚡'}</span>
+                  <span>{isAutoPlaying ? 'Auto-Playing...' : 'Auto-Play Tour'}</span>
                 </button>
 
                 <button
@@ -1171,7 +1171,7 @@ export default function BankMantriApp() {
                     Step {tourStep} of 5: {currentTour.title}
                   </span>
                   <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">
-                    {activePersona === 'user' ? '👵 Primary User View' : '🛡️ Guardian View'}
+                    {activePersona === 'user' ? 'Primary User View' : 'Guardian View'}
                   </span>
                 </div>
                 <p className="font-semibold text-white/95 text-xs mt-0.5">
@@ -1186,7 +1186,7 @@ export default function BankMantriApp() {
                 <button
                   onClick={() => speakVoice(currentTour.narrative)}
                   className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-lg flex items-center gap-1 cursor-pointer"
-                  title="🔊 Read Tour Step"
+                  title="Read Tour Step"
                 >
                   <Volume2 size={13} />
                   <span>Narrate Step</span>
@@ -1197,7 +1197,7 @@ export default function BankMantriApp() {
         </div>
       )}
 
-      {/* ♿ WCAG AAA ACCESSIBILITY CONTROLS BAR */}
+      {/* WCAG AAA ACCESSIBILITY CONTROLS BAR */}
       <div className={`border-b py-2 px-4 ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Senior Font Scaler */}
@@ -1257,14 +1257,14 @@ export default function BankMantriApp() {
         </div>
       </div>
 
-      {/* 🔊 SYNCHRONIZED CAPTION BANNER */}
+      {/* SYNCHRONIZED CAPTION BANNER */}
       {syncCaption && (
         <div className="bg-amber-300 text-blue-950 font-black px-4 py-2 text-xs border-b-2 border-amber-400 shadow-inner flex items-center justify-between">
           <div className="max-w-4xl mx-auto flex items-center gap-2 w-full">
             <Volume2 size={16} className="text-blue-950 shrink-0" />
             <span className="font-sans italic">{syncCaption}</span>
           </div>
-          <button onClick={() => setSyncCaption('')} className="text-blue-950 font-black text-xs hover:opacity-75 cursor-pointer">✕</button>
+          <button onClick={() => setSyncCaption('')} className="text-blue-950 font-black text-xs hover:opacity-75 cursor-pointer">X</button>
         </div>
       )}
 
@@ -1275,12 +1275,12 @@ export default function BankMantriApp() {
             <AlertTriangle size={18} className="text-yellow-300 shrink-0" />
             <span>{serverErrorAlert}</span>
           </div>
-          <button onClick={() => setServerErrorAlert('')} className="text-white font-black text-sm cursor-pointer">✕</button>
+          <button onClick={() => setServerErrorAlert('')} className="text-white font-black text-sm cursor-pointer">X</button>
         </div>
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 👵 VIEW 1: PRIMARY USER (SUNITA VERMA) — GPAY INTERFACE       */}
+      {/* User VIEW 1: PRIMARY USER (SUNITA VERMA) — GPAY INTERFACE       */}
       {/* ───────────────────────────────────────────────────────────── */}
       {activePersona === 'user' && (
         <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -1291,7 +1291,7 @@ export default function BankMantriApp() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div className="w-14 h-14 rounded-full bg-amber-100 text-2xl flex items-center justify-center border-2 border-amber-300">
-                  👵
+                  User
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -1436,7 +1436,7 @@ export default function BankMantriApp() {
                 </div>
               </div>
 
-              {/* 🛡️ TRUSTED CIRCLE ADVISORY STATUS BADGE */}
+              {/*  TRUSTED CIRCLE ADVISORY STATUS BADGE */}
               <div className="p-4 bg-purple-50 border-2 border-purple-300 rounded-xl mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -1563,7 +1563,7 @@ export default function BankMantriApp() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 🛡️ VIEW 2: GUARDIAN (DILSHAN / DAUGHTER) — TRUSTED ADVISORY   */}
+      {/*  VIEW 2: GUARDIAN (DILSHAN / DAUGHTER) — TRUSTED ADVISORY   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {activePersona === 'guardian' && (
         <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -1572,7 +1572,7 @@ export default function BankMantriApp() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div className="w-14 h-14 rounded-full bg-purple-200 text-purple-950 text-2xl flex items-center justify-center font-black">
-                  👨🏻‍💼
+                  Guardian
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -1638,7 +1638,7 @@ export default function BankMantriApp() {
               </div>
 
               {/* ───────────────────────────────────────────────────────────── */}
-              {/* 📞 TWILIO LIVE PHONE CALL VERIFICATION SECTION                */}
+              {/* TWILIO LIVE PHONE CALL VERIFICATION SECTION                */}
               {/* ───────────────────────────────────────────────────────────── */}
               <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
@@ -1700,7 +1700,7 @@ export default function BankMantriApp() {
                   </div>
                 )}
 
-                {/* 🔴 LIVE SHARED CONVERSATION TRANSCRIPT STREAM */}
+                {/* LIVE SHARED CONVERSATION TRANSCRIPT STREAM */}
                 <div className="mt-3 bg-white p-4 rounded-xl border border-blue-200 space-y-2">
                   <div className="flex items-center justify-between border-b pb-1.5 border-gray-200">
                     <span className="font-black text-[11px] uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
@@ -1750,13 +1750,13 @@ export default function BankMantriApp() {
                       onClick={() => handleSimulateSeniorResponse('CONFIRM')}
                       className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-md font-bold text-[10px] flex items-center gap-1 cursor-pointer"
                     >
-                      <span>🗣️ {t('simulateSeniorYes')}</span>
+                      <span>{t('simulateSeniorYes')}</span>
                     </button>
                     <button
                       onClick={() => handleSimulateSeniorResponse('REJECT')}
                       className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-900 rounded-md font-bold text-[10px] flex items-center gap-1 cursor-pointer"
                     >
-                      <span>🗣️ {t('simulateSeniorNo')}</span>
+                      <span>{t('simulateSeniorNo')}</span>
                     </button>
                   </div>
                 </div>
@@ -1832,7 +1832,7 @@ export default function BankMantriApp() {
               <h3 className="text-sm font-black uppercase text-gray-900 flex items-center gap-1.5">
                 <Edit3 size={16} className="text-[#1A73E8]" /> {t('editNames')}
               </h3>
-              <button onClick={() => setShowEditNamesModal(false)} className="font-bold text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
+              <button onClick={() => setShowEditNamesModal(false)} className="font-bold text-gray-400 hover:text-gray-700 cursor-pointer">X</button>
             </div>
 
             <div className="space-y-3.5 text-xs">
