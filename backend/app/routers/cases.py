@@ -310,3 +310,99 @@ def call_customer_for_case(
     db.commit()
 
     return res
+
+
+@router.api_route("/voice/webhook/respond", methods=["GET", "POST"])
+async def voice_webhook_respond(
+    request: Request,
+    case_id: Optional[str] = "DEMO-CALL",
+    lang: Optional[str] = "en",
+    turn: Optional[int] = 1,
+    db: Session = Depends(get_db)
+):
+    """Twilio Webhook: Receive transcribed customer speech and return conversational response TwiML."""
+    from fastapi.responses import Response
+    from app.services.voice_service import voice_service
+
+    form_data = {}
+    try:
+        form_data = await request.form()
+    except Exception:
+        pass
+
+    user_speech = form_data.get("SpeechResult") or request.query_params.get("SpeechResult") or ""
+    confidence = form_data.get("Confidence") or "1.0"
+    call_sid = form_data.get("CallSid") or ""
+    language = lang or "en"
+    turn_num = int(turn or 1)
+
+    voice_name, lang_code = voice_service.get_voice_and_lang(language)
+    public_base = voice_service.get_public_webhook_url()
+    next_turn = turn_num + 1
+    next_webhook = f"{public_base}/api/v1/cases/voice/webhook/respond?case_id={case_id}&lang={language}&turn={next_turn}"
+
+    if not user_speech:
+        # Prompt the user again if nothing was heard
+        if language in ("hi", "hindi"):
+            no_input_text = "क्षमा करें, मुझे आपकी आवाज सुनाई नहीं दी। क्या आप कृपया दोहरा सकते हैं?"
+        elif language in ("kn", "kannada"):
+            no_input_text = "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಮಾತು ನನಗೆ ಸರಿಯಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಇನ್ನೊಮ್ಮೆ ಹೇಳಿ."
+        else:
+            no_input_text = "I am sorry, I could not hear your response. Could you please repeat that?"
+
+        twiml = f"""<Response>
+    <Gather input="speech" action="{next_webhook}" method="POST" speechTimeout="auto" timeout="6" language="{lang_code}">
+        <Say voice="{voice_name}" language="{lang_code}">
+            {no_input_text}
+        </Say>
+    </Gather>
+    <Say voice="{voice_name}" language="{lang_code}">
+        Thank you for your time. You can reach our support team anytime in the banking app. Goodbye!
+    </Say>
+</Response>"""
+        return Response(content=twiml, media_type="application/xml")
+
+    # Generate contextual conversational reply
+    ai_reply, should_continue = voice_service.generate_conversational_reply(
+        case_id=case_id or "DEMO-CALL",
+        user_speech=str(user_speech),
+        language=language,
+        turn=turn_num
+    )
+
+    # Log speech turn to audit log
+    from app.models.database import AuditTrailRecord
+    import uuid
+    audit_entry = AuditTrailRecord(
+        id=f"AUD-{uuid.uuid4().hex[:8].upper()}",
+        case_id=case_id or "DEMO-CALL",
+        event_type="VOICE_CONVERSATION_TURN",
+        actor="CUSTOMER_INTERACTION",
+        action=f"Turn {turn_num} ({language.upper()})",
+        decision="IN_PROGRESS" if should_continue else "COMPLETED",
+        notes=f"Customer Spoke: '{user_speech}' (Confidence: {confidence}). AI Replied: '{ai_reply[:150]}'"
+    )
+    db.add(audit_entry)
+    db.commit()
+
+    if should_continue:
+        twiml = f"""<Response>
+    <Gather input="speech" action="{next_webhook}" method="POST" speechTimeout="auto" timeout="6" language="{lang_code}">
+        <Say voice="{voice_name}" language="{lang_code}">
+            {ai_reply}
+        </Say>
+    </Gather>
+    <Say voice="{voice_name}" language="{lang_code}">
+        Thank you for your time. Have a wonderful day. Goodbye!
+    </Say>
+</Response>"""
+    else:
+        twiml = f"""<Response>
+    <Say voice="{voice_name}" language="{lang_code}">
+        {ai_reply}
+    </Say>
+    <Pause length="1"/>
+    <Hangup/>
+</Response>"""
+
+    return Response(content=twiml, media_type="application/xml")
