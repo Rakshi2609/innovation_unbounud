@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SafePay India · AI Voice Money Transfer Simulator",
-  description: "Consumer Banking App with Voice-Driven Money Transfer and Behavioral N-Month Safety Verification",
+  title: "BankMantri · Accessible Family-Protected Voice Banking",
+  description: "Accessible voice-first digital banking with Trusted Circle second opinions and zero screen sharing.",
 };
 
 export default function RootLayout({

@@ -86,7 +86,7 @@ class VoiceNotificationService:
         amt_str = f"{int(amount):,}"
         if lang in ("hi", "hindi"):
             script_text = (
-                f"नमस्ते {senior_name} जी! यह बैंकसाथी फैमिली शील्ड से वॉयस वेरिफिकेशन कॉल है। "
+                f"नमस्ते {senior_name} जी! यह बैंकमंत्री फैमिली शील्ड से वॉयस वेरिफिकेशन कॉल है। "
                 f"आपके ट्रस्टेड गार्डियन {guardian_name} ने {recipient_name} को {amt_str} रुपये ट्रांसफर करने का अलर्ट देखा है। "
                 f"क्या आप सचमुच यह {amt_str} रुपये भेजना चाहते हैं? "
                 f"पुष्टि करने के लिए 'हाँ' कहें, या कैंसिल करने के लिए 'नहीं' कहें।"
@@ -118,7 +118,7 @@ class VoiceNotificationService:
             fallback_msg = "மன்னிக்கவும், உங்கள் குரல் கேட்கவில்லை. நன்றி."
         else:
             script_text = (
-                f"Hello {senior_name}! This is BankSathi Family Shield voice verification. "
+                f"Hello {senior_name}! This is BankMantri Family Shield voice verification. "
                 f"Your trusted guardian {guardian_name} noticed a transfer of {amt_str} rupees to {recipient_name}. "
                 f"Are you sending this money yourself? "
                 f"Please say 'Yes' to confirm, or 'No' to cancel."

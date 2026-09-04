@@ -1,13 +1,13 @@
 # 🇮🇳 AI FINANCIAL SAFETY & ACCESSIBLE BANKING ECOSYSTEM
 
-> **A Dual-Engine Platform for Indian Digital Banking:** Unifying **BankSathi** (Voice-First Accessible Banking & Anti-Scam Shield for Indian Seniors) with **TheSuperRAG Lending & Distress Copilot** (Evidence-Grounded Decision Intelligence for Institutional Bank Officers).
+> **A Dual-Engine Platform for Indian Digital Banking:** Unifying **BankMantri** (Voice-First Accessible Banking & Anti-Scam Shield for Indian Seniors) with **TheSuperRAG Lending & Distress Copilot** (Evidence-Grounded Decision Intelligence for Institutional Bank Officers).
 
 ---
 
 ## 📑 TABLE OF CONTENTS
 1. [Executive Summary & Problem Statement](#-executive-summary--problem-statement)
 2. [Dual-Project System Topology & Live Ports](#-dual-project-system-topology--live-ports)
-3. [Project 1: BankSathi — Accessible Voice Banking (Port 3002)](#-project-1-banksathi--accessible-voice-banking-port-3002)
+3. [Project 1: BankMantri — Accessible Voice Banking (Port 3002)](#-project-1-bankmantri--accessible-voice-banking-port-3002)
    - [Core Philosophy: "Shared Guidance, Not Shared Access"](#core-philosophy-shared-guidance-not-shared-access)
    - [Threat Model: Anti-Social Engineering & Zero Screen-Sharing](#threat-model-anti-social-engineering--zero-screen-sharing)
    - [5-Step Interactive Guided Story Tour](#5-step-interactive-guided-story-tour)
@@ -61,7 +61,7 @@ This repository contains the complete production codebase solving both challenge
 
 | Component | Framework / Engine | Port | Directory | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **BankSathi Senior & Guardian App** | Next.js 16 + Web Speech API + Tailwind CSS | **`http://localhost:3002`** | [`user_app/`](file:///home/appu/Downloads/Grid-main/user_app) | Senior-friendly voice banking, behavioral safety queue, guardian advisory view, live Twilio transcript stream. |
+| **BankMantri Senior & Guardian App** | Next.js 16 + Web Speech API + Tailwind CSS | **`http://localhost:3002`** | [`user_app/`](file:///home/appu/Downloads/Grid-main/user_app) | Senior-friendly voice banking, behavioral safety queue, guardian advisory view, live Twilio transcript stream. |
 | **Bank Officer Copilot Portal** | Next.js 16 + Tailwind CSS | **`http://localhost:3001`** | [`frontend/`](file:///home/appu/Downloads/Grid-main/frontend) | Case triage queue, dynamic policy RAG viewer, officer workout authorization, immutable audit dashboard. |
 | **Core AI & RAG Backend** | FastAPI + LangGraph + Qdrant + Twilio | **`http://localhost:8000`** | [`backend/`](file:///home/appu/Downloads/Grid-main/backend) | 10-node LangGraph orchestrator, hybrid vector search, speech recognition webhooks, cryptographic signing. |
 | **ML Predict Service** | LightGBM / XGBoost + FastAPI | **`http://localhost:8001`** | [`ml_research/`](file:///home/appu/Downloads/Grid-main/ml_research) | Calibrated Indian credit distress model, SHAP feature attribution, UPI anomaly isolation. |
@@ -72,7 +72,7 @@ This repository contains the complete production codebase solving both challenge
 
 **"Shared guidance, not shared access."**
 
-BankSathi completely reimagines digital banking for Indian seniors and rural users who prefer speaking in their mother tongue rather than typing on confusing user interfaces.
+BankMantri completely reimagines digital banking for Indian seniors and rural users who prefer speaking in their mother tongue rather than typing on confusing user interfaces.
 
 ```
                               BANKSATHI TRANSACTION FLOW
@@ -106,11 +106,11 @@ BankSathi completely reimagines digital banking for Indian seniors and rural use
 * **Preserving Dignity & Financial Autonomy**: Seniors retain 100% control of their money while enjoying the safety net of their family.
 
 ### Threat Model: Anti-Social Engineering & Zero Screen-Sharing
-* **Breaking the "Scammer's Trance"**: In Digital Arrest or fake bill scams, fraudsters force seniors to stay on WhatsApp and threaten them not to contact family. BankSathi's automatic out-of-band Twilio call immediately breaks this isolation by notifying the trusted circle.
+* **Breaking the "Scammer's Trance"**: In Digital Arrest or fake bill scams, fraudsters force seniors to stay on WhatsApp and threaten them not to contact family. BankMantri's automatic out-of-band Twilio call immediately breaks this isolation by notifying the trusted circle.
 * **Historical Lookback Verification ($N$-Month History)**: Evaluates past transaction frequency. If a recipient has zero history in the last $N$ months, the payment is placed on a cooling-off safety hold.
 
 ### 🗺️ 5-Step Interactive Guided Story Tour (Port 3002)
-BankSathi includes a full interactive guided tour HUD with audio speech narration, step navigation, and live auto-actions:
+BankMantri includes a full interactive guided tour HUD with audio speech narration, step navigation, and live auto-actions:
 
 1. **Step 1: Senior Voice Transfer**:
    - Senior Sunita speaks *"Send ₹5,000 to Dilshan"*.
@@ -184,7 +184,16 @@ Designed for Credit Risk Officers, Branch Managers, and Grievance Committees, th
 
 ### 🕸️ 3. 10-Node LangGraph Agentic Workflow
 The orchestration graph guarantees zero hallucination through a deterministic pipeline:
-1. `Telemetry Ingest` $ightarrow$ 2. `ML Feature Prep` $ightarrow$ 3. `Distress Infer` $ightarrow$ 4. `Policy Retrieval` $ightarrow$ 5. `Evidence Filter` $ightarrow$ 6. `Synthesis Node` $ightarrow$ 7. `Safety Guardrail` $ightarrow$ 8. `Workout Plan Generation` $ightarrow$ 9. `Officer Triage Presentation` $ightarrow$ 10. `Audit Ledger Commit`.
+1. `Telemetry Ingest` $
+ightarrow$ 2. `ML Feature Prep` $
+ightarrow$ 3. `Distress Infer` $
+ightarrow$ 4. `Policy Retrieval` $
+ightarrow$ 5. `Evidence Filter` $
+ightarrow$ 6. `Synthesis Node` $
+ightarrow$ 7. `Safety Guardrail` $
+ightarrow$ 8. `Workout Plan Generation` $
+ightarrow$ 9. `Officer Triage Presentation` $
+ightarrow$ 10. `Audit Ledger Commit`.
 
 ### ⚖️ 4. Human-in-the-Loop Governance & Overrides
 * AI never makes unilateral credit or recovery decisions.
@@ -207,7 +216,7 @@ The orchestration graph guarantees zero hallucination through a deterministic pi
 
 The voice engine ([`backend/app/services/voice_service.py`](file:///home/appu/Downloads/Grid-main/backend/app/services/voice_service.py)) supports two distinct operational modes:
 
-### Mode A: BankSathi Trusted Circle Senior Verification
+### Mode A: BankMantri Trusted Circle Senior Verification
 * **Endpoint**: `POST /api/v1/cases/voice/trusted-circle-call`
 * **Triggered by**: Guardian daughter when an anomalous transfer is detected.
 * **Webhook**: `POST /api/v1/cases/voice/webhook/trusted-circle-respond` uses `<Gather input="speech">` to capture senior's spoken *"Yes"* or *"No"*.
@@ -266,7 +275,7 @@ npm run build
 npm run start -- -p 3001
 ```
 
-### 5. Launch BankSathi Senior & Guardian App (Port 3002)
+### 5. Launch BankMantri Senior & Guardian App (Port 3002)
 ```bash
 cd user_app
 npm install

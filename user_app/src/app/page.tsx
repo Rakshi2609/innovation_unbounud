@@ -53,7 +53,7 @@ interface CallTurn {
 // ─────────────────────────────────────────────────────────────────────────────
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
-    appTitle: "BankSathi",
+    appTitle: "BankMantri",
     familyShield: "FAMILY SHIELD",
     tagline: "Shared Guidance, Not Shared Access",
     userTag: "USER",
@@ -96,7 +96,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     requestedAmount: "Requested Amount",
     spendingBaseline: "Spending Baseline",
     deviation: "deviation",
-    whySeeingThis: "Why You're Seeing This: {user} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.",
+    whySeeingThis: "Why You're Seeing This: {user} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankMantri Trusted Circle protocol to ask for your advisory second opinion.",
     selectRecommendation: "Select Your Advisory Recommendation:",
     optLooksExpected: "✓ Looks Expected",
     optLooksExpectedSub: "I recognize this recipient and amount.",
@@ -127,7 +127,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     saveNames: "Save & Apply Names"
   },
   hi: {
-    appTitle: "बैंकसाथी",
+    appTitle: "बैंकमंत्री",
     familyShield: "फैमिली शील्ड",
     tagline: "साझा मार्गदर्शन, साझा पहुंच नहीं",
     userTag: "उपयोगकर्ता",
@@ -170,7 +170,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     requestedAmount: "अनुरोधित राशि",
     spendingBaseline: "सामान्य खर्च बेसलाइन",
     deviation: "विचलन",
-    whySeeingThis: "आप इसे क्यों देख रहे हैं: {user} आमतौर पर ₹1,500 से अधिक ट्रांसफर नहीं करते। इस ₹5,000 के ट्रांसफर ने बैंकसाथी ट्रस्टेड सर्कल को आपकी दूसरी राय लेने के लिए सक्रिय किया।",
+    whySeeingThis: "आप इसे क्यों देख रहे हैं: {user} आमतौर पर ₹1,500 से अधिक ट्रांसफर नहीं करते। इस ₹5,000 के ट्रांसफर ने बैंकमंत्री ट्रस्टेड सर्कल को आपकी दूसरी राय लेने के लिए सक्रिय किया।",
     selectRecommendation: "अपनी सलाहकार अनुशंसा चुनें:",
     optLooksExpected: "✓ उचित लग रहा है",
     optLooksExpectedSub: "मैं इस प्राप्तकर्ता और राशि को पहचानता हूँ।",
@@ -462,7 +462,7 @@ const TOUR_STEPS = [
   }
 ];
 
-export default function BankSathiApp() {
+export default function BankMantriApp() {
   const [userName, setUserName] = useState('Sunita Verma');
   const [guardianName, setGuardianName] = useState('Dilshan');
   const [guardianRelation, setGuardianRelation] = useState('Son & Trusted Guardian');
