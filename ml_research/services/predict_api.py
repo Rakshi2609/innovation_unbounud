@@ -319,9 +319,9 @@ def predict_risk(req: MLPredictionRequest):
     threshold = float(model_bundle.get("threshold", 0.5))
 
     try:
-        prob = float(model.predict_proba(X)[0][1])
-    except Exception:
-        prob = 0.5
+        raw_prob = float(model.predict_proba(X)[0][1])
+    except Exception as e:
+        raw_prob = 0.5
 
     # Extract key financial indicators for calibration
     inc = float(req.features.get("monthly_income", 0))
@@ -334,26 +334,29 @@ def predict_risk(req: MLPredictionRequest):
     annual = inc * 12.0
     lti = debt / max(annual, 1.0)
 
+    # Compute calibrated risk score combining model prediction with domain boundary checks
+    calibrated_score = raw_prob
+
     # 1. Device / Behavioral Fraud Risk
     if dts is not None and float(dts) < 0.40:
         fraud_risk = round(1.0 - float(dts), 3)
-        prob = max(prob, fraud_risk)
+        calibrated_score = max(calibrated_score, fraud_risk)
     # 2. High Solvency / Prime Profile (Low debt, low expenses relative to income, 0 delinquencies)
     elif debt < 50000 and burden < 0.40 and delinq == 0:
-        prob = round(0.08 + 0.12 * cu, 3)
+        calibrated_score = round(0.08 + 0.12 * cu, 3)
     # 3. Moderate / Normal Prime Borrower with healthy DTI
     elif burden < 0.50 and lti < 1.5 and delinq == 0:
-        prob = round(0.12 + 0.20 * cu, 3)
+        calibrated_score = round(0.12 + 0.20 * cu, 3)
     # 4. Severe Distress Profile
     elif burden > 0.70 or delinq >= 2 or (cu > 0.85 and lti > 0.3):
         distress_score = 0.55 + 0.20 * min(burden, 1.0) + 0.15 * min(delinq, 2) + 0.10 * cu
-        prob = round(min(max(prob, distress_score), 0.95), 3)
+        calibrated_score = round(min(max(calibrated_score, distress_score), 0.95), 3)
     else:
-        prob = round(min(max(prob, 0.15), 0.88), 3)
+        calibrated_score = round(min(max(calibrated_score, 0.15), 0.88), 3)
 
-    risk_class = _class(prob, threshold)
-    confidence = round(0.85 + 0.10 * (1.0 - abs(prob - 0.5)), 2)
-    factors = _derive_factors(req.features, req.metadata, prob)
+    risk_class = _class(calibrated_score, threshold)
+    confidence = round(0.85 + 0.10 * (1.0 - abs(calibrated_score - 0.5)), 2)
+    factors = _derive_factors(req.features, req.metadata, calibrated_score)
 
     # Infer risk_type from the strongest factor
     risk_type = "credit_distress"
@@ -368,16 +371,21 @@ def predict_risk(req: MLPredictionRequest):
         else:
             risk_type = "credit_distress"
 
+    metrics = dict(model_bundle.get("evaluation_metrics", {}))
+    metrics["raw_model_probability"] = round(raw_prob, 4)
+    metrics["calibrated_risk_score"] = round(calibrated_score, 4)
+    metrics["score_source"] = "ONLINE_ML_SERVICE"
+
     return MLRiskPrediction(
         prediction_id=f"PRED-{uuid.uuid4().hex[:8].upper()}",
         customer_id=req.customer_id,
-        risk_score=round(prob, 3),
+        risk_score=round(calibrated_score, 3),
         risk_class=risk_class,
         confidence=min(max(confidence, 0.0), 1.0),
         risk_type=risk_type,
         top_factors=factors,
-        model_version=model_bundle.get("model_version", "v1.0"),
-        evaluation_metrics=model_bundle.get("evaluation_metrics"),
+        model_version=model_bundle.get("model_version", "v1.0-lightgbm-npa"),
+        evaluation_metrics=metrics,
     )
 
 

@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import hashlib
 import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
@@ -121,7 +122,16 @@ class CopilotOrchestrator:
                 existing.customer_profile = customer.model_dump()
                 existing.updated_at = datetime.now(timezone.utc)
 
-            # Audit record for ML Evaluation
+            # Audit record for ML Evaluation with SHA-256 integrity hash
+            eval_payload = {
+                "case_id": cid,
+                "customer_id": customer.customer_id,
+                "risk_score": ml_prediction.risk_score,
+                "risk_class": ml_prediction.risk_class,
+                "citations_count": len(assessment.rag_citations),
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            eval_hash = f"sha256:{hashlib.sha256(json.dumps(eval_payload, sort_keys=True).encode()).hexdigest()}"
             audit = AuditTrailRecord(
                 id=f"AUDIT-{uuid.uuid4().hex[:8].upper()}",
                 case_id=cid,
@@ -131,7 +141,7 @@ class CopilotOrchestrator:
                 decision=None,
                 override_ml=False,
                 notes=f"Assessed as {ml_prediction.risk_class} risk ({ml_prediction.risk_score*100:.1f}%) with {len(assessment.rag_citations)} policy citations.",
-                details={"risk_score": ml_prediction.risk_score, "risk_class": ml_prediction.risk_class},
+                details={"risk_score": ml_prediction.risk_score, "risk_class": ml_prediction.risk_class, "integrity_hash": eval_hash},
                 timestamp=datetime.now(timezone.utc)
             )
             db.add(audit)
@@ -175,6 +185,15 @@ class CopilotOrchestrator:
             case.status = new_status
             case.updated_at = datetime.now(timezone.utc)
 
+            decision_payload = {
+                "case_id": case_id,
+                "officer_id": request.officer_id,
+                "decision": request.decision,
+                "action_taken": request.action_taken,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            decision_hash = f"sha256:{hashlib.sha256(json.dumps(decision_payload, sort_keys=True).encode()).hexdigest()}"
+
             audit_id = f"AUDIT-{uuid.uuid4().hex[:8].upper()}"
             audit_record = AuditTrailRecord(
                 id=audit_id,
@@ -186,7 +205,7 @@ class CopilotOrchestrator:
                 override_ml=request.override_ml,
                 override_reason=request.override_reason,
                 notes=request.notes,
-                details={"new_status": new_status, "decision": request.decision},
+                details={"new_status": new_status, "decision": request.decision, "integrity_hash": decision_hash},
                 timestamp=datetime.now(timezone.utc)
             )
             db.add(audit_record)
