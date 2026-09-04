@@ -7,7 +7,7 @@ import {
   Phone, KeyRound, ChevronRight, Settings, Info, Sparkles, Volume2,
   FileText, ShieldAlert, History, Plus, Check, Play, Square, ExternalLink,
   QrCode, Landmark, Smartphone, HeartHandshake, Eye, EyeOff, HelpCircle,
-  ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle
+  ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle, Edit3, X
 } from 'lucide-react';
 
 interface TransferAlert {
@@ -22,7 +22,7 @@ interface TransferAlert {
   riskReason: string;
   timestamp: string;
   advisoryStatus: 'PENDING' | 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY';
-  daughterNote?: string;
+  guardianNote?: string;
   finalStatus: 'PENDING_ADVISORY' | 'AWAITING_USER_CONFIRMATION' | 'AUTHORIZED_PAID' | 'CANCELLED';
 }
 
@@ -35,27 +35,26 @@ interface Person {
   baseline: number;
 }
 
-const FREQUENT_PEOPLE: Person[] = [
-  { name: 'Ravi Kumar', upiId: 'ravi.kumar@okaxis', avatar: '👨🏽', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
-  { name: 'Daughter Ananya', upiId: 'ananya.m@okhdfcbank', avatar: '👩🏻', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
-  { name: 'Sharma Kirana', upiId: 'sharmagrocery@paytm', avatar: '🏪', color: 'bg-amber-600', lastPaid: '₹850 · 3 days ago', baseline: 1000 },
-  { name: 'Electric Bill', upiId: 'bescom.bill@icici', avatar: '⚡', color: 'bg-blue-600', lastPaid: '₹1,240 · Last month', baseline: 1500 },
-  { name: 'Rajesh (Unknown)', upiId: 'rajesh.lottery99@ybl', avatar: '🕵️', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
-];
-
 export default function BankSathiApp() {
-  // Active Persona: "mother" (Meena Devi) or "daughter" (Ananya)
-  const [activePersona, setActivePersona] = useState<'mother' | 'daughter'>('mother');
+  // Configurable Persona Names
+  const [userName, setUserName] = useState('Sunita Verma');
+  const [guardianName, setGuardianName] = useState('Dilshan');
+  const [guardianRelation, setGuardianRelation] = useState('Son & Trusted Guardian');
+  const [demoRecipientName, setDemoRecipientName] = useState('Rohan Sharma');
+  const [showEditNamesModal, setShowEditNamesModal] = useState(false);
+
+  // Active Persona: "user" (Sunita) or "guardian" (Dilshan)
+  const [activePersona, setActivePersona] = useState<'user' | 'guardian'>('user');
 
   // Accessibility States (WCAG AAA)
-  const [fontScale, setFontScale] = useState(1.0); // 0.85 to 1.8
+  const [fontScale, setFontScale] = useState(1.0);
   const [highContrast, setHighContrast] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'hi' | 'kn' | 'mr' | 'ta'>('en');
   const [showBalance, setShowBalance] = useState(true);
 
   // Financial Balances
-  const [motherBalance, setMotherBalance] = useState(50000);
-  const [daughterBalance, setDaughterBalance] = useState(142000);
+  const [userBalance, setUserBalance] = useState(50000);
+  const [guardianBalance, setGuardianBalance] = useState(142000);
 
   // Speech & Voice State
   const [isListening, setIsListening] = useState(false);
@@ -63,17 +62,26 @@ export default function BankSathiApp() {
   const [syncCaption, setSyncCaption] = useState('');
   const [speechEnabled, setSpeechEnabled] = useState(true);
 
-  // Current Transfer in Progress (Mother Side)
+  // Frequent People Directory
+  const [frequentPeople, setFrequentPeople] = useState<Person[]>([
+    { name: 'Rohan Sharma', upiId: 'rohan.sharma@okaxis', avatar: '👨🏽', color: 'bg-emerald-600', lastPaid: '₹1,500 · 2 weeks ago', baseline: 1500 },
+    { name: 'Dilshan Kumar', upiId: 'dilshan.k@okhdfcbank', avatar: '👨🏻‍💼', color: 'bg-purple-600', lastPaid: '₹5,000 · 1 month ago', baseline: 5000 },
+    { name: 'Priya Verma', upiId: 'priya.verma@okicici', avatar: '👩🏻‍💻', color: 'bg-blue-600', lastPaid: '₹3,200 · 3 weeks ago', baseline: 3000 },
+    { name: 'City Grocery & Kirana', upiId: 'grocery@paytm', avatar: '🏪', color: 'bg-amber-600', lastPaid: '₹850 · 3 days ago', baseline: 1000 },
+    { name: 'Unknown Lottery Agent', upiId: 'unknown.win99@ybl', avatar: '🕵️', color: 'bg-red-600', lastPaid: 'No history', baseline: 0 },
+  ]);
+
+  // Current Transfer in Progress
   const [activeTransfer, setActiveTransfer] = useState<TransferAlert | null>({
     id: 'TXN-ALERT-8819',
-    senderName: 'Meena Devi',
+    senderName: 'Sunita Verma',
     senderPhone: '9999999001',
-    recipientName: 'Ravi Kumar',
-    upiId: 'ravi.kumar@okaxis',
+    recipientName: 'Rohan Sharma',
+    upiId: 'rohan.sharma@okaxis',
     amount: 5000,
     baselineAmount: 1500,
     riskTier: 'HIGH',
-    riskReason: 'Amount ₹5,000 exceeds usual spending baseline of ₹1,500 (3.3x deviation). First transfer of this size.',
+    riskReason: 'Amount ₹5,000 exceeds regular spending baseline of ₹1,500 (3.3x deviation). Trusted Circle advisory alert dispatched to Dilshan.',
     timestamp: 'Just Now',
     advisoryStatus: 'PENDING',
     finalStatus: 'PENDING_ADVISORY'
@@ -83,42 +91,41 @@ export default function BankSathiApp() {
   const [transactions, setTransactions] = useState<any[]>([
     {
       id: 'TXN-UPI-9941',
-      recipient: 'Sharma Kirana',
-      upi: 'sharmagrocery@paytm',
+      recipient: 'City Grocery & Kirana',
+      upi: 'grocery@paytm',
       amount: 850,
       date: '01 Sep 2026',
       status: 'SUCCESS',
-      advisory: 'Low Risk · Auto Approved'
+      advisory: 'Low Risk · Regular Expense'
     },
     {
       id: 'TXN-UPI-9920',
-      recipient: 'BESCOM Electricity',
-      upi: 'bescom.bill@icici',
-      amount: 1240,
+      recipient: 'Priya Verma',
+      upi: 'priya.verma@okicici',
+      amount: 3200,
       date: '28 Aug 2026',
       status: 'SUCCESS',
-      advisory: 'Low Risk · Regular Bill'
+      advisory: 'Low Risk · Verified Contact'
     }
   ]);
 
-  // Modals & Banners
+  // Modals
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [showReceiptModal, setShowReceiptModal] = useState<any>(null);
   const [serverErrorAlert, setServerErrorAlert] = useState('');
-  const [demoStep, setDemoStep] = useState(0);
 
   const recognitionRef = useRef<any>(null);
 
-  // Text-To-Speech with Indian Accent / Hindi support
+  // Text-To-Speech with Indian Accent / Multi-language support
   const speakVoice = (text: string) => {
     setSyncCaption(text);
     if (!speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95; // Slightly slower for elderly clarity
+      utterance.rate = 0.95;
       utterance.pitch = 1.0;
       const voices = window.speechSynthesis.getVoices();
       const inVoice = voices.find(v => v.lang.includes('IN') || v.name.includes('India') || v.name.includes('Aditi'));
@@ -153,7 +160,7 @@ export default function BankSathiApp() {
         recognitionRef.current = reco;
       }
     }
-  }, [selectedLanguage, motherBalance]);
+  }, [selectedLanguage, userBalance, userName, guardianName]);
 
   const toggleMic = () => {
     if (isListening) {
@@ -164,7 +171,7 @@ export default function BankSathiApp() {
         setIsListening(true);
         setVoiceTranscript('');
         recognitionRef.current.start();
-        speakVoice(selectedLanguage === 'hi' ? 'बोलिए, किसको कितने पैसे भेजने हैं?' : 'Please speak: who would you like to send money to?');
+        speakVoice(selectedLanguage === 'hi' ? `नमस्ते ${userName}, किसको कितने पैसे भेजने हैं?` : `Hello ${userName}, who would you like to send money to?`);
       } else {
         alert('Speech recognition is not supported in this browser. Please use the quick action buttons.');
       }
@@ -180,13 +187,13 @@ export default function BankSathiApp() {
       amount = parseInt(numMatch[1].replace(/,/g, ''));
     }
 
-    let recipient = 'Ravi Kumar';
-    if (clean.includes('ananya') || clean.includes('daughter') || clean.includes('beti')) recipient = 'Daughter Ananya';
-    if (clean.includes('sharma') || clean.includes('kirana') || clean.includes('grocery')) recipient = 'Sharma Kirana';
-    if (clean.includes('electric') || clean.includes('bill') || clean.includes('bescom')) recipient = 'Electric Bill';
-    if (clean.includes('rajesh') || clean.includes('lottery') || clean.includes('unknown')) recipient = 'Rajesh (Unknown)';
+    let recipient = demoRecipientName;
+    if (clean.includes('dilshan')) recipient = 'Dilshan Kumar';
+    if (clean.includes('priya')) recipient = 'Priya Verma';
+    if (clean.includes('grocery') || clean.includes('kirana')) recipient = 'City Grocery & Kirana';
+    if (clean.includes('unknown') || clean.includes('lottery') || clean.includes('hacker')) recipient = 'Unknown Lottery Agent';
 
-    const p = FREQUENT_PEOPLE.find(person => person.name.toLowerCase().includes(recipient.toLowerCase())) || FREQUENT_PEOPLE[0];
+    const p = frequentPeople.find(person => person.name.toLowerCase().includes(recipient.toLowerCase())) || frequentPeople[0];
     
     // Compute Risk Tier
     const isBaselineExceeded = amount > (p.baseline * 2);
@@ -194,14 +201,14 @@ export default function BankSathiApp() {
 
     const riskTier = isUnknown ? 'CRITICAL' : isBaselineExceeded ? 'HIGH' : 'LOW';
     const reason = isUnknown 
-      ? `Unknown recipient with zero past transaction history. Fraud precaution active.`
+      ? `Unknown recipient with zero past transaction history. Fraud safeguard active.`
       : isBaselineExceeded 
       ? `Amount ₹${amount.toLocaleString('en-IN')} is significantly higher than your typical ₹${p.baseline.toLocaleString('en-IN')} payment to ${p.name}.`
       : `Within typical spending baseline.`;
 
     const newAlert: TransferAlert = {
       id: `TXN-${Date.now().toString().slice(-6)}`,
-      senderName: 'Meena Devi',
+      senderName: userName,
       senderPhone: '9999999001',
       recipientName: p.name,
       upiId: p.upiId,
@@ -219,65 +226,64 @@ export default function BankSathiApp() {
     if (riskTier === 'LOW') {
       speakVoice(`Transfer of ₹${amount} to ${p.name} is within your normal baseline. Please review and enter your PIN to confirm.`);
     } else {
-      speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. We have sent a private advisory notice to your daughter Ananya for her second opinion.`);
+      speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. A private advisory alert has been sent to your guardian ${guardianName} for second opinion.`);
     }
   };
 
   // Run 1-Click Interactive ₹5,000 Demo Story
   const runDemoStory = () => {
-    setDemoStep(1);
-    setActivePersona('mother');
+    setActivePersona('user');
     const demoAlert: TransferAlert = {
       id: 'TXN-DEMO-5000',
-      senderName: 'Meena Devi',
+      senderName: userName,
       senderPhone: '9999999001',
-      recipientName: 'Ravi Kumar',
-      upiId: 'ravi.kumar@okaxis',
+      recipientName: demoRecipientName,
+      upiId: `${demoRecipientName.toLowerCase().replace(/\s+/g, '.')}@okaxis`,
       amount: 5000,
       baselineAmount: 1500,
       riskTier: 'HIGH',
-      riskReason: 'Transfer of ₹5,000 is 3.3x higher than regular ₹1,500 baseline. Trusted Circle advisory alert dispatched to Daughter Ananya.',
+      riskReason: `Transfer of ₹5,000 is 3.3x higher than regular ₹1,500 baseline. Trusted Circle advisory alert dispatched to ${guardianName}.`,
       timestamp: 'Just Now',
       advisoryStatus: 'PENDING',
       finalStatus: 'PENDING_ADVISORY'
     };
     setActiveTransfer(demoAlert);
-    speakVoice('Step 1: Meena Devi is sending ₹5,000 to Ravi Kumar. The risk engine flagged the baseline deviation and sent an advisory alert to daughter Ananya.');
+    speakVoice(`Step 1: ${userName} is sending ₹5,000 to ${demoRecipientName}. The risk engine detected the baseline deviation and sent an advisory alert to ${guardianName}.`);
   };
 
-  // Daughter Submits Advisory Opinion
-  const handleDaughterAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
+  // Guardian Submits Advisory Opinion
+  const handleGuardianAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
     if (!activeTransfer) return;
     const updated: TransferAlert = {
       ...activeTransfer,
       advisoryStatus: opinion,
-      daughterNote: note,
+      guardianNote: note,
       finalStatus: 'AWAITING_USER_CONFIRMATION'
     };
     setActiveTransfer(updated);
 
     if (opinion === 'LOOKS_EXPECTED') {
-      speakVoice('Daughter Ananya confirmed: Looks Expected. Advisory badge updated for Meena Devi.');
+      speakVoice(`${guardianName} confirmed: Looks Expected. Advisory badge updated for ${userName}.`);
     } else if (opinion === 'DONT_RECOGNIZE') {
-      speakVoice('Daughter Ananya warned: I do not recognize this recipient. Please double check before paying.');
+      speakVoice(`${guardianName} warned: I do not recognize this recipient. Please verify carefully.`);
     } else {
-      speakVoice('Daughter Ananya requested a quick phone call to verify.');
+      speakVoice(`${guardianName} requested a quick phone verification call.`);
     }
 
-    // Auto-prompt switch back to mother to finalize
+    // Switch back to primary user view
     setTimeout(() => {
-      setActivePersona('mother');
+      setActivePersona('user');
     }, 1800);
   };
 
   // Attempt Helper Authorization (Server-Side Block Enforcement Demonstration)
   const handleHelperAttemptAuthorization = () => {
-    setServerErrorAlert('HTTP 403 Forbidden: "Shared guidance, not shared access." Trusted Circle guardians cannot execute or confirm payments. Only primary account holder (Meena Devi) holds authorization authority.');
-    speakVoice('Security Protection: Only Mother Meena Devi can authorize this payment. Trusted Circle members cannot access funds or enter PIN.');
+    setServerErrorAlert(`HTTP 403 Forbidden: "Shared guidance, not shared access." Trusted Circle guardians (${guardianName}) cannot execute or confirm payments. Only ${userName} holds authorization authority.`);
+    speakVoice(`Security Protection: Only ${userName} can authorize this payment. Guardians cannot access funds or enter PIN.`);
   };
 
-  // Mother Confirms Final Payment with PIN
-  const handleMotherConfirmPayment = () => {
+  // Primary User Confirms Final Payment with PIN
+  const handleUserConfirmPayment = () => {
     if (pinInput !== '1234') {
       setPinError('Invalid UPI PIN. Enter demo PIN 1234.');
       return;
@@ -285,8 +291,8 @@ export default function BankSathiApp() {
 
     if (!activeTransfer) return;
 
-    const newBal = motherBalance - activeTransfer.amount;
-    setMotherBalance(newBal);
+    const newBal = userBalance - activeTransfer.amount;
+    setUserBalance(newBal);
 
     const completedTxn = {
       id: activeTransfer.id,
@@ -295,7 +301,7 @@ export default function BankSathiApp() {
       amount: activeTransfer.amount,
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       status: 'SUCCESS',
-      advisory: activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? 'Daughter Verified ✓' : 'User Authorized'
+      advisory: activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? `${guardianName} Verified ✓` : 'User Authorized'
     };
 
     setTransactions(prev => [completedTxn, ...prev]);
@@ -305,7 +311,7 @@ export default function BankSathiApp() {
     setPinError('');
 
     setShowReceiptModal(completedTxn);
-    speakVoice(`Payment Successful! ₹${completedTxn.amount} sent to ${completedTxn.recipient}. Your updated account balance is ₹${newBal.toLocaleString('en-IN')}.`);
+    speakVoice(`Payment Successful! ₹${completedTxn.amount} sent to ${completedTxn.recipient}. Updated balance is ₹${newBal.toLocaleString('en-IN')}.`);
   };
 
   // Cancel Payment
@@ -332,7 +338,7 @@ export default function BankSathiApp() {
             </div>
             <div>
               <span className="font-black text-xs uppercase tracking-wider block leading-none">
-                BankSathi <span className="bg-amber-400 text-blue-950 text-[9px] px-1.5 py-0.5 rounded-xs font-black">FAMILY PROTECTED</span>
+                BankSathi <span className="bg-amber-400 text-blue-950 text-[9px] px-1.5 py-0.5 rounded-xs font-black">FAMILY SHIELD</span>
               </span>
               <span className="text-[10px] text-blue-100 font-medium">Shared Guidance, Not Shared Access</span>
             </div>
@@ -341,40 +347,50 @@ export default function BankSathiApp() {
           {/* Persona Switcher Buttons */}
           <div className="flex items-center gap-1.5 bg-blue-900/90 p-1 rounded-md border border-blue-600">
             <button
-              onClick={() => setActivePersona('mother')}
+              onClick={() => setActivePersona('user')}
               className={`px-3 py-1.5 rounded-sm text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
-                activePersona === 'mother'
+                activePersona === 'user'
                   ? 'bg-white text-blue-950 shadow-sm'
                   : 'text-blue-100 hover:bg-blue-800'
               }`}
             >
-              <span>👵 1. Mother (Meena)</span>
+              <span>👵 1. {userName.split(' ')[0]}</span>
               <span className="text-[9px] bg-amber-400 text-blue-950 px-1 rounded-xs font-black">USER</span>
             </button>
 
             <button
-              onClick={() => setActivePersona('daughter')}
+              onClick={() => setActivePersona('guardian')}
               className={`px-3 py-1.5 rounded-sm text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer relative ${
-                activePersona === 'daughter'
+                activePersona === 'guardian'
                   ? 'bg-purple-600 text-white shadow-sm'
                   : 'text-purple-200 hover:bg-blue-800'
               }`}
             >
-              <span>🛡️ 2. Daughter (Ananya)</span>
+              <span>🛡️ 2. {guardianName}</span>
               {activeTransfer && activeTransfer.advisoryStatus === 'PENDING' && (
                 <span className="w-2 h-2 rounded-full bg-red-400 animate-ping absolute -top-0.5 -right-0.5" />
               )}
             </button>
           </div>
 
-          {/* 1-Click Demo Story Button */}
-          <button
-            onClick={runDemoStory}
-            className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-sm flex items-center gap-1 shadow-sm cursor-pointer transition-transform active:scale-95"
-          >
-            <Play size={13} className="fill-blue-950" />
-            <span>▶️ Run ₹5,000 Demo Story</span>
-          </button>
+          {/* 1-Click Demo Story & Edit Names Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={runDemoStory}
+              className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-sm flex items-center gap-1 shadow-sm cursor-pointer transition-transform active:scale-95"
+            >
+              <Play size={13} className="fill-blue-950" />
+              <span>▶️ Run ₹5,000 Story</span>
+            </button>
+
+            <button
+              onClick={() => setShowEditNamesModal(true)}
+              className="p-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded-sm text-xs border border-blue-600 cursor-pointer"
+              title="Customize Names"
+            >
+              <Edit3 size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -434,7 +450,7 @@ export default function BankSathiApp() {
         </div>
       </div>
 
-      {/* 🔊 SYNCHRONIZED REAL-TIME CAPTION BANNER (Hearing Accessibility) */}
+      {/* 🔊 SYNCHRONIZED CAPTION BANNER */}
       {syncCaption && (
         <div className="bg-amber-300 text-blue-950 font-black px-4 py-2 text-xs border-b-2 border-amber-400 shadow-inner flex items-center justify-between">
           <div className="max-w-4xl mx-auto flex items-center gap-2 w-full">
@@ -445,7 +461,7 @@ export default function BankSathiApp() {
         </div>
       )}
 
-      {/* HTTP 403 / SERVER-SIDE ENFORCEMENT ALERT BANNER */}
+      {/* HTTP 403 / SERVER-SIDE ENFORCEMENT ALERT */}
       {serverErrorAlert && (
         <div className="bg-red-600 text-white font-bold p-3 text-xs border-b-2 border-red-800 flex items-center justify-between shadow-md">
           <div className="max-w-4xl mx-auto flex items-center gap-2 w-full">
@@ -457,9 +473,9 @@ export default function BankSathiApp() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 👵 VIEW 1: MOTHER (MEENA DEVI) — PRIMARY USER GPAY INTERFACE  */}
+      {/* 👵 VIEW 1: PRIMARY USER (SUNITA VERMA) — GPAY INTERFACE       */}
       {/* ───────────────────────────────────────────────────────────── */}
-      {activePersona === 'mother' && (
+      {activePersona === 'user' && (
         <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* User Profile Header Card */}
           <div className={`p-6 rounded-2xl border-2 shadow-sm relative overflow-hidden ${
@@ -472,14 +488,14 @@ export default function BankSathiApp() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-black text-lg text-gray-900 leading-tight">Meena Devi</h2>
+                    <h2 className="font-black text-lg text-gray-900 leading-tight">{userName}</h2>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-full border border-emerald-300">
-                      Protected Senior Account
+                      Family Shield Active
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 font-mono font-medium">UPI ID: 9999999001@sbi</span>
+                  <span className="text-xs text-gray-500 font-mono font-medium">UPI: {userName.toLowerCase().replace(/\s+/g, '.')}@sbi</span>
                   <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                    Spending Baseline: <span className="text-blue-700 font-black">₹1,500 / transfer</span>
+                    Guardian: <span className="text-purple-700 font-black">{guardianName} ({guardianRelation})</span>
                   </p>
                 </div>
               </div>
@@ -498,7 +514,7 @@ export default function BankSathiApp() {
                     {showBalance ? <Eye size={13} /> : <EyeOff size={13} />}
                   </button>
                   <button
-                    onClick={() => speakVoice(`Your current bank balance is ₹${motherBalance.toLocaleString('en-IN')}`)}
+                    onClick={() => speakVoice(`Your account balance is ₹${userBalance.toLocaleString('en-IN')}`)}
                     className="p-1 bg-blue-100 text-blue-900 rounded-full hover:bg-blue-200 cursor-pointer"
                     title="🔊 Read Balance Out Loud"
                   >
@@ -506,7 +522,7 @@ export default function BankSathiApp() {
                   </button>
                 </div>
                 <div className="text-2xl font-black text-blue-950 font-mono mt-0.5">
-                  {showBalance ? `₹${motherBalance.toLocaleString('en-IN')}` : '••••••'}
+                  {showBalance ? `₹${userBalance.toLocaleString('en-IN')}` : '••••••'}
                 </div>
               </div>
             </div>
@@ -525,11 +541,11 @@ export default function BankSathiApp() {
               value={voiceTranscript}
               onChange={(e) => setVoiceTranscript(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleVoiceCommand(voiceTranscript)}
-              placeholder="Speak or type: 'Send 5000 to Ravi Kumar'..."
+              placeholder={`Speak or type: 'Send 5000 to ${demoRecipientName}'...`}
               className="flex-1 text-sm font-bold bg-transparent focus:outline-hidden text-gray-900"
             />
 
-            {/* Oversized 56px Senior-Friendly Voice Mic Button */}
+            {/* Oversized 56px Voice Mic Button */}
             <button
               onClick={toggleMic}
               className={`w-14 h-14 rounded-full flex items-center justify-center font-black transition-all shadow-md cursor-pointer ${
@@ -557,9 +573,9 @@ export default function BankSathiApp() {
                   key={idx}
                   onClick={() => {
                     if (action.label === 'Trusted Circle') {
-                      setActivePersona('daughter');
+                      setActivePersona('guardian');
                     } else {
-                      handleVoiceCommand('Send 5000 to Ravi Kumar');
+                      handleVoiceCommand(`Send 5000 to ${demoRecipientName}`);
                     }
                   }}
                   className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 shadow-xs hover:scale-105 transition-transform cursor-pointer ${
@@ -604,7 +620,7 @@ export default function BankSathiApp() {
                 </div>
               </div>
 
-              {/* Plain-Language Behavioral Risk Reason */}
+              {/* Behavioral Risk Reason */}
               <div className="p-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-800 mb-4 flex items-start gap-2">
                 <Info size={16} className="text-blue-700 mt-0.5 shrink-0" />
                 <div>
@@ -619,14 +635,14 @@ export default function BankSathiApp() {
                   <div className="flex items-center gap-2">
                     <HeartHandshake size={18} className="text-purple-700" />
                     <span className="text-xs font-black uppercase text-purple-950">
-                      Trusted Circle Advisory (Daughter Ananya)
+                      Trusted Circle Advisory ({guardianName})
                     </span>
                   </div>
                   <button
-                    onClick={() => setActivePersona('daughter')}
+                    onClick={() => setActivePersona('guardian')}
                     className="text-[11px] font-black text-purple-700 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>View as Daughter</span>
+                    <span>View as {guardianName}</span>
                     <ChevronRight size={12} />
                   </button>
                 </div>
@@ -634,33 +650,33 @@ export default function BankSathiApp() {
                 {activeTransfer.advisoryStatus === 'PENDING' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-amber-800 bg-amber-100/70 p-2.5 rounded-lg border border-amber-300">
                     <Clock size={16} className="animate-spin text-amber-700" />
-                    <span>Advisory ping sent to Daughter Ananya. Awaiting her second opinion...</span>
+                    <span>Advisory ping sent to {guardianName}. Awaiting second opinion...</span>
                   </div>
                 ) : activeTransfer.advisoryStatus === 'LOOKS_EXPECTED' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-100 p-2.5 rounded-lg border border-emerald-300">
                     <CheckCircle2 size={18} className="text-emerald-700" />
                     <div>
-                      <span className="font-black block">✓ Daughter Ananya: &quot;Looks Expected&quot;</span>
-                      <span className="text-[11px] font-normal text-emerald-900">{activeTransfer.daughterNote || 'Verified as legitimate payment.'}</span>
+                      <span className="font-black block">✓ {guardianName}: &quot;Looks Expected&quot;</span>
+                      <span className="text-[11px] font-normal text-emerald-900">{activeTransfer.guardianNote || 'Verified as recognized payment.'}</span>
                     </div>
                   </div>
                 ) : activeTransfer.advisoryStatus === 'DONT_RECOGNIZE' ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-red-800 bg-red-100 p-2.5 rounded-lg border border-red-300">
                     <AlertTriangle size={18} className="text-red-700" />
                     <div>
-                      <span className="font-black block">⚠️ Daughter Ananya: &quot;I Don&apos;t Recognize This&quot;</span>
-                      <span className="text-[11px] font-normal text-red-900">{activeTransfer.daughterNote || 'Please verify before entering your PIN.'}</span>
+                      <span className="font-black block">⚠️ {guardianName}: &quot;I Don&apos;t Recognize This&quot;</span>
+                      <span className="text-[11px] font-normal text-red-900">{activeTransfer.guardianNote || 'Please verify before entering your PIN.'}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-xs font-bold text-blue-800 bg-blue-100 p-2.5 rounded-lg border border-blue-300">
                     <HelpCircle size={18} className="text-blue-700" />
-                    <span>Daughter Ananya requested voice/phone verification before approving.</span>
+                    <span>{guardianName} requested voice/phone verification before approving.</span>
                   </div>
                 )}
               </div>
 
-              {/* MOTHER'S FINAL ACTION BUTTONS (USER-ONLY AUTHORIZATION) */}
+              {/* USER-ONLY AUTHORIZATION BUTTONS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={() => setShowPinModal(true)}
@@ -689,7 +705,7 @@ export default function BankSathiApp() {
               Frequent Contacts (1-Tap Pay)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {FREQUENT_PEOPLE.map((p, idx) => (
+              {frequentPeople.map((p, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleVoiceCommand(`Send ${p.baseline || 2000} to ${p.name}`)}
@@ -735,25 +751,25 @@ export default function BankSathiApp() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 🛡️ VIEW 2: DAUGHTER (ANANYA) — TRUSTED CIRCLE ADVISORY DASHBOARD */}
+      {/* 🛡️ VIEW 2: GUARDIAN (DILSHAN) — TRUSTED ADVISORY DASHBOARD     */}
       {/* ───────────────────────────────────────────────────────────── */}
-      {activePersona === 'daughter' && (
+      {activePersona === 'guardian' && (
         <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Guardian Profile Header */}
           <div className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-6 rounded-2xl shadow-lg border-2 border-purple-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div className="w-14 h-14 rounded-full bg-purple-200 text-purple-950 text-2xl flex items-center justify-center font-black">
-                  👩🏻
+                  👨🏻‍💼
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-black text-lg">Ananya (Daughter &amp; Trusted Guardian)</h2>
+                    <h2 className="font-black text-lg">{guardianName} ({guardianRelation})</h2>
                     <span className="text-[10px] bg-purple-300 text-purple-950 font-black px-2 py-0.5 rounded-full">
-                      Trusted Circle
+                      Trusted Guardian
                     </span>
                   </div>
-                  <span className="text-xs text-purple-200 font-mono">Phone: 9999999002 · Protecting Meena Devi</span>
+                  <span className="text-xs text-purple-200 font-mono">Protecting {userName}</span>
                   <p className="text-[11px] text-purple-100 font-medium mt-1">
                     🛡️ Advisory Guidance Mode: You provide real-time recommendations with zero screen-sharing or PIN access.
                   </p>
@@ -761,23 +777,23 @@ export default function BankSathiApp() {
               </div>
 
               <button
-                onClick={() => setActivePersona('mother')}
+                onClick={() => setActivePersona('user')}
                 className="px-3.5 py-2 bg-white text-purple-950 font-black text-xs uppercase rounded-xl hover:bg-purple-50 shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
               >
-                <span>Switch to Mother View</span>
+                <span>Switch to {userName.split(' ')[0]} View</span>
                 <ChevronRight size={14} />
               </button>
             </div>
           </div>
 
-          {/* ACTIVE ADVISORY REQUEST FROM MOTHER */}
+          {/* ACTIVE ADVISORY REQUEST */}
           {activeTransfer ? (
             <div className="bg-white border-4 border-purple-600 rounded-2xl p-6 shadow-xl space-y-5">
               <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-purple-600 animate-ping" />
                   <h3 className="font-black text-sm uppercase tracking-wide text-purple-950">
-                    Incoming Advisory Request for Meena Devi
+                    Incoming Advisory Request from {userName}
                   </h3>
                 </div>
                 <span className="text-xs font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
@@ -799,17 +815,17 @@ export default function BankSathiApp() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Mother&apos;s Baseline</span>
+                  <span className="text-gray-500 font-bold block text-[10px] uppercase">Spending Baseline</span>
                   <span className="font-bold text-gray-700">₹{activeTransfer.baselineAmount.toLocaleString('en-IN')}</span>
                   <span className="text-[10px] text-red-600 font-bold block">(3.3x deviation)</span>
                 </div>
               </div>
 
               <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900">
-                <strong>Why You&apos;re Seeing This:</strong> Meena Devi rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.
+                <strong>Why You&apos;re Seeing This:</strong> {userName} rarely transfers more than ₹1,500. This ₹5,000 transfer triggered the BankSathi Trusted Circle protocol to ask for your advisory second opinion.
               </div>
 
-              {/* 3 ADVISORY FEEDBACK OPTIONS FOR DAUGHTER */}
+              {/* 3 ADVISORY FEEDBACK OPTIONS */}
               <div>
                 <h4 className="font-black text-xs uppercase tracking-wider text-gray-700 mb-2">
                   Select Your Advisory Recommendation:
@@ -817,7 +833,7 @@ export default function BankSathiApp() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
-                    onClick={() => handleDaughterAdvisory('LOOKS_EXPECTED', 'I recognize Ravi Kumar for medical/home expenses.')}
+                    onClick={() => handleGuardianAdvisory('LOOKS_EXPECTED', `I recognize ${activeTransfer.recipientName} for legitimate expenses.`)}
                     className="p-3.5 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <CheckCircle2 size={22} className="text-emerald-600" />
@@ -826,26 +842,26 @@ export default function BankSathiApp() {
                   </button>
 
                   <button
-                    onClick={() => handleDaughterAdvisory('DONT_RECOGNIZE', 'Unknown recipient. Please hold or verify.')}
+                    onClick={() => handleGuardianAdvisory('DONT_RECOGNIZE', 'Unknown recipient. Please hold or verify.')}
                     className="p-3.5 bg-red-50 hover:bg-red-100 border-2 border-red-400 text-red-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <AlertTriangle size={22} className="text-red-600" />
                     <span>⚠️ Don&apos;t Recognize This</span>
-                    <span className="text-[10px] text-red-700 font-normal">Warn mother of potential scam.</span>
+                    <span className="text-[10px] text-red-700 font-normal">Warn user of potential scam.</span>
                   </button>
 
                   <button
-                    onClick={() => handleDaughterAdvisory('REQUEST_VERIFY', 'Call me before proceeding.')}
+                    onClick={() => handleGuardianAdvisory('REQUEST_VERIFY', 'Call me before proceeding.')}
                     className="p-3.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-400 text-blue-950 font-black text-xs rounded-xl flex flex-col items-center text-center gap-1 cursor-pointer transition-all shadow-xs"
                   >
                     <HelpCircle size={22} className="text-blue-600" />
                     <span>❓ Request Verification</span>
-                    <span className="text-[10px] text-blue-700 font-normal">Ask mother to call before paying.</span>
+                    <span className="text-[10px] text-blue-700 font-normal">Ask user to call before paying.</span>
                   </button>
                 </div>
               </div>
 
-              {/* DEMO: HELPER ATTEMPTING AUTHORIZATION (SHOWS HTTP 403 ENFORCEMENT) */}
+              {/* DEMO: HELPER ATTEMPTING AUTHORIZATION (HTTP 403 ENFORCEMENT) */}
               <div className="pt-3 border-t border-gray-200">
                 <button
                   onClick={handleHelperAttemptAuthorization}
@@ -853,7 +869,7 @@ export default function BankSathiApp() {
                   title="Test security: helper cannot confirm payment"
                 >
                   <ShieldAlert size={14} />
-                  <span>Test Security: Attempt to confirm payment as daughter (Simulate HTTP 403)</span>
+                  <span>Test Security: Attempt to confirm payment as {guardianName} (Simulate HTTP 403)</span>
                 </button>
               </div>
             </div>
@@ -862,7 +878,7 @@ export default function BankSathiApp() {
               <ShieldCheck size={40} className="mx-auto text-emerald-500 mb-2" />
               <h3 className="font-black text-sm uppercase text-gray-800">All Clear — No Pending Alerts</h3>
               <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1">
-                Mother Meena Devi has no active anomalous transfers. Click <strong>&quot;▶️ Run ₹5,000 Demo Story&quot;</strong> above to simulate a new transfer alert.
+                {userName} has no active anomalous transfers. Click <strong>&quot;▶️ Run ₹5,000 Story&quot;</strong> above to simulate a new transfer alert.
               </p>
             </div>
           )}
@@ -870,7 +886,74 @@ export default function BankSathiApp() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* STEP-UP PIN VERIFICATION MODAL (MOTHER ONLY)                  */}
+      {/* EDIT NAMES CUSTOMIZER MODAL                                   */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showEditNamesModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-4 border-blue-950 w-full max-w-md rounded-2xl shadow-2xl p-6">
+            <div className="flex items-center justify-between border-b pb-3 mb-4">
+              <h3 className="text-sm font-black uppercase text-gray-900 flex items-center gap-1.5">
+                <Edit3 size={16} className="text-[#1A73E8]" /> Customize Persona Names
+              </h3>
+              <button onClick={() => setShowEditNamesModal(false)} className="font-bold text-gray-400 hover:text-gray-700">✕</button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-black uppercase text-gray-700 mb-1">Primary Senior User Name</label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  className="w-full p-2.5 border-2 border-gray-300 rounded-lg font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-black uppercase text-gray-700 mb-1">Trusted Guardian / Helper Name</label>
+                <input
+                  type="text"
+                  value={guardianName}
+                  onChange={(e) => setGuardianName(e.target.value)}
+                  className="w-full p-2.5 border-2 border-gray-300 rounded-lg font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-black uppercase text-gray-700 mb-1">Guardian Relationship</label>
+                <input
+                  type="text"
+                  value={guardianRelation}
+                  onChange={(e) => setGuardianRelation(e.target.value)}
+                  className="w-full p-2.5 border-2 border-gray-300 rounded-lg font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-black uppercase text-gray-700 mb-1">Demo Transfer Recipient Name</label>
+                <input
+                  type="text"
+                  value={demoRecipientName}
+                  onChange={(e) => setDemoRecipientName(e.target.value)}
+                  className="w-full p-2.5 border-2 border-gray-300 rounded-lg font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowEditNamesModal(false)}
+                className="px-5 py-2 bg-blue-900 text-white font-black text-xs uppercase rounded-lg shadow-sm"
+              >
+                Save &amp; Apply Names
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* STEP-UP PIN VERIFICATION MODAL (USER ONLY)                    */}
       {/* ───────────────────────────────────────────────────────────── */}
       {showPinModal && activeTransfer && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -880,7 +963,7 @@ export default function BankSathiApp() {
             </div>
 
             <h3 className="text-base font-black uppercase text-gray-900">
-              Authorize Payment (Meena Devi)
+              Authorize Payment ({userName})
             </h3>
             <span className="text-2xl font-black text-blue-950 block my-1 font-mono">
               ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
@@ -911,7 +994,7 @@ export default function BankSathiApp() {
                 Cancel
               </button>
               <button
-                onClick={handleMotherConfirmPayment}
+                onClick={handleUserConfirmPayment}
                 className="py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase rounded-xl shadow-md"
               >
                 Confirm &amp; Pay
