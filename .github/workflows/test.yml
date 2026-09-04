@@ -16,6 +16,9 @@ jobs:
 
     env:
       GROQ_API_KEY: ""
+      MISTRAL_API_KEY: ""
+      TWILIO_ACCOUNT_SID: ""
+      TWILIO_AUTH_TOKEN: ""
 
     steps:
       - name: Checkout
@@ -30,9 +33,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv venv .venv
-          uv pip install --python .venv/bin/python -r backend/requirements.txt
+          uv venv
+          uv pip install -r backend/requirements.txt
 
       - name: Run pytest
         run: |
-          PYTHONPATH=backend .venv/bin/pytest backend/tests/ -v --tb=short
+          PYTHONPATH=backend uv run pytest backend/tests/ -v --tb=short
