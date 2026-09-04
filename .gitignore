@@ -52,8 +52,6 @@ ml_research/reports/*.png
 .env.production.local
 .env.test.local
 .env.development.local
-.env
-.env.local
 
 # misc
 .DS_Store
@@ -66,3 +64,4 @@ ml_research/reports/*.png
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+config.bat
