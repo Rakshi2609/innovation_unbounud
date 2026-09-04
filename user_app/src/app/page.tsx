@@ -8,7 +8,7 @@ import {
   FileText, ShieldAlert, History, Plus, Check, Play, Square, ExternalLink,
   QrCode, Landmark, Smartphone, HeartHandshake, Eye, EyeOff, HelpCircle,
   ZoomIn, ZoomOut, Contrast, Globe, Shield, MessageCircle, AlertCircle, Edit3, X,
-  PhoneCall, PhoneForwarded, Radio, MessageSquare
+  PhoneCall, PhoneForwarded, Radio, MessageSquare, FastForward, Rewind, PlayCircle
 } from 'lucide-react';
 
 interface TransferAlert {
@@ -58,7 +58,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     tagline: "Shared Guidance, Not Shared Access",
     userTag: "USER",
     guardianTag: "GUARDIAN",
-    runStory: "▶️ Run ₹5,000 Story",
+    runStory: "▶️ 5-Step Guided Story Tour",
     editNames: "Customize Names",
     fontSize: "Font Size:",
     contrastOn: "High Contrast ON",
@@ -132,7 +132,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     tagline: "साझा मार्गदर्शन, साझा पहुंच नहीं",
     userTag: "उपयोगकर्ता",
     guardianTag: "अभिभावक",
-    runStory: "▶️ ₹5,000 स्टोरी चलाएं",
+    runStory: "▶️ 5-चरणीय गाइडेड स्टोरी",
     editNames: "नाम बदलें",
     fontSize: "अक्षर आकार:",
     contrastOn: "हाई कंट्रास्ट चालू",
@@ -206,7 +206,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     tagline: "ಹಂಚಿಕೆಯ ಮಾರ್ಗದರ್ಶನ, ಹಂಚಿಕೆಯ ಪ್ರವೇಶವಲ್ಲ",
     userTag: "ಬಳಕೆದಾರ",
     guardianTag: "ರಕ್ಷಕ",
-    runStory: "▶️ ₹5,000 ಕಥೆ ಚಾಲನೆ ಮಾಡಿ",
+    runStory: "▶️ 5-ಹಂತದ ಮಾರ್ಗದರ್ಶಿ ಕಥೆ",
     editNames: "ಹೆಸರುಗಳನ್ನು ಬದಲಾಯಿಸಿ",
     fontSize: "ಅಕ್ಷರ ಗಾತ್ರ:",
     contrastOn: "ಹೈ ಕಾಂಟ್ರಾಸ್ಟ್ ಆನ್",
@@ -242,7 +242,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     incomingRequest: "{user} ಅವರಿಂದ ಬಂದ ಸಲಹಾ ವಿನಂತಿ",
     recipientLabel: "ಸ್ವೀಕೃತದಾರ",
     requestedAmount: "ಕೋರಿದ ಮೊತ್ತ",
-    spendingBaseline: "ಸಾಮಾನ್ಯ ವೆಚ್ಚದ ಮಿತಿ",
+    spendingBaseline: "ಸಾನ್ಯ ವೆಚ್ಚದ ಮಿತಿ",
     deviation: "ವ್ಯತ್ಯಾಸ",
     whySeeingThis: "ನೀವು ಇದನ್ನು ಏಕೆ ನೋಡುತ್ತಿದ್ದೀರಿ: {user} ಅವರು ಸಾಮಾನ್ಯವಾಗಿ ₹1,500 ಕ್ಕಿಂತ ಹೆಚ್ಚು ಕಳುಹಿಸುವುದಿಲ್ಲ. ಈ ₹5,000 ವಹಿವಾಟು ನಿಮ್ಮ ಅಭಿಪ್ರಾಯ ಪಡೆಯಲು ಬ್ಯಾಂಕ್‌ಸಾಥಿ ರಕ್ಷಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದೆ.",
     selectRecommendation: "ನಿಮ್ಮ ಸಲಹೆಯನ್ನು ಆರಿಸಿ:",
@@ -280,7 +280,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     tagline: "सामायिक मार्गदर्शन, सामायिक प्रवेश नाही",
     userTag: "वापरकर्ता",
     guardianTag: "पालक",
-    runStory: "▶️ ₹5,000 कथा चालवा",
+    runStory: "▶️ 5-टप्प्यांची मार्गदर्शित कथा",
     editNames: "नावे बदला",
     fontSize: "फॉन्ट आकार:",
     contrastOn: "हाय कॉन्ट्रास्ट चालू",
@@ -354,7 +354,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     tagline: "பகிர்ந்த வழிகாட்டுதல், பகிர்ந்த அணுகல் அல்ல",
     userTag: "பயனர்",
     guardianTag: "பாதுகாவலர்",
-    runStory: "▶️ ₹5,000 கதையை இயக்கு",
+    runStory: "▶️ 5-படி வழிகாட்டப்பட்ட கதை",
     editNames: "பெயர்களை மாற்று",
     fontSize: "எழுத்து அளவு:",
     contrastOn: "உயர் மாறுபாடு ஆன்",
@@ -424,6 +424,44 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
   }
 };
 
+const TOUR_STEPS = [
+  {
+    step: 1,
+    title: "1. Senior Initiates Transfer",
+    subtitle: "Sunita Verma speaks voice transfer of ₹5,000 to Rohan Sharma.",
+    narrative: "Step 1: Senior user Sunita Verma attempts a ₹5,000 transfer. The behavioral risk engine detects a 3.3x baseline deviation and sends a Trusted Circle advisory alert to Dilshan.",
+    actionPrompt: "Action: Click 'Next Step ➡️' or view the active alert card below."
+  },
+  {
+    step: 2,
+    title: "2. Guardian Advisory & Phone Call",
+    subtitle: "Dilshan receives alert & verifies with Sunita over Twilio AI Voice Call.",
+    narrative: "Step 2: Dilshan opens his Trusted Guardian dashboard, triggers an automated Twilio verification call to Sunita. Sunita confirms 'Yes' over the phone.",
+    actionPrompt: "Action: Guardian reviews live transcript and submits '✓ Looks Expected' recommendation."
+  },
+  {
+    step: 3,
+    title: "3. Server-Side Block (HTTP 403)",
+    subtitle: "Demonstrates that Guardian CANNOT execute payment or enter PIN.",
+    narrative: "Step 3: Security Rule: 'Shared guidance, not shared access.' When helper attempts to pay, backend returns HTTP 403 Forbidden.",
+    actionPrompt: "Action: Demonstrates zero credential leakage and zero proxy payments."
+  },
+  {
+    step: 4,
+    title: "4. Senior Step-Up Authorization",
+    subtitle: "Sunita sees '✓ Dilshan Verified' badge and enters her UPI PIN.",
+    narrative: "Step 4: Sunita Verma sees the verified badge from Dilshan. She enters her own 4-digit UPI PIN (1234) on her own device.",
+    actionPrompt: "Action: Senior enters PIN 1234 to complete final authorization."
+  },
+  {
+    step: 5,
+    title: "5. Safe Settlement & Digital Receipt",
+    subtitle: "Funds transferred with full immutable Trusted Circle audit record.",
+    narrative: "Step 5: Transfer complete! ₹5,000 sent safely. Bank balance updated, and a digital receipt with cryptographic audit reference is generated.",
+    actionPrompt: "Action: Story complete. Click 'Restart Tour' to practice again."
+  }
+];
+
 export default function BankSathiApp() {
   const [userName, setUserName] = useState('Sunita Verma');
   const [guardianName, setGuardianName] = useState('Dilshan');
@@ -432,6 +470,11 @@ export default function BankSathiApp() {
   const [showEditNamesModal, setShowEditNamesModal] = useState(false);
 
   const [activePersona, setActivePersona] = useState<'user' | 'guardian'>('user');
+
+  // Guided Walkthrough State
+  const [tourStep, setTourStep] = useState<number>(1);
+  const [isTourActive, setIsTourActive] = useState<boolean>(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
 
   const [fontScale, setFontScale] = useState(1.0);
   const [highContrast, setHighContrast] = useState(false);
@@ -546,6 +589,131 @@ export default function BankSathiApp() {
       console.error('Speech error:', e);
     }
   };
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // 🧭 GUIDED TOUR CONTROLLER & AUTOMATION
+  // ───────────────────────────────────────────────────────────────────────────
+  const executeTourStep = (stepNumber: number) => {
+    setTourStep(stepNumber);
+    setIsTourActive(true);
+
+    if (stepNumber === 1) {
+      setActivePersona('user');
+      const demoAlert: TransferAlert = {
+        id: 'TXN-DEMO-5000',
+        senderName: userName,
+        senderPhone: seniorPhoneNumber,
+        recipientName: demoRecipientName,
+        upiId: `${demoRecipientName.toLowerCase().replace(/\s+/g, '.')}@okaxis`,
+        amount: 5000,
+        baselineAmount: 1500,
+        riskTier: 'HIGH',
+        riskReason: `Transfer of ₹5,000 is 3.3x higher than regular ₹1,500 baseline. Trusted Circle advisory alert dispatched to ${guardianName}.`,
+        timestamp: 'Just Now',
+        advisoryStatus: 'PENDING',
+        finalStatus: 'PENDING_ADVISORY'
+      };
+      setActiveTransfer(demoAlert);
+      setShowPinModal(false);
+      setShowReceiptModal(null);
+      setServerErrorAlert('');
+      setCallConversationTurns([]);
+      setCallStatusMessage('');
+      speakVoice(`Step 1: ${userName} is sending ₹5,000 to ${demoRecipientName}. The risk engine detected the baseline deviation and sent an advisory alert to ${guardianName}.`);
+    } else if (stepNumber === 2) {
+      setActivePersona('guardian');
+      setShowPinModal(false);
+      setShowReceiptModal(null);
+      // Simulate live Twilio conversation turns
+      setCallConversationTurns([
+        {
+          id: 'TC-TOUR-1',
+          event_type: 'TRUSTED_CIRCLE_CALL_INITIATED',
+          actor: `Guardian (${guardianName})`,
+          action: `Initiated Twilio Verification Call to ${userName}`,
+          decision: 'CALLING',
+          notes: `🤖 AI Voice Shield (Twilio): "Hello ${userName}! Your guardian ${guardianName} requested verification for ₹5,000 to ${demoRecipientName}. Say 'Yes' to confirm or 'No' to cancel."`
+        },
+        {
+          id: 'TC-TOUR-2',
+          event_type: 'TRUSTED_CIRCLE_CONFIRMED',
+          actor: `Senior (${userName})`,
+          action: `Confirmed ₹5,000 Over Phone Call`,
+          decision: 'CONFIRMED',
+          notes: `👵 ${userName}: "Yes, I am sending this ₹5,000 for festival shopping."\n🤖 AI Voice Shield: "Thank you ${userName}! Transfer verified. ${guardianName} notified."`
+        }
+      ]);
+      setCallStatusMessage(`✓ ${userName} confirmed the transfer over Twilio phone call!`);
+      if (activeTransfer) {
+        setActiveTransfer({
+          ...activeTransfer,
+          advisoryStatus: 'LOOKS_EXPECTED',
+          verifiedOverPhone: true,
+          guardianNote: `Phone verification complete: ${userName} confirmed authorization over Twilio call.`
+        });
+      }
+      speakVoice(`Step 2: Switched to Guardian ${guardianName}. Verification call was placed to ${userName}, and she confirmed over the phone.`);
+    } else if (stepNumber === 3) {
+      setActivePersona('guardian');
+      setShowPinModal(false);
+      setShowReceiptModal(null);
+      setServerErrorAlert(`HTTP 403 Forbidden: "Shared guidance, not shared access." Trusted Circle guardians (${guardianName}) cannot execute or confirm payments. Only ${userName} holds authorization authority.`);
+      speakVoice(`Step 3: Security Rule: Guardian cannot authorize payments or enter PIN. Authorization authority belongs strictly to ${userName}.`);
+    } else if (stepNumber === 4) {
+      setActivePersona('user');
+      setServerErrorAlert('');
+      setShowReceiptModal(null);
+      setShowPinModal(true);
+      setPinInput('1234');
+      speakVoice(`Step 4: Switched to ${userName}. She sees the verified badge from ${guardianName} and enters her private UPI PIN to authorize.`);
+    } else if (stepNumber === 5) {
+      setActivePersona('user');
+      setShowPinModal(false);
+      const newBal = userBalance - 5000;
+      setUserBalance(newBal);
+      const receipt = {
+        id: activeTransfer?.id || 'TXN-DEMO-5000',
+        recipient: demoRecipientName,
+        upi: `${demoRecipientName.toLowerCase().replace(/\s+/g, '.')}@okaxis`,
+        amount: 5000,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        status: 'SUCCESS',
+        advisory: `${guardianName} & Phone Verified ✓`
+      };
+      setTransactions(prev => [receipt, ...prev]);
+      setActiveTransfer(null);
+      setShowReceiptModal(receipt);
+      speakVoice(`Step 5: Payment Successful! ₹5,000 sent safely. Digital receipt generated with complete Trusted Circle and Twilio call verification audit trail.`);
+    }
+  };
+
+  const handleNextStep = () => {
+    const next = tourStep >= 5 ? 1 : tourStep + 1;
+    executeTourStep(next);
+  };
+
+  const handlePrevStep = () => {
+    const prev = tourStep <= 1 ? 5 : tourStep - 1;
+    executeTourStep(prev);
+  };
+
+  const toggleAutoPlay = () => {
+    setIsAutoPlaying(!isAutoPlaying);
+  };
+
+  useEffect(() => {
+    let timer: any = null;
+    if (isAutoPlaying) {
+      timer = setTimeout(() => {
+        if (tourStep < 5) {
+          executeTourStep(tourStep + 1);
+        } else {
+          setIsAutoPlaying(false);
+        }
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [isAutoPlaying, tourStep]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -683,35 +851,6 @@ export default function BankSathiApp() {
     } else {
       speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. A private advisory alert has been sent to your guardian ${guardianName} for second opinion.`);
     }
-  };
-
-  const runDemoStory = () => {
-    setActivePersona('user');
-    const demoAlert: TransferAlert = {
-      id: 'TXN-DEMO-5000',
-      senderName: userName,
-      senderPhone: seniorPhoneNumber,
-      recipientName: demoRecipientName,
-      upiId: `${demoRecipientName.toLowerCase().replace(/\s+/g, '.')}@okaxis`,
-      amount: 5000,
-      baselineAmount: 1500,
-      riskTier: 'HIGH',
-      riskReason: `Transfer of ₹5,000 is 3.3x higher than regular ₹1,500 baseline. Trusted Circle advisory alert dispatched to ${guardianName}.`,
-      timestamp: 'Just Now',
-      advisoryStatus: 'PENDING',
-      finalStatus: 'PENDING_ADVISORY'
-    };
-    setActiveTransfer(demoAlert);
-    setCallConversationTurns([]);
-    setCallStatusMessage('');
-
-    let announceText = `Step 1: ${userName} is sending ₹5,000 to ${demoRecipientName}. The risk engine detected the baseline deviation and sent an advisory alert to ${guardianName}.`;
-    if (selectedLanguage === 'hi') {
-      announceText = `चरण 1: ${userName} ₹5,000 ${demoRecipientName} को भेज रहे हैं। असामान्य राशि होने के कारण ${guardianName} को सुरक्षा अलर्ट भेजा गया है।`;
-    } else if (selectedLanguage === 'kn') {
-      announceText = `ಹಂತ 1: ${userName} ಅವರು ${demoRecipientName} ಅವರಿಗೆ ₹5,000 ಕಳುಹಿಸುತ್ತಿದ್ದಾರೆ. ಅಸಾಮಾನ್ಯ ಮೊತ್ತವಾದ್ದರಿಂದ ${guardianName} ಅವರಿಗೆ ಭದ್ರತಾ ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ.`;
-    }
-    speakVoice(announceText);
   };
 
   const handleGuardianAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
@@ -878,6 +1017,8 @@ export default function BankSathiApp() {
     setActiveTransfer(null);
   };
 
+  const currentTour = TOUR_STEPS[tourStep - 1] || TOUR_STEPS[0];
+
   return (
     <div 
       className={`min-h-screen transition-all ${
@@ -930,10 +1071,10 @@ export default function BankSathiApp() {
             </button>
           </div>
 
-          {/* 1-Click Demo Story & Edit Names Buttons */}
+          {/* Guided Story Tour Bar & Edit Names Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={runDemoStory}
+              onClick={() => executeTourStep(1)}
               className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase rounded-sm flex items-center gap-1 shadow-sm cursor-pointer transition-transform active:scale-95"
             >
               <Play size={13} className="fill-blue-950" />
@@ -950,6 +1091,92 @@ export default function BankSathiApp() {
           </div>
         </div>
       </div>
+
+      {/* 🧭 INTERACTIVE 5-STEP GUIDED TOUR HUD (WHAT'S NEXT GUIDE) */}
+      {isTourActive && (
+        <div className="bg-gradient-to-r from-blue-950 via-indigo-900 to-purple-950 text-white border-b-4 border-amber-400 shadow-xl px-4 py-3">
+          <div className="max-w-4xl mx-auto space-y-2.5">
+            {/* Step badges */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {TOUR_STEPS.map((s) => (
+                  <button
+                    key={s.step}
+                    onClick={() => executeTourStep(s.step)}
+                    className={`px-2.5 py-1 rounded-md text-xs font-black transition-all cursor-pointer ${
+                      tourStep === s.step
+                        ? 'bg-amber-400 text-blue-950 shadow-md ring-2 ring-white scale-105'
+                        : 'bg-white/10 text-white/80 hover:bg-white/20'
+                    }`}
+                  >
+                    Step {s.step}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tour Controls */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleAutoPlay}
+                  className={`px-2.5 py-1 rounded text-xs font-black flex items-center gap-1 cursor-pointer ${
+                    isAutoPlaying ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-800 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  <PlayCircle size={13} />
+                  <span>{isAutoPlaying ? 'Auto-Playing...' : 'Auto-Play Tour ⚡'}</span>
+                </button>
+
+                <button
+                  onClick={handlePrevStep}
+                  className="p-1 bg-white/10 hover:bg-white/20 rounded cursor-pointer text-xs"
+                  title="Previous Step"
+                >
+                  <Rewind size={14} />
+                </button>
+
+                <button
+                  onClick={handleNextStep}
+                  className="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black rounded text-xs flex items-center gap-1 cursor-pointer shadow-sm"
+                >
+                  <span>Next Step</span>
+                  <FastForward size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Current Step Instruction Box */}
+            <div className="bg-white/10 p-3 rounded-xl border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-amber-300 uppercase tracking-wider text-[11px]">
+                    Step {tourStep} of 5: {currentTour.title}
+                  </span>
+                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">
+                    {activePersona === 'user' ? '👵 Primary User View' : '🛡️ Guardian View'}
+                  </span>
+                </div>
+                <p className="font-semibold text-white/95 text-xs mt-0.5">
+                  {currentTour.subtitle}
+                </p>
+                <p className="text-[11px] text-amber-200/90 font-medium italic mt-0.5">
+                  {currentTour.actionPrompt}
+                </p>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2">
+                <button
+                  onClick={() => speakVoice(currentTour.narrative)}
+                  className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-lg flex items-center gap-1 cursor-pointer"
+                  title="🔊 Read Tour Step"
+                >
+                  <Volume2 size={13} />
+                  <span>Narrate Step</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ♿ WCAG AAA ACCESSIBILITY CONTROLS BAR */}
       <div className={`border-b py-2 px-4 ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
@@ -1158,7 +1385,7 @@ export default function BankSathiApp() {
               activeTransfer.advisoryStatus === 'DONT_RECOGNIZE'
                 ? 'border-red-500 bg-red-50/50'
                 : activeTransfer.advisoryStatus === 'LOOKS_EXPECTED'
-                ? 'border-emerald-500 bg-emerald-50/50'
+                ? 'border-emerald-500 bg-emerald-50/50 ring-4 ring-emerald-300'
                 : 'border-amber-400 bg-amber-50/40'
             }`}>
               <div className="flex items-start justify-between gap-3 border-b pb-3 mb-4 border-gray-300">
@@ -1646,7 +1873,7 @@ export default function BankSathiApp() {
       {/* ───────────────────────────────────────────────────────────── */}
       {/* STEP-UP PIN VERIFICATION MODAL (USER ONLY)                    */}
       {/* ───────────────────────────────────────────────────────────── */}
-      {showPinModal && activeTransfer && (
+      {showPinModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white border-4 border-blue-950 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
             <div className="w-12 h-12 bg-blue-100 text-blue-950 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -1657,7 +1884,7 @@ export default function BankSathiApp() {
               {t('authorizePayment', { user: userName })}
             </h3>
             <span className="text-2xl font-black text-blue-950 block my-1 font-mono">
-              ₹{activeTransfer.amount.toLocaleString('en-IN')} to {activeTransfer.recipientName}
+              ₹5,000 to {demoRecipientName}
             </span>
 
             <p className="text-xs text-gray-500 mb-4 font-medium">
@@ -1671,7 +1898,7 @@ export default function BankSathiApp() {
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 placeholder="••••"
-                className="w-full text-center tracking-widest text-3xl py-2.5 border-2 border-gray-300 rounded-xl font-mono focus:outline-hidden focus:border-blue-700 bg-gray-50"
+                className="w-full text-center tracking-widest text-3xl py-2.5 border-2 border-gray-300 rounded-xl font-mono focus:outline-hidden focus:border-blue-700 bg-gray-50 font-bold"
               />
               <span className="text-[10px] text-gray-400 font-bold block mt-1">{t('demoPinLabel')}</span>
               {pinError && <p className="text-xs text-red-600 font-bold mt-1">{pinError}</p>}

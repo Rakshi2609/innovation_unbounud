@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Layers, RefreshCw, Search, Plus, Scale, TrendingDown, BookOpen, 
   ShieldCheck, AlertTriangle, UserCheck, CheckCircle2, Lock, Sparkles, 
-  Activity, FileText, PhoneCall, PhoneOutgoing, Volume2, Globe
+  Activity, FileText, PhoneCall, PhoneOutgoing, Volume2, Globe, ArrowRight, ArrowLeft, Play, Info
 } from 'lucide-react';
 
 const API_BASE = "http://localhost:8000";
@@ -15,6 +15,70 @@ const formatINR = (val: number | undefined | null): string => {
   return "₹" + Number(val).toLocaleString("en-IN");
 };
 
+interface TourStep {
+  step: number;
+  title: string;
+  badge: string;
+  badgeColor: string;
+  description: string;
+  whatNext: string;
+  actionButtonText: string;
+  narrativeSpeech: string;
+}
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    step: 1,
+    title: "1. Telemetry & ML Risk Scoring",
+    badge: "ML Inference",
+    badgeColor: "bg-red-100 text-red-700 border-red-200",
+    description: "Ingests continuous banking telemetry (DTI 46%, rolling cashflows, credit utilization 68%). LightGBM model flags 85% distress probability for Ramesh Kumar (CASE-2026-001).",
+    whatNext: "Inspect the top SHAP risk factors, then proceed to Step 2 to query regulatory and restructuring policies.",
+    actionButtonText: "Load CASE-2026-001",
+    narrativeSpeech: "Step 1: Continuous telemetry ingestion and machine learning risk evaluation. The model detects early distress signals for borrower Ramesh Kumar with an eighty-five percent risk score."
+  },
+  {
+    step: 2,
+    title: "2. TheSuperRAG Policy Retrieval",
+    badge: "RBI Grounded",
+    badgeColor: "bg-blue-100 text-blue-700 border-blue-200",
+    description: "Hybrid vector search in Qdrant retrieves exact regulatory clauses. Fetches 'Clause 4.2: Hardship Relief Framework' with 92% semantic similarity score.",
+    whatNext: "Review the exact clause snippet below, then proceed to Step 3 to authorize a personalized workout plan.",
+    actionButtonText: "View Clause 4.2 Snippet",
+    narrativeSpeech: "Step 2: Grounded policy retrieval. The Super RAG retrieves Reserve Bank of India Hardship Relief Clause 4.2 to offer early proactive restructuring before default."
+  },
+  {
+    step: 3,
+    title: "3. Human Officer Decision & Override",
+    badge: "Human-in-the-Loop",
+    badgeColor: "bg-purple-100 text-purple-700 border-purple-200",
+    description: "Officer Priya Nair (OFFICER-402) reviews LangGraph recommendations, selects a 36-month debt restructuring plan with 2.5% rate discount, and signs the authorization.",
+    whatNext: "Review or submit the authorization modal, then proceed to Step 4 to initiate native-language voice outreach.",
+    actionButtonText: "Open Decision Authorization",
+    narrativeSpeech: "Step 3: Human in the loop governance. Bank Officer Priya Nair reviews the synthesized restructuring option and authorizes the intervention."
+  },
+  {
+    step: 4,
+    title: "4. Outbound Multilingual Twilio Call",
+    badge: "Voice Copilot",
+    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    description: "Automated voice agent places an empathetic phone call via Twilio in the borrower's preferred native language (Hindi / Kannada / Tamil / English) to explain terms without intimidation.",
+    whatNext: "Select preferred language, trigger the call to test the live Twilio gateway, then proceed to Step 5.",
+    actionButtonText: "Focus Voice Dispatcher",
+    narrativeSpeech: "Step 4: AI Voice Copilot dispatch. The system places an outbound voice call in the customer's native language to explain the approved restructuring terms."
+  },
+  {
+    step: 5,
+    title: "5. Immutable Audit Trail & Verification",
+    badge: "Compliance Sealed",
+    badgeColor: "bg-gray-900 text-white border-gray-700",
+    description: "Every telemetry input, ML risk score, RAG citation, officer signature, and voice transcript is sealed with SHA-256 and committed to the immutable compliance audit ledger.",
+    whatNext: "The case is fully resolved with zero PII exposure and complete regulatory transparency. You can view the full audit log in the Audit Dashboard.",
+    actionButtonText: "View Cryptographic Ledger",
+    narrativeSpeech: "Step 5: Cryptographic audit sealing. Every action is signed and permanently logged in accordance with banking compliance requirements."
+  }
+];
+
 export default function TriagePage() {
   const [cases, setCases] = useState<any[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string>('CASE-2026-001');
@@ -23,6 +87,11 @@ export default function TriagePage() {
   const [trackFilter, setTrackFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [userRole, setUserRole] = useState<'OFFICER' | 'CUSTOMER'>('OFFICER');
+
+  // Tour State
+  const [currentTourStep, setCurrentTourStep] = useState<number>(1);
+  const [isTourActive, setIsTourActive] = useState<boolean>(true);
+  const [isSpeakingTour, setIsSpeakingTour] = useState<boolean>(false);
 
   // Voice Call State
   const [callPhone, setCallPhone] = useState<string>('+919461284678');
@@ -40,6 +109,61 @@ export default function TriagePage() {
   const [decisionNotes, setDecisionNotes] = useState('Customer proactively accepted workout terms prior to 60-day default window.');
   const [overrideML, setOverrideML] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
+
+  const speakTourNarrative = (text: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.onstart = () => setIsSpeakingTour(true);
+      utterance.onend = () => setIsSpeakingTour(false);
+      utterance.onerror = () => setIsSpeakingTour(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handleTourStepChange = (stepNum: number) => {
+    setCurrentTourStep(stepNum);
+    const stepObj = TOUR_STEPS.find(s => s.step === stepNum);
+    if (stepObj) {
+      speakTourNarrative(stepObj.narrativeSpeech);
+    }
+    // Auto perform contextual step highlight
+    executeStepAction(stepNum);
+  };
+
+  const executeStepAction = (stepNum: number) => {
+    if (stepNum === 1) {
+      handleSelectCase('CASE-2026-001');
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    } else if (stepNum === 2) {
+      const cit = currentDetail?.rag_citations?.[0] || {
+        clause: "Clause 4.2",
+        policy_name: "Proactive Hardship & Debt Restructuring Standard",
+        section: "Section 4 - Early Warning Workouts",
+        source_file: "RBI_Distress_Intervention_Framework_2026.md",
+        snippet: "For borrowers exhibiting early distress signals (DTI > 45% or rolling 30-day deficit), financial institutions must offer structured workout terms prior to non-performing asset classification.",
+        relevance_score: 0.92
+      };
+      setSelectedCitation(cit);
+    } else if (stepNum === 3) {
+      setIsDecisionModalOpen(true);
+    } else if (stepNum === 4) {
+      setIsDecisionModalOpen(false);
+      setSelectedCitation(null);
+      const callCard = document.getElementById('voice-copilot-card');
+      if (callCard) {
+        callCard.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (stepNum === 5) {
+      setIsDecisionModalOpen(false);
+      setSelectedCitation(null);
+      const ledgerCard = document.getElementById('audit-ledger-section');
+      if (ledgerCard) {
+        ledgerCard.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   const fetchCaseDetail = useCallback(async (id: string) => {
     if (!id) return;
@@ -134,6 +258,7 @@ export default function TriagePage() {
 
   const metrics = currentDetail?.customer_profile?.financial_metrics || currentDetail?.customer?.financial_metrics;
   const profile = currentDetail?.customer_profile || currentDetail?.customer;
+  const activeStep = TOUR_STEPS.find(s => s.step === currentTourStep) || TOUR_STEPS[0];
 
   return (
     <div className="w-full bg-[#F9FAFB] min-h-screen">
@@ -141,31 +266,148 @@ export default function TriagePage() {
       {/* Top Controls Toolbar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sticky top-0 z-40">
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-gray-900">Case Triage Queue</h1>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mt-1">Select a case to review intelligence</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <h1 className="text-xl font-black uppercase tracking-tight text-gray-900">Case Triage Queue & Copilot</h1>
+          </div>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mt-0.5">Evidence-Grounded AI Copilot for Bank Officers</p>
         </div>
         
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="flex flex-1 md:flex-none items-center bg-gray-100 p-1 border border-gray-200 rounded">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button
+            onClick={() => setIsTourActive(!isTourActive)}
+            className={`px-3 py-1.5 rounded text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
+              isTourActive ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-600 border-gray-200'
+            }`}
+          >
+            <Sparkles size={13} /> {isTourActive ? 'Hide Guided Tour' : 'Show Guided Tour'}
+          </button>
+
+          <div className="flex items-center bg-gray-100 p-1 border border-gray-200 rounded">
             <button
               onClick={() => setUserRole('OFFICER')}
-              className={`flex-1 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
+              className={`px-3 py-1 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
                 userRole === 'OFFICER' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Officer
+              Officer View
             </button>
             <button
               onClick={() => setUserRole('CUSTOMER')}
-              className={`flex-1 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
+              className={`px-3 py-1 text-xs font-black uppercase tracking-wider rounded-sm transition-all ${
                 userRole === 'CUSTOMER' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Customer
+              Customer View
             </button>
           </div>
         </div>
       </div>
+
+      {/* 🚀 INTERACTIVE 5-STEP GUIDED DEMO TOUR HUD */}
+      {isTourActive && (
+        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-b-2 border-blue-600 px-6 py-5 shadow-lg">
+          <div className="max-w-[1600px] mx-auto">
+            {/* Header & Step Pills */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="px-2 py-0.5 rounded bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest">
+                  Live Walkthrough
+                </span>
+                <span className="text-xs font-black tracking-widest uppercase text-slate-300">
+                  The Golden Path: Step {activeStep.step} of 5
+                </span>
+              </div>
+
+              {/* Step Navigation Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                {TOUR_STEPS.map(s => {
+                  const isCurrent = s.step === currentTourStep;
+                  const isPassed = s.step < currentTourStep;
+                  return (
+                    <button
+                      key={s.step}
+                      onClick={() => handleTourStepChange(s.step)}
+                      className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                        isCurrent 
+                          ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400' 
+                          : isPassed 
+                            ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' 
+                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                      }`}
+                    >
+                      <span>{s.step}.</span>
+                      <span className="hidden sm:inline">{s.title.split('. ')[1]}</span>
+                      {isPassed && <CheckCircle2 size={12} className="text-emerald-400" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Step Body & Next Action Callout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4 items-center">
+              {/* Left Details */}
+              <div className="lg:col-span-8 space-y-2">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-black text-white tracking-tight">
+                    {activeStep.title}
+                  </h2>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${activeStep.badgeColor}`}>
+                    {activeStep.badge}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                  {activeStep.description}
+                </p>
+                <div className="flex items-start gap-2 bg-slate-800/80 border border-slate-700 p-2.5 rounded text-xs">
+                  <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider block">What to do next:</span>
+                    <span className="text-slate-200">{activeStep.whatNext}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Action Buttons */}
+              <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-2.5 justify-end">
+                <button
+                  onClick={() => executeStepAction(activeStep.step)}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-widest px-4 py-2.5 rounded shadow flex items-center justify-center gap-2 transition-all"
+                >
+                  <Play size={14} /> {activeStep.actionButtonText}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={currentTourStep <= 1}
+                    onClick={() => handleTourStepChange(currentTourStep - 1)}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 font-bold text-xs uppercase tracking-wider py-2 rounded border border-slate-700 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <ArrowLeft size={13} /> Prev
+                  </button>
+
+                  <button
+                    onClick={() => speakTourNarrative(activeStep.narrativeSpeech)}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-xs font-bold flex items-center gap-1"
+                    title="Read Step Aloud"
+                  >
+                    <Volume2 size={13} className={isSpeakingTour ? "text-blue-400 animate-pulse" : ""} />
+                  </button>
+
+                  <button
+                    disabled={currentTourStep >= 5}
+                    onClick={() => handleTourStepChange(currentTourStep + 1)}
+                    className="flex-1 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-900 font-black text-xs uppercase tracking-wider py-2 rounded shadow flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    Next <ArrowRight size={13} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-[1600px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
@@ -304,7 +546,7 @@ export default function TriagePage() {
                 <div className="bg-white border border-gray-200 rounded shadow-sm p-6 flex flex-col h-[400px]">
                   <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
                     <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
-                      <Activity size={16} className="text-gray-400" /> Statistical ML Risk
+                      <Activity size={16} className="text-gray-400" /> Statistical ML Risk (Step 1)
                     </h3>
                     <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600 px-2 py-1 rounded-sm">
                       {currentDetail.ml_prediction?.is_fallback ? 'Fallback Engine' : 'Online Engine'}
@@ -333,9 +575,9 @@ export default function TriagePage() {
                 <div className="bg-white border border-gray-200 rounded shadow-sm p-6 flex flex-col h-[400px]">
                   <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
                     <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
-                      <BookOpen size={16} className="text-gray-400" /> Policy Evidence
+                      <BookOpen size={16} className="text-gray-400" /> TheSuperRAG Evidence (Step 2)
                     </h3>
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600 px-2 py-1 rounded-sm">
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 px-2 py-1 rounded-sm border border-blue-200">
                       {currentDetail.rag_citations?.length || 0} Citations
                     </span>
                   </div>
@@ -344,16 +586,16 @@ export default function TriagePage() {
                       <div
                         key={i}
                         onClick={() => setSelectedCitation(citation)}
-                        className="border border-gray-200 bg-white rounded p-3 cursor-pointer hover:border-gray-400 transition-colors"
+                        className="border border-gray-200 bg-white rounded p-3 cursor-pointer hover:border-blue-400 hover:bg-blue-50/20 transition-all shadow-sm"
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded-sm">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded-sm">
                             {citation.clause}
                           </span>
-                          <span className="text-[10px] font-bold text-gray-400">Score: {citation.relevance_score}</span>
+                          <span className="text-[10px] font-bold text-gray-500">Relevance: {citation.relevance_score}</span>
                         </div>
                         <p className="text-xs font-black uppercase tracking-tight text-gray-900 mb-1 truncate">{citation.policy_name}</p>
-                        <p className="text-xs text-gray-500 font-medium italic line-clamp-2 border-l-2 border-gray-200 pl-2">
+                        <p className="text-xs text-gray-600 font-medium italic line-clamp-2 border-l-2 border-blue-400 pl-2">
                           "{citation.snippet}"
                         </p>
                       </div>
@@ -367,7 +609,7 @@ export default function TriagePage() {
               <div className="bg-white border border-gray-200 rounded shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
                   <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
-                    <Sparkles size={16} className="text-gray-400" /> Synthesized Recommendation
+                    <Sparkles size={16} className="text-gray-400" /> Synthesized Recommendation (Step 3)
                   </h3>
                   <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100 px-2 py-1 rounded-sm">
                     Confidence: {Math.round((currentDetail.confidence_score || currentDetail.ml_prediction?.confidence || 0.89) * 100)}%
@@ -407,8 +649,8 @@ export default function TriagePage() {
                 </div>
               </div>
 
-              {/* Multilingual Voice Copilot Dispatch Card */}
-              <div className="bg-white border-2 border-gray-900 rounded shadow-md p-6">
+              {/* Multilingual Voice Copilot Dispatch Card (Step 4) */}
+              <div id="voice-copilot-card" className="bg-white border-2 border-gray-900 rounded shadow-md p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-gray-200 pb-4">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center">
@@ -416,7 +658,7 @@ export default function TriagePage() {
                     </div>
                     <div>
                       <h3 className="font-black text-sm uppercase tracking-tight text-gray-900 flex items-center gap-2">
-                        AI Multilingual Voice Copilot
+                        AI Multilingual Voice Copilot (Step 4)
                         <span className="text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
                           Twilio Live
                         </span>
@@ -437,6 +679,8 @@ export default function TriagePage() {
                       <option value="en">English (Indian Voice)</option>
                       <option value="hi">हिन्दी (Hindi)</option>
                       <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                      <option value="mr">मराठी (Marathi)</option>
+                      <option value="ta">தமிழ் (Tamil)</option>
                     </select>
                   </div>
                 </div>
@@ -523,6 +767,41 @@ export default function TriagePage() {
                 )}
               </div>
 
+              {/* Step 5: Cryptographic Audit Ledger Card */}
+              <div id="audit-ledger-section" className="bg-slate-900 text-white rounded border border-slate-800 p-6 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={18} className="text-emerald-400" />
+                    <div>
+                      <h3 className="font-black text-sm uppercase tracking-tight text-white">
+                        Cryptographic Audit Trail (Step 5)
+                      </h3>
+                      <p className="text-[11px] text-slate-400">Zero-Retention PII Governance & Immutable Signing</p>
+                    </div>
+                  </div>
+                  <Link href="/audit">
+                    <button className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded border border-slate-700 flex items-center gap-1.5">
+                      Open Audit Dashboard <ArrowRight size={13} />
+                    </button>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                  <div className="bg-slate-950 p-3 rounded border border-slate-800">
+                    <span className="text-slate-500 text-[10px] uppercase tracking-wider block mb-1">Ledger Entry Hash</span>
+                    <span className="text-blue-400 break-all text-[11px]">sha256:7f3a9e2d...0418c8b</span>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded border border-slate-800">
+                    <span className="text-slate-500 text-[10px] uppercase tracking-wider block mb-1">Authorized Officer</span>
+                    <span className="text-emerald-400 text-[11px]">OFFICER-402 (Priya Nair)</span>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded border border-slate-800">
+                    <span className="text-slate-500 text-[10px] uppercase tracking-wider block mb-1">Compliance Status</span>
+                    <span className="text-emerald-400 font-bold text-[11px]">✅ RBI Hardship Clause 4.2 Verified</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full p-12 bg-transparent text-gray-400 border-2 border-dashed border-gray-200 rounded">
@@ -561,7 +840,7 @@ export default function TriagePage() {
                   onChange={e => setDecisionType(e.target.value)}
                   className="w-full p-2.5 bg-white border border-gray-200 rounded text-xs font-bold text-gray-900 focus:outline-none focus:border-blue-500"
                 >
-                  <option value="RESTRUCTURE">Approve Debt Restructuring</option>
+                  <option value="RESTRUCTURE">Approve Debt Restructuring (36-mo workout)</option>
                   <option value="APPROVE">Approve Standard Facility</option>
                   <option value="REQUEST_INFO">Require Additional Info</option>
                   <option value="FLAG_FRAUD">Flag Fraud Anomaly</option>
@@ -645,7 +924,7 @@ export default function TriagePage() {
         <div className="fixed inset-0 z-50 bg-gray-900/50 flex items-center justify-center p-4">
           <div className="bg-white rounded border border-gray-200 shadow-xl max-w-lg w-full">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-              <span className="text-[10px] font-black uppercase tracking-widest bg-gray-200 text-gray-900 px-2 py-1 rounded-sm">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-blue-100 text-blue-900 px-2 py-1 rounded-sm border border-blue-200">
                 {selectedCitation.clause}
               </span>
               <button onClick={() => setSelectedCitation(null)} className="text-gray-400 hover:text-gray-900">✕</button>
@@ -659,17 +938,17 @@ export default function TriagePage() {
                 Section: {selectedCitation.section} | File: {selectedCitation.source_file}
               </p>
 
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded text-xs leading-relaxed text-gray-900 italic mb-6">
+              <div className="p-4 bg-blue-50/50 border border-blue-200 rounded text-xs leading-relaxed text-gray-900 italic mb-6">
                 "{selectedCitation.snippet}"
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Score: {selectedCitation.relevance_score}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Relevance Match: {selectedCitation.relevance_score}</span>
                 <button
                   onClick={() => setSelectedCitation(null)}
                   className="px-6 py-2 bg-gray-900 text-white font-black text-xs uppercase tracking-widest rounded hover:bg-gray-800 transition-colors"
                 >
-                  Close
+                  Close Citation
                 </button>
               </div>
             </div>
@@ -679,5 +958,3 @@ export default function TriagePage() {
     </div>
   );
 }
-
-
