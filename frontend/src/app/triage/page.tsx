@@ -63,12 +63,9 @@ export default function TriagePage() {
         const list = data.cases || [];
         setCases(list);
         if (list.length > 0) {
-          setSelectedCaseId(prev => {
-            const exists = list.some((c: any) => c.case_id === prev);
-            const chosenId = exists ? prev : list[0].case_id;
-            fetchCaseDetail(chosenId);
-            return chosenId;
-          });
+          const targetId = list[0].case_id;
+          setSelectedCaseId(targetId);
+          fetchCaseDetail(targetId);
         }
       }
     } catch (e) {
@@ -80,9 +77,9 @@ export default function TriagePage() {
 
   useEffect(() => {
     fetchCases();
-  }, [fetchCases]);
+  }, []);
 
-  const handleSelectCase = (id: string) => {
+  const handleSelectCase = async (id: string) => {
     setSelectedCaseId(id);
     if (!caseDetailsCache[id]) {
       fetchCaseDetail(id);

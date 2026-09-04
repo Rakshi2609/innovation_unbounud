@@ -34,5 +34,5 @@ jobs:
           uv pip install --python .venv/bin/python -r backend/requirements.txt
 
       - name: Run pytest
-        working-directory: backend
-        run: .venv/bin/python -m pytest tests/ --tb=short
+        run: |
+          PYTHONPATH=backend .venv/bin/pytest backend/tests/ -v --tb=short
