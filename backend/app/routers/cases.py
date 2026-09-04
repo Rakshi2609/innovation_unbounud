@@ -369,12 +369,14 @@ async def voice_webhook_respond(
         vr.say(no_input_end, voice=voice_name, language=lang_code)
         return Response(content=str(vr), media_type="application/xml; charset=utf-8")
 
-    # Generate contextual conversational reply
-    ai_reply, should_continue = voice_service.generate_conversational_reply(
+    # Generate contextual conversational reply with live RAG policy search
+    policy_store = getattr(request.app.state, "policy_store", None)
+    ai_reply, should_continue = await voice_service.generate_conversational_reply(
         case_id=case_id or "DEMO-CALL",
         user_speech=str(user_speech),
         language=language,
-        turn=turn_num
+        turn=turn_num,
+        policy_store=policy_store
     )
 
     # Log speech turn to audit log

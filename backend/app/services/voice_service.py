@@ -224,14 +224,71 @@ class VoiceNotificationService:
                 "script_spoken": script_text
             }
 
-    def generate_conversational_reply(
+    def get_latest_policy_summary(self, policy_store=None) -> str:
+        """Find the latest or custom policy document in the knowledge base."""
+        if not policy_store or not policy_store.documents:
+            return "Institutional Banking Underwriting and Restructuring Policy"
+        for doc in reversed(policy_store.documents):
+            source = doc.metadata.get("source_file", "")
+            title = source.replace(".md", "").replace("_", " ").title()
+            if title and not source.startswith("contract_"):
+                return title
+        return "Institutional Banking Underwriting and Restructuring Policy"
+
+    async def search_and_explain_policy(
+        self,
+        query: str,
+        language: str = "en",
+        policy_store=None
+    ) -> Optional[str]:
+        """Search policy store and synthesize a clean spoken explanation for text-to-speech."""
+        if not policy_store:
+            return None
+        try:
+            results = await policy_store.search(query, k=3)
+            if not results:
+                return None
+            
+            # Pick the most relevant document
+            doc = results[0]
+            raw_title = doc.metadata.get("source_file", "Bank Policy").replace(".md", "").replace("_", " ").title()
+            clause_name = doc.metadata.get("clause", "Policy Guidelines")
+            
+            # Clean snippet for TTS: remove markdown and metadata headers
+            clean_lines = []
+            for line in doc.page_content.split("\n"):
+                line = line.strip()
+                if not line or line.startswith(("#", "Category:", "Status:", "Jurisdiction:", "**Category", "**Status", "**Jurisdiction", "---")):
+                    continue
+                clean_lines.append(line.replace("*", "").replace("`", "").replace(">", "").strip())
+            
+            clean_text = " ".join(clean_lines).strip()
+            # Extract 1-2 key sentences
+            sentences = [s.strip() for s in clean_text.split(".") if len(s.strip()) > 10]
+            summary_snippet = ". ".join(sentences[:2]) if sentences else clean_text[:160]
+            if summary_snippet and not summary_snippet.endswith("."):
+                summary_snippet += "."
+                
+            lang = language.lower().strip()
+            if lang in ("hi", "hindi"):
+                return f"हमारी बैंक पॉलिसी '{raw_title}' के अनुसार: {summary_snippet} क्या आप इस नई पॉलिसी या ऋण सुविधा के बारे में कुछ और पूछना चाहते हैं?"
+            elif lang in ("kn", "kannada"):
+                return f"ನಮ್ಮ ಹೊಸ ಬ್ಯಾಂಕ್ ಪಾಲಿಸಿ '{raw_title}' ಪ್ರಕಾರ: {summary_snippet} ನೀವು ಈ ಸೌಲಭ್ಯವನ್ನು ಪಡೆಯಲು ಬಯಸುವಿರಾ?"
+            else:
+                return f"According to our institutional policy '{raw_title}': {summary_snippet} Would you like to proceed with this plan or have our loan officer assist you?"
+        except Exception as e:
+            logger.error(f"Error searching policy in voice service: {e}")
+            return None
+
+    async def generate_conversational_reply(
         self,
         case_id: str,
         user_speech: str,
         language: str = "en",
-        turn: int = 1
+        turn: int = 1,
+        policy_store=None
     ) -> Tuple[str, bool]:
-        """Generate empathetic AI conversational answer to user's question, returning (reply_text, should_continue)."""
+        """Generate empathetic AI conversational answer to user's question, searching live policies in real time."""
         speech_lower = user_speech.lower().strip()
         lang = language.lower().strip()
 
@@ -243,6 +300,13 @@ class VoiceNotificationService:
                 return ("ತುಂಬಾ ಧನ್ಯವಾದಗಳು! ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು ನಮಗೆ ಸಂತೋಷವಾಗಿದೆ. ಶುಭ ದಿನ, ನಮಸ್ಕಾರ!", False)
             else:
                 return ("Thank you very much for speaking with us today. Have a wonderful and safe day. Goodbye!", False)
+
+        # Check for policy inquiry keywords to trigger live RAG search
+        policy_keywords = ["policy", "rule", "guideline", "scheme", "restructure", "moratorium", "emi", "interest", "relief", "पॉलिसी", "नियम", "योजना", "ಸಾಲ", "ನಿಯಮ", "ಪಾಲಿಸಿ"]
+        if any(pk in speech_lower for pk in policy_keywords) and policy_store:
+            policy_explanation = await self.search_and_explain_policy(user_speech, language, policy_store)
+            if policy_explanation:
+                return (policy_explanation, True)
 
         # Hindi Conversational Responses
         if lang in ("hi", "hindi"):
