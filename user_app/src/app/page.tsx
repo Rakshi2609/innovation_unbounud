@@ -829,6 +829,30 @@ export default function BankMantriApp() {
       ? `Amount ₹${amount.toLocaleString('en-IN')} is significantly higher than your typical ₹${p.baseline.toLocaleString('en-IN')} payment to ${p.name}.`
       : `Within typical spending baseline.`;
 
+    // 🟢 BASELINE TRANSFERS: Zero-PIN Instant UPI Lite Payment!
+    if (riskTier === 'LOW') {
+      const newBal = userBalance - amount;
+      setUserBalance(newBal);
+
+      const completedTxn = {
+        id: `TXN-${Date.now().toString().slice(-6)}`,
+        recipient: p.name,
+        upi: p.upiId,
+        amount: amount,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        status: 'SUCCESS',
+        advisory: 'UPI Lite (Within Baseline · Zero-PIN Instant Pay)'
+      };
+
+      setTransactions(prev => [completedTxn, ...prev]);
+      setActiveTransfer(null);
+      setShowPinModal(false);
+      setShowReceiptModal(completedTxn);
+      speakVoice(`Transfer of ₹${amount} to ${p.name} is within your normal baseline of ₹${p.baseline}. Paid instantly with UPI Lite without requiring PIN!`);
+      return;
+    }
+
+    // 🔴 UNUSUAL / HIGH RISK: Trigger Trusted Circle Advisory & Phone Verification
     const newAlert: TransferAlert = {
       id: `TXN-${Date.now().toString().slice(-6)}`,
       senderName: userName,
@@ -840,17 +864,12 @@ export default function BankMantriApp() {
       riskTier: riskTier,
       riskReason: reason,
       timestamp: 'Just Now',
-      advisoryStatus: riskTier === 'LOW' ? 'LOOKS_EXPECTED' : 'PENDING',
-      finalStatus: riskTier === 'LOW' ? 'AWAITING_USER_CONFIRMATION' : 'PENDING_ADVISORY'
+      advisoryStatus: 'PENDING',
+      finalStatus: 'PENDING_ADVISORY'
     };
 
     setActiveTransfer(newAlert);
-
-    if (riskTier === 'LOW') {
-      speakVoice(`Transfer of ₹${amount} to ${p.name} is within your normal baseline. Please review and enter your PIN to confirm.`);
-    } else {
-      speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. A private advisory alert has been sent to your guardian ${guardianName} for second opinion.`);
-    }
+    speakVoice(`Notice: ₹${amount} to ${p.name} is higher than your usual ₹${p.baseline}. A private advisory alert has been sent to your guardian ${guardianName} for second opinion.`);
   };
 
   const handleGuardianAdvisory = (opinion: 'LOOKS_EXPECTED' | 'DONT_RECOGNIZE' | 'REQUEST_VERIFY', note: string) => {
