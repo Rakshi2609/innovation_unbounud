@@ -64,3 +64,4 @@ ml_research/reports/*.png
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+config.bat
